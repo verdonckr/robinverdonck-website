@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0e13">
+<title>Gratis TrainLog — Robin Verdonck Coaching</title>
+<style>
+:root{--bg:#0b0e13;--card:#171c24;--line:#232a35;--gold:#c9a962;--goldsoft:#e0c98f;--wit:#f5f4f1;--grijs:#9aa1ab;--groen:#5dca85;--rood:#e08a6d}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--wit);font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;padding-bottom:84px}
+.wrap{max-width:520px;margin:0 auto;padding:14px}
+header{text-align:center;padding:16px 0 4px}
+header h1{font-size:19px;font-weight:800}
+header h1 span{color:var(--gold)}
+header p{font-size:12px;color:var(--grijs)}
+h2{font-size:17px;font-weight:800;margin:16px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-weight:700;font-size:15px}
+.btn{background:var(--gold);color:#0b0e13;padding:13px 20px;width:100%}
+.btn-lijn{background:transparent;border:1px solid var(--line);color:var(--wit);padding:11px 18px;width:100%}
+.btn-klein{background:var(--line);color:var(--wit);padding:8px 14px;font-size:13px;width:auto}
+.btn-mini{background:var(--line);color:var(--wit);padding:5px 10px;font-size:13px;width:auto;border-radius:8px}
+input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--wit);font-family:inherit;font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grijs);margin:12px 0 6px}
+.rij{display:flex;gap:8px;align-items:center}
+.setrij{display:grid;grid-template-columns:30px 1fr 1fr 40px;gap:8px;align-items:center;margin-bottom:8px}
+.setnr{font-size:13px;color:var(--grijs);text-align:center;font-weight:700}
+.vorige{font-size:12.5px;color:var(--grijs);background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:8px 12px;margin:10px 0}
+.vorige b{color:var(--goldsoft)}
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:10}
+.tabbar button{flex:1;background:none;color:var(--grijs);padding:11px 0 15px;font-size:10.5px;font-weight:700;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+.tabbar button.aan{color:var(--gold)}
+.tabbar svg{width:21px;height:21px}
+.scherm{display:none}
+.scherm.aan{display:block}
+.dagkaart{display:flex;justify-content:space-between;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer}
+.dagkaart .n{font-weight:800;font-size:16px}
+.dagkaart .s{font-size:12px;color:var(--grijs)}
+.oefrij{border-bottom:1px solid var(--line);padding:12px 0}
+.oefrij:last-child{border-bottom:none}
+.oefkop{display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:8px}
+.oefkop .n{font-weight:600;font-size:15px}
+.oefkop .klaar{color:var(--groen);font-size:13px;font-weight:700}
+.oefkop .open{color:var(--grijs);font-size:13px}
+.paneel{display:none;padding-top:6px}
+.paneel.aan{display:block}
+.leeg{text-align:center;color:var(--grijs);font-size:14px;padding:22px 12px}
+.histset{font-size:13.5px;color:var(--grijs);padding:2px 0}
+.verwijder{background:none;color:var(--rood);font-size:18px;padding:4px;width:auto}
+.terug{background:none;color:var(--grijs);font-size:14px;font-weight:700;padding:4px 0;width:auto;margin-bottom:8px}
+.schemarij{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);gap:6px}
+.schemarij .n{font-size:14.5px;font-weight:600;flex:1}
+.cta{background:linear-gradient(180deg,rgba(201,169,98,.08),transparent),var(--card);border:1px solid var(--gold);border-radius:14px;padding:18px;text-align:center;margin-bottom:12px}
+.cta p{font-size:13.5px;color:var(--grijs);margin:6px 0 12px}
+.cta a{display:inline-block;background:var(--gold);color:#0b0e13;padding:11px 20px;border-radius:99px;font-weight:700;font-size:13.5px;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>TRAIN<span>LOG</span> <span style="font-size:11px;color:var(--grijs);font-weight:700">GRATIS</span></h1>
+  <p>Robin Verdonck Coaching — elke week iets beter</p>
+</header>
+<div class="wrap">
+<div class="scherm aan" id="s-trainen"></div>
+<div class="scherm" id="s-schema"></div>
+<div class="scherm" id="s-gewicht">
+  <h2>Ochtendgewicht</h2>
+  <div class="card">
+    <div class="rij"><input type="number" inputmode="decimal" step="0.1" id="gewichtin" placeholder="kg"><button class="btn-klein" onclick="bewaarGewicht()">Opslaan</button></div>
+    <div style="font-size:12px;color:var(--grijs);margin-top:6px">Weeg je elke ochtend na het opstaan, voor het ontbijt. Kijk naar de trend, niet naar één dag.</div>
+  </div>
+  <div class="card" id="glijst"></div>
+</div>
+<div class="scherm" id="s-meer">
+  <h2>Gegevens</h2>
+  <div class="card">
+    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Alles staat lokaal op dit toestel. Maak af en toe een back-up.</p>
+    <button class="btn-lijn" onclick="exporteer()" style="margin-bottom:8px">Back-up downloaden</button>
+    <label>Back-up terugzetten</label>
+    <input type="file" accept=".json" onchange="importeer(event)">
+  </div>
+</div>
+</div>
+
+<nav class="tabbar">
+  <button class="aan" id="t-trainen" onclick="toon('trainen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Trainen</button>
+  <button id="t-schema" onclick="toon('schema')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Schema</button>
+  <button id="t-gewicht" onclick="toon('gewicht')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Gewicht</button>
+  <button id="t-meer" onclick="toon('meer')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Meer</button>
+</nav>
+
+<script>
+const BIBL={
+"Borst":["Bankdrukken","Incline bankdrukken","Dumbbell press","Incline dumbbell press","Chest press machine","Cable fly","Pec deck","Push-ups","Dips"],
+"Rug · Lats":["Pull-up","Lat pulldown","Pulldown single arm","Cable pullover"],
+"Rug · Bovenrug & trapezius":["Cable row","Machine row","Barbell row","Dumbbell row","Shrugs"],
+"Schouders":["Shoulder press","Dumbbell shoulder press","Lateral raises","Cable lateral raise","Reverse pec deck","Face pull"],
+"Biceps":["Barbell curl","Dumbbell curl","Hammer curl","Incline curl","Preacher curl","Cable curl"],
+"Triceps":["Triceps pushdown","Overhead triceps extension","Skull crushers","Dips (triceps)","Close grip bench"],
+"Quadriceps":["Squat","Leg press","Hack squat","Leg extension","Bulgarian split squat","Lunges"],
+"Hamstrings":["Romanian deadlift","Deadlift","Seated leg curl","Lying leg curl"],
+"Glutes":["Hip thrust","Glute kickback","Abductor machine"],
+"Kuiten":["Standing calf raises","Seated calf raises"],
+"Core":["Crunch machine","Leg raises","Cable crunch","Plank"]};
+let db=JSON.parse(localStorage.getItem('trainlog_gratis')||'{"dagen":[{"id":1,"naam":"Full body (voorbeeld)","oefs":["Squat","Bankdrukken","Cable row","Shoulder press","Romanian deadlift","Leg raises"]}],"logs":[],"gewicht":[]}');
+db.setdoel=db.setdoel||{};
+function bewaar(){localStorage.setItem('trainlog_gratis',JSON.stringify(db))}
+function setDoelVan(dagId,oef){return db.setdoel[dagId+'|'+oef]||3}
+function setsAantal(dagId,i,delta){
+  const d=db.dagen.find(x=>x.id===dagId);
+  const n=Math.min(10,Math.max(1,setDoelVan(dagId,d.oefs[i])+delta));
+  db.setdoel[dagId+'|'+d.oefs[i]]=n;bewaar();renderSchema();
+}
+function vandaag(){return new Date().toISOString().slice(0,10)}
+let huidigeDag=null;
+
+function toon(naam){
+  document.querySelectorAll('.scherm').forEach(s=>s.classList.remove('aan'));
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('aan'));
+  document.getElementById('s-'+naam).classList.add('aan');
+  document.getElementById('t-'+naam).classList.add('aan');
+  if(naam==='trainen')renderTrainen();
+  if(naam==='schema')renderSchema();
+  if(naam==='gewicht')renderGewicht();
+}
+function renderTrainen(){
+  const el=document.getElementById('s-trainen');
+  if(huidigeDag===null){
+    const cta=`<div class="cta">
+      <b style="font-size:15px">Dit is de gratis versie</b>
+      <p>Mijn klanten krijgen de volledige app: uitvoeringscues en videolinks per oefening, ideale repranges met verzwaar-advies, macro-opvolging, rusttimer en check-ins rechtstreeks naar mij. Plus, belangrijker: een plan op maat en iemand die meekijkt.</p>
+      <a href="https://wa.me/32472502086?text=Hey%20Robin,%20ik%20gebruik%20je%20gratis%20app%20en%20wil%20meer%20weten%20over%20je%20coaching">Vertel me meer</a>
+    </div>`;
+    el.innerHTML=cta+'<h2>Kies je trainingsdag</h2>'+(db.dagen.length?db.dagen.map(d=>
+      `<div class="dagkaart" onclick="openDag(${d.id})"><div><div class="n">${d.naam}</div><div class="s">${d.oefs.length} oefeningen</div></div><div style="color:var(--gold);font-size:20px">›</div></div>`).join('')
+      :'<div class="leeg">Nog geen trainingsdagen. Maak ze aan onder Schema.</div>');
+    return;
+  }
+  const dag=db.dagen.find(d=>d.id===huidigeDag);
+  el.innerHTML=`<button class="terug" onclick="huidigeDag=null;renderTrainen()">‹ Alle dagen</button>
+  <h2 style="margin-top:0">${dag.naam}</h2><div class="card">`+
+  dag.oefs.map((o,i)=>{
+    const klaar=db.logs.some(l=>l.oef===o&&l.datum===vandaag());
+    return `<div class="oefrij"><div class="oefkop" onclick="klapOpen(${i})"><span class="n">${o}</span>${klaar?'<span class="klaar">✓ gelogd</span>':'<span class="open">loggen ›</span>'}</div><div class="paneel" id="paneel${i}"></div></div>`;
+  }).join('')+'</div>';
+}
+function openDag(id){huidigeDag=id;renderTrainen()}
+function laatsteLog(oef){
+  const logs=db.logs.filter(l=>l.oef===oef&&l.datum!==vandaag()).sort((a,b)=>b.datum.localeCompare(a.datum));
+  return logs[0]||null;
+}
+function klapOpen(i){
+  const dag=db.dagen.find(d=>d.id===huidigeDag);
+  const oef=dag.oefs[i];
+  const p=document.getElementById('paneel'+i);
+  if(p.classList.contains('aan')){p.classList.remove('aan');p.innerHTML='';return}
+  document.querySelectorAll('.paneel').forEach(x=>{x.classList.remove('aan');x.innerHTML=''});
+  const vorig=laatsteLog(oef);
+  let setsHtml='';
+  const n=setDoelVan(huidigeDag,oef);
+  for(let s=0;s<n;s++){
+    const v=vorig&&vorig.sets[s]?vorig.sets[s]:{kg:'',reps:''};
+    setsHtml+=setHtml(s+1,v.kg,v.reps);
+  }
+  p.innerHTML=`
+    ${vorig?`<div class="vorige">Vorige keer (${vorig.datum}): <b>${vorig.sets.map(s=>s.kg+'kg × '+s.reps).join(' · ')}</b><br>De grijze waarden zijn je vorige training. Probeer één herhaling of één kilo meer.</div>`:'<div class="vorige">Eerste keer. Zet een startgewicht neer.</div>'}
+    <label>Sets vandaag</label>
+    <div id="sets${i}">${setsHtml}</div>
+    <button class="btn-lijn" style="margin:4px 0 10px" onclick="voegSet(${i})">+ set toevoegen</button>
+    <button class="btn" onclick="bewaarOef(${i})">Opslaan</button>`;
+  p.classList.add('aan');
+}
+function setHtml(nr,phKg,phReps){
+  return `<div class="setrij"><span class="setnr">${nr}</span><input type="number" inputmode="decimal" step="0.5" placeholder="${phKg!==''?phKg+' kg':'kg'}"><input type="number" inputmode="numeric" placeholder="${phReps!==''?phReps+' reps':'reps'}"><button class="verwijder" onclick="this.parentElement.remove()">×</button></div>`;
+}
+function voegSet(i){
+  const c=document.getElementById('sets'+i);
+  c.insertAdjacentHTML('beforeend',setHtml(c.children.length+1,'',''));
+}
+function bewaarOef(i){
+  const dag=db.dagen.find(d=>d.id===huidigeDag);
+  const oef=dag.oefs[i];
+  const sets=[...document.querySelectorAll('#sets'+i+' .setrij')].map(r=>{
+    const ins=r.querySelectorAll('input');
+    return{kg:parseFloat(ins[0].value)||0,reps:parseInt(ins[1].value)||0};
+  }).filter(s=>s.kg>0&&s.reps>0);
+  if(!sets.length){alert('Vul minstens één set in.');return}
+  db.logs=db.logs.filter(l=>!(l.oef===oef&&l.datum===vandaag()));
+  db.logs.push({oef,datum:vandaag(),sets});
+  bewaar();renderTrainen();
+}
+function renderSchema(){
+  const el=document.getElementById('s-schema');
+  const opties='<option value="">— kies oefening —</option>'+Object.keys(BIBL).map(g=>`<optgroup label="${g}">`+BIBL[g].map(o=>`<option>${o}</option>`).join('')+'</optgroup>').join('');
+  el.innerHTML='<h2>Mijn trainingsdagen</h2>'+db.dagen.map(d=>`
+    <div class="card">
+      <div class="rij" style="justify-content:space-between;margin-bottom:6px">
+        <b style="font-size:16px">${d.naam}</b>
+        <button class="btn-mini" style="color:var(--rood)" onclick="verwijderDag(${d.id})">dag ×</button>
+      </div>
+      ${d.oefs.map((o,i)=>`<div class="schemarij"><span class="n">${o}</span>
+        <button class="btn-mini" onclick="setsAantal(${d.id},${i},-1)">−</button>
+        <b style="font-size:13px;color:var(--goldsoft);min-width:24px;text-align:center">${setDoelVan(d.id,o)}×</b>
+        <button class="btn-mini" onclick="setsAantal(${d.id},${i},1)">+</button>
+        <button class="verwijder" onclick="haalWeg(${d.id},${i})">×</button></div>`).join('')}
+      <div class="rij" style="margin-top:10px"><select id="kies${d.id}">${opties}</select><button class="btn-klein" onclick="voegAanDag(${d.id})">+</button></div>
+    </div>`).join('')+`
+    <div class="card"><label>Nieuwe trainingsdag</label>
+    <div class="rij"><input type="text" id="nieuwedag" placeholder="bv. Push, Pull, Full body…"><button class="btn-klein" onclick="nieuweDag()">+</button></div></div>`;
+}
+function nieuweDag(){
+  const v=document.getElementById('nieuwedag').value.trim();if(!v)return;
+  db.dagen.push({id:Date.now(),naam:v,oefs:[]});bewaar();renderSchema();
+}
+function verwijderDag(id){
+  if(!confirm('Deze trainingsdag verwijderen?'))return;
+  db.dagen=db.dagen.filter(d=>d.id!==id);bewaar();renderSchema();
+}
+function voegAanDag(id){
+  const sel=document.getElementById('kies'+id);if(!sel.value)return;
+  db.dagen.find(x=>x.id===id).oefs.push(sel.value);bewaar();renderSchema();
+}
+function haalWeg(id,i){
+  const d=db.dagen.find(x=>x.id===id);
+  if(!confirm(d.oefs[i]+' verwijderen?'))return;
+  d.oefs.splice(i,1);bewaar();renderSchema();
+}
+function bewaarGewicht(){
+  const v=parseFloat(document.getElementById('gewichtin').value);
+  if(!v){alert('Vul je gewicht in.');return}
+  db.gewicht=db.gewicht.filter(g=>g.datum!==vandaag());
+  db.gewicht.push({datum:vandaag(),kg:v});
+  bewaar();renderGewicht();
+}
+function renderGewicht(){
+  const desc=[...db.gewicht].sort((a,b)=>b.datum.localeCompare(a.datum));
+  document.getElementById('glijst').innerHTML=desc.length?desc.map((x,i)=>{
+    const vor=desc[i+1];const d=vor?x.kg-vor.kg:null;
+    return `<div class="histset" style="display:flex;justify-content:space-between"><span>${x.datum}</span><span><b style="color:var(--wit)">${x.kg.toFixed(1)} kg</b>${d===null?'':` <span style="color:${d<0?'var(--groen)':'var(--goldsoft)'};font-weight:700">${d>0?'+':''}${d.toFixed(1)}</span>`}</span></div>`;
+  }).join(''):'<div class="leeg">Nog geen metingen.</div>';
+}
+function exporteer(){
+  const blob=new Blob([JSON.stringify(db,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='trainlog-gratis-backup-'+vandaag()+'.json';a.click();
+}
+function importeer(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.dagen&&d.logs){db=d;db.gewicht=db.gewicht||[];bewaar();renderTrainen();alert('Back-up teruggezet.')}else alert('Ongeldig bestand.')}catch(e){alert('Ongeldig bestand.')}};
+  r.readAsText(f);
+}
+renderTrainen();
+</script>
+</body>
+</html>
