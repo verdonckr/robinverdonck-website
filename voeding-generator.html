@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Voedingsschema-generator — Robin Verdonck Coaching</title>
+<style>
+:root{--bg:#0b0e13;--card:#171c24;--line:#232a35;--gold:#c9a962;--goldsoft:#e0c98f;--wit:#f5f4f1;--grijs:#9aa1ab;--groen:#5dca85;--rood:#e08a6d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--wit);font-family:system-ui,sans-serif;font-size:16px;line-height:1.6;padding-bottom:40px}
+.wrap{max-width:660px;margin:0 auto;padding:16px}
+header{text-align:center;padding:22px 0 6px}
+header h1{font-size:20px;font-weight:800}
+header h1 span{color:var(--gold)}
+header p{font-size:12.5px;color:var(--grijs)}
+h2{font-size:17px;font-weight:800;margin:18px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grijs);margin:12px 0 6px}
+input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--wit);font-family:inherit;font-size:15px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-weight:700;font-size:15px}
+.btn{background:var(--gold);color:#0b0e13;padding:14px 20px;width:100%;margin-top:16px}
+.btn-lijn{background:transparent;border:1px solid var(--line);color:var(--wit);padding:12px 18px;width:100%;margin-top:8px}
+.btn-mini{background:var(--line);color:var(--wit);padding:6px 12px;font-size:13px;width:auto;border-radius:8px}
+.verwijder{background:none;color:var(--rood);font-size:17px;padding:2px 6px;width:auto}
+.rij{display:flex;gap:10px}
+.rij>div{flex:1}
+.rij>input,.rij>select{min-width:0}
+.maaltijd{font-size:13px;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 4px}
+.item{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:14.5px;gap:12px}
+.item span:last-child{color:var(--goldsoft);font-weight:700;white-space:nowrap}
+.sub{display:flex;justify-content:space-between;padding:6px 0 2px;font-size:12.5px;color:var(--grijs);font-weight:700}
+.totaal{display:flex;justify-content:space-between;padding:12px 0 2px;font-weight:800;font-size:15px}
+.recept{font-size:12.5px;color:var(--grijs);font-style:italic;padding:7px 0 2px}
+.uitleg{font-size:13px;color:var(--grijs);border-left:3px solid var(--gold);padding:6px 0 6px 14px;margin:14px 0;line-height:1.6}
+.eigenrij{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:8px}
+.res{display:none}
+.res.aan{display:block}
+@media print{
+  body{background:#fff;color:#1c1b18}
+  .card{border:1px solid #ddd;background:#fff}
+  .geen-print{display:none}
+  .item span:last-child{color:#1c1b18}
+  .maaltijd,.sub{color:#b3934e}
+  header h1 span{color:#b3934e}
+  header p,.recept,.uitleg{color:#666}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>VOEDINGSSCHEMA <span>GENERATOR</span></h1>
+  <p>Robin Verdonck Coaching — intern werkdocument</p>
+</header>
+<div class="wrap">
+
+<div class="card geen-print">
+  <div class="rij">
+    <div><label>Doelcalorieën</label>
+    <select id="kcal" onchange="labels()">
+      <option>1250</option><option>1500</option><option>1750</option><option>2000</option><option value="2250" selected>2250</option><option>2500</option><option>2750</option><option>3000</option><option>3250</option><option>3500</option><option>3750</option><option>4000</option><option>4250</option>
+    </select></div>
+    <div><label>Gewicht klant (kg)</label><input type="number" id="gew" value="85" inputmode="numeric"></div>
+  </div>
+  <label>Fase (kies dit eerst, de gerechtkeuzes passen zich aan)</label>
+  <select id="fase" onchange="labels()">
+    <option value="cut">Cut — vet verliezen (vezelrijk, maximaal verzadigend)</option>
+    <option value="onderhoud" selected>Onderhoud</option>
+    <option value="bulk">Bulk — spieropbouw (compact, minder vezels)</option>
+  </select>
+  <label>Vaste caloriehoudende dranken en extra's (kcal per dag)</label>
+  <input type="number" id="drank" value="0" inputmode="numeric">
+  <div style="font-size:12px;color:var(--grijs);margin-top:4px">Richtwaarden: blikje cola 139 · glas fruitsap 110 · pintje 140 · glas wijn 85 · koffie met suiker en melk ±35 per tas. De maaltijden worden automatisch kleiner zodat het dagtotaal klopt.</div>
+  <div style="font-size:12.5px;color:var(--grijs);border-left:3px solid var(--gold);padding:6px 0 6px 12px;margin-top:14px;line-height:1.6">
+  <b style="color:var(--goldsoft)">Zo kies je slim:</b> kies eerst je <b style="color:var(--wit)">avondmaal</b> — dat neemt de grootste hap uit je budget, de rest past zich aan wat overblijft. <b style="color:var(--wit)">★</b> = beste keuze binnen dit budget én deze fase · <b style="color:var(--wit)">licht</b> = past makkelijk, groot bord · <b style="color:var(--wit)">zwaar voor dit budget</b> = alleen bewust kiezen. De labels verspringen mee met calorieën, fase en avondmaalkeuze. "Ontbijt overslaan" maakt de andere maaltijden automatisch groter.</div>
+  <label>Avondmaal (kies dit eerst)</label><select id="m2" onchange="labels()"></select>
+  <label>Middagmaal</label><select id="m1"></select>
+  <label>Ontbijt</label><select id="m0" onchange="labels()"></select>
+  <label>Avondsnack</label><select id="m3"></select>
+  <label>Allergie / intolerantie</label>
+  <select id="variant" onchange="labels()">
+    <option value="std">Standaard</option>
+    <option value="vis">Zonder vis</option>
+    <option value="gluten">Glutenvrij</option>
+    <option value="lactose">Lactose-intolerant</option>
+    <option value="melk">Koemelkallergie</option>
+  </select>
+  <button class="btn" onclick="maak()">Genereer schema</button>
+</div>
+
+<div class="card geen-print">
+  <h2 style="margin-top:0">Eigen ingrediënt toevoegen</h2>
+  <p style="font-size:13px;color:var(--grijs)">Voeg iets toe aan een maaltijd (bv. een extra ei bij het ontbijt, of een product dat de klant graag eet). Het telt volledig mee in de berekening en blijft bewaard tot je het verwijdert.</p>
+  <div class="rij">
+    <div><label>Bij welke maaltijd</label><select id="e_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option></select></div>
+    <div><label>Naam</label><input type="text" id="e_naam" placeholder="bv. Gekookt ei"></div>
+  </div>
+  <label>Per 100 g (of 100 ml): kcal · eiwit · koolhydraten · vetten</label>
+  <div class="rij">
+    <input type="number" id="e_kcal" placeholder="kcal" inputmode="numeric">
+    <input type="number" id="e_p" placeholder="eiwit g" inputmode="decimal">
+    <input type="number" id="e_k" placeholder="kh g" inputmode="decimal">
+    <input type="number" id="e_v" placeholder="vet g" inputmode="decimal">
+  </div>
+  <div class="rij" style="margin-top:10px">
+    <div><label>Hoeveelheid (g/ml)</label><input type="number" id="e_gram" placeholder="bv. 50" inputmode="numeric"></div>
+    <div><label>Schaalt mee als</label><select id="e_schaal"><option value="vast">Vaste portie (schaalt niet)</option><option value="eiwit">Eiwitbron</option><option value="kh">Koolhydraatbron</option><option value="vet">Vetbron</option></select></div>
+  </div>
+  <button class="btn-lijn" onclick="eigenToevoegen()">Toevoegen</button>
+  <div id="eigenlijst" style="margin-top:10px"></div>
+</div>
+
+<div class="res" id="uit">
+  <div class="card" id="schema"></div>
+  <div class="card">
+    <div class="uitleg" id="advies"></div>
+    <div class="uitleg"><b style="color:var(--wit)">Wisselgids — zo vervang je producten zonder dat de calorieën verschuiven:</b><br>
+    · 10 g rijst of pasta (ongekookt) = 40 g gekookte aardappelen. Dus 90 g rijst = ± 360 g aardappelen.<br>
+    · 1 snee bruin brood = 20 g rijst/pasta (ongekookt) = 85 g aardappelen.<br>
+    · 100 g kipfilet = 100 g kalkoenfilet = 80 g mager rundsvlees = 135 g witvis.<br>
+    · Zalm is ruim dubbel zo calorierijk als kip: vervang 100 g kip door maximaal 50 g zalm.<br>
+    · 100 g skyr = 100 g magere kwark = 130 g Griekse yoghurt 0%.<br>
+    Controleer altijd etiketten. Dit schema is een startpunt: op basis van je gewichtstrend sturen we bij.</div>
+  </div>
+  <button class="btn-lijn geen-print" onclick="window.print()">Afdrukken / opslaan als PDF voor de klant</button>
+</div>
+
+</div>
+<script>
+// Per gram: kcal, p (eiwit), k (koolhydraten), v (vet). Standaard tabelwaarden.
+const MAALTIJDEN=[
+{naam:"Ontbijt",opties:[
+ {label:"Ontbijt overslaan (intermittent fasting)",items:[]},
+ {label:"Proats: brinta of havermout met whey",items:[
+  {n:"Brinta of havermout",kcal:3.6,p:0.10,k:0.70,v:0.02,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Maiswafels of cracotten met hüttenkäse",items:[
+  {n:"Maiswafels of cracotten",kcal:3.8,p:0.08,k:0.80,v:0.02,basis:40,schaal:"kh",per:{g:10,label:"stuks"}},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief of kipfilet-beleg"},
+  {n:"Tomaat of komkommer",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Havermout met melk en banaan",items:[
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:80,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:200,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Toast met eieren",items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Sinaasappel",kcal:0.47,p:0.009,k:0.09,v:0.001,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Griekse yoghurt met muesli",items:[
+  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
+  {n:"Muesli (ongezoet)",kcal:3.75,p:0.10,k:0.60,v:0.08,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije muesli"},
+  {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Smoothie met havermout en eiwitpoeder",items:[
+  {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:300,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:40,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"}]},
+ {label:"Brood met kaas",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Notenpasta i.p.v. kaas (+extra kip bij de lunch)"},
+  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Boterhammen met confituur en ei",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.60,basis:10,schaal:"vet",stap:5},
+  {n:"Confituur",kcal:2.5,p:0.005,k:0.60,v:0,basis:30,schaal:"kh",stap:10},
+  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}}]},
+ {label:"Cornflakes met melk en banaan",items:[
+  {n:"Cornflakes (naturel)",kcal:3.8,p:0.07,k:0.84,v:0.008,basis:50,schaal:"kh",stap:10,gv:"Glutenvrije cornflakes"},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Boterhammen met plattekaas en fruit",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Plattekaas (mager)",kcal:0.55,p:0.10,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"},
+  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Pannenkoeken",items:[
+  {n:"Pannenkoeken",kcal:2.2,p:0.06,k:0.28,v:0.09,basis:160,schaal:"kh",per:{g:80,label:"pannenkoeken"},gv:"Met glutenvrije bloem",melk:"Beslag met sojadrink"},
+  {n:"Bruine suiker",kcal:4.0,p:0,k:1.0,v:0,basis:10,schaal:"kh",stap:5},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Spiegeleieren met spek",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Ontbijtspek",kcal:3.0,p:0.15,k:0,v:0.27,basis:30,schaal:"vet",stap:10}]},
+ {label:"Griekse yoghurt met honing en walnoten",items:[
+  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:200,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
+  {n:"Honing",kcal:3.0,p:0,k:0.82,v:0,basis:15,schaal:"kh",stap:5},
+  {n:"Walnoten",kcal:6.5,p:0.15,k:0.07,v:0.65,basis:15,schaal:"vet",stap:5}]},
+ {label:"Crackers met kaas en tomaat",items:[
+  {n:"Volkoren crackers",kcal:3.9,p:0.10,k:0.65,v:0.08,basis:60,schaal:"kh",per:{g:20,label:"crackers"},gv:"Glutenvrije crackers"},
+  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Hummus i.p.v. kaas"},
+  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Choco-banaansmoothie met kwark",items:[
+  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"},
+  {n:"Cacaopoeder (puur)",kcal:3.5,p:0.20,k:0.10,v:0.14,basis:5,schaal:"vast",stap:5},
+  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:15,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
+ {label:"Omelet met champignons",items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Champignons en ui",kcal:0.3,p:0.03,k:0.03,v:0.003,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]}
+]},
+{naam:"Middagmaal",opties:[
+ {label:"Brood met kipfilet en avocado",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:120,schaal:"eiwit",stap:10},
+  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
+  {n:"Tomaat, sla, mosterd",kcal:0.38,p:0.01,k:0.05,v:0.003,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Wraps met kip en hummus",items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
+  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.20,basis:30,schaal:"vet",stap:10},
+  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Brood met tonijn",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:100,schaal:"eiwit",stap:50,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
+  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
+  {n:"Tomaat, sla",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Rijstsalade met kip",items:[
+  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:120,schaal:"eiwit",stap:10},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5},
+  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
+ {label:"Brood met kipbeleg",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:80,schaal:"eiwit",stap:20},
+  {n:"Tomaat, augurk",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Soep met boterhammen",items:[
+  {n:"Groentesoep",kcal:0.35,p:0.015,k:0.05,v:0.01,basis:400,schaal:"vast",stap:100,eenheid:"ml"},
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:60,schaal:"eiwit",stap:20},
+  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:20,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Croque monsieur (2 stuks)",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gekookte hesp",kcal:1.1,p:0.20,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20},
+  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Extra hesp i.p.v. kaas"},
+  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.60,basis:10,schaal:"vet",stap:5}]},
+ {label:"Omelet met brood",items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Groenten naar keuze (tomaat, champignons, paprika)",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Pastasalade met pesto en kip",items:[
+  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije pasta",cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
+  {n:"Groene pesto",kcal:4.5,p:0.05,k:0.06,v:0.45,basis:20,schaal:"vet",stap:10,melk:"Pesto zonder kaas (of tapenade)"},
+  {n:"Kerstomaatjes, rucola",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Wrap met gerookte zalm",items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Gerookte zalm",kcal:1.8,p:0.20,k:0,v:0.11,basis:75,schaal:"eiwit",stap:25,visAlt:{n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015}},
+  {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"},
+  {n:"Sla, komkommer",kcal:0.15,p:0.01,k:0.02,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Slaatje met ei, tonijn en aardappel",items:[
+  {n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:200,schaal:"kh",stap:50},
+  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:80,schaal:"eiwit",stap:40,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
+  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Boontjes, tomaat",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie (dressing)",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Brooddoos voor de werf (geen koeling of microgolf nodig)",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:150,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:25,schaal:"vet",stap:5},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Whey-eiwit (shaker met water)",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
+ {label:"Boterhammen met gehaktbrood",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gehaktbrood (beleg)",kcal:2.5,p:0.14,k:0.03,v:0.20,basis:60,schaal:"eiwit",stap:20},
+  {n:"Augurk, mosterd",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:50,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Maaltijdsalade met kip en kwarkdressing",items:[
+  {n:"Sla, komkommer, kerstomaatjes",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:150,schaal:"eiwit",stap:10},
+  {n:"Magere kwark met knoflook (dressing)",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:50,schaal:"vast",stap:50,lac:"Lactosevrije kwark",melk:"Sojayoghurt met knoflook"},
+  {n:"Geroosterde amandelen",kcal:6.2,p:0.21,k:0.07,v:0.53,basis:15,schaal:"vet",stap:5},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood"}]}
+]},
+{naam:"Avondmaal",opties:[
+ {label:"Rijst met kip en groenten",items:[
+  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
+ {label:"Aardappelen met mager gehakt",items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Pasta met zalm",items:[
+  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
+  {n:"Zalm",kcal:2.08,p:0.20,k:0,v:0.14,basis:150,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
+ {label:"Wraps met kipgehakt",items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Kipgehakt",kcal:1.45,p:0.25,k:0,v:0.05,basis:150,schaal:"eiwit",stap:25},
+  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Aardappelen met witvis",items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
+  {n:"Kabeljauw of andere witvis",kcal:0.82,p:0.18,k:0,v:0.007,basis:200,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Boter",kcal:7.2,p:0.006,k:0.006,v:0.81,basis:10,schaal:"vet",stap:5,melk:"Olijfolie i.p.v. boter"}]},
+ {label:"Spaghetti bolognese",items:[
+  {n:"Volkoren spaghetti (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije spaghetti"},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Ui, wortel, selder in de saus",kcal:0.35,p:0.012,k:0.06,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Parmezaan",kcal:4.0,p:0.35,k:0,v:0.28,basis:15,schaal:"vet",stap:5,lac:"Oude parmezaan wordt meestal verdragen",melk:"Weglaten"}]},
+ {label:"Ovenpatatjes met kipfilet",items:[
+  {n:"Aardappelen (in partjes)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie (voor de oven)",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
+ {label:"Zoete aardappel met kip",items:[
+  {n:"Zoete aardappel",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Kip curry met rijst",items:[
+  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Kokosmelk light + currypasta",kcal:0.73,p:0.005,k:0.03,v:0.065,basis:100,schaal:"vet",stap:50},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
+ {label:"Balletjes in tomatensaus met aardappelen",items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Rundsballetjes (mager)",kcal:1.6,p:0.20,k:0.03,v:0.08,basis:150,schaal:"eiwit",stap:25},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
+ {label:"Bloemkoolrijst met kip (licht en veel)",items:[
+  {n:"Bloemkoolrijst",kcal:0.25,p:0.02,k:0.03,v:0.003,basis:350,schaal:"vast",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
+  {n:"Zilvervliesrijst (ongekookt, gemengd erdoor)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:40,schaal:"kh",stap:10,min:30},
+  {n:"Rozijnen en amandelen",kcal:4.5,p:0.09,k:0.45,v:0.20,basis:20,schaal:"vet",stap:10},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Pesto kip met spinazie en feta (koolhydraatarm)",items:[
+  {n:"Spinazie en champignons",kcal:0.28,p:0.025,k:0.02,v:0.004,basis:250,schaal:"vast",stap:50},
+  {n:"Kipdijfilet",kcal:1.6,p:0.19,k:0,v:0.09,basis:150,schaal:"eiwit",stap:25},
+  {n:"Rode pesto",kcal:4.0,p:0.04,k:0.08,v:0.38,basis:15,schaal:"vet",stap:5,melk:"Pesto zonder kaas"},
+  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:40,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten, extra kip"}]},
+ {label:"Chili con carne met rijst",items:[
+  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Kidneybonen (uitgelekt)",kcal:0.85,p:0.07,k:0.12,v:0.005,basis:120,schaal:"kh",stap:40},
+  {n:"Tomatenblokjes, paprika, ui",kcal:0.32,p:0.013,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50}]},
+ {label:"Huisgemaakte hamburgers",items:[
+  {n:"Hamburgerbroodjes (volkoren)",kcal:2.6,p:0.10,k:0.46,v:0.04,basis:100,schaal:"kh",per:{g:50,label:"broodjes"},gv:"Glutenvrije broodjes"},
+  {n:"Mager rundsgehakt (burgers)",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
+  {n:"Sla, tomaat, augurk, ui",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"},
+  {n:"Saus (ketchup/mosterd)",kcal:1.2,p:0.01,k:0.25,v:0.01,basis:20,schaal:"vast",stap:10}]},
+ {label:"Roerbakrijst met ei en groenten (vegetarisch)",items:[
+  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Cashewnoten",kcal:5.9,p:0.18,k:0.27,v:0.44,basis:20,schaal:"vet",stap:10},
+  {n:"Ketjap of sojasaus",kcal:0.7,p:0.06,k:0.10,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]}
+]},
+{naam:"Avondsnack",opties:[
+ {label:"Skyr met fruit en noten",items:[
+  {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
+  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50},
+  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
+ {label:"Kwark met appel en pindakaas",items:[
+  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
+  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
+ {label:"Skyr met banaan",items:[
+  {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Kwark met bessen",items:[
+  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
+  {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Eiwitshake met noten",items:[
+  {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"},
+  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
+ {label:"Fruit met een handje noten",items:[
+  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
+ {label:"Rijstwafels met plattekaas",items:[
+  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.82,v:0.03,basis:30,schaal:"kh",per:{g:10,label:"rijstwafels"}},
+  {n:"Plattekaas (mager)",kcal:0.55,p:0.10,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"}]},
+ {label:"Boterham met pindakaas",items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
+ {label:"Warme chocolademelk",items:[
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Chocoladepoeder",kcal:3.8,p:0.05,k:0.75,v:0.03,basis:15,schaal:"kh",stap:5}]},
+ {label:"Popcorn (zelf gepoft)",items:[
+  {n:"Popcornmais",kcal:3.87,p:0.12,k:0.78,v:0.045,basis:25,schaal:"kh",stap:5},
+  {n:"Olijfolie (om te poffen)",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Studentenhaver",items:[
+  {n:"Studentenhaver (noten en rozijnen)",kcal:4.9,p:0.14,k:0.35,v:0.32,basis:30,schaal:"vet",stap:10}]},
+ {label:"Banaan met pindakaas",items:[
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]}
+]}];
+
+const RECEPTEN=[
+["Geen ontbijt: je eet binnen een venster van ongeveer 8 uur, bijvoorbeeld van 12u tot 20u. Zwarte koffie, thee en water mogen 's ochtends gewoon. De andere maaltijden zijn automatisch groter gemaakt zodat je dagtotaal en je eiwit kloppen. Werkt alleen als het bij je leven past; het is een hulpmiddel, geen wondermiddel.",
+"Breng de melk aan de kook, roer de havermout erdoor en laat 3-4 minuten zachtjes koken. Snijd de banaan erover. Kaneel mag altijd.",
+ "Rooster het brood. Bak de eieren in een pan met antiaanbaklaag als spiegelei, of klop ze los voor roerei. Peper en zout, sinaasappel ernaast.",
+ "Schep de yoghurt in een kom, strooi de muesli en bessen erover. Klaar in één minuut.",
+ "Alles samen in de blender en 30 seconden mixen. Te dik? Scheutje water of extra melk erbij.",
+ "Beleg het brood met de kaas. Appel ernaast, of in partjes erop.",
+ "Smeer het brood, confituur erop. Kook het ei 7 minuten voor zachtgekookt, 9 voor hard.",
+ "Cornflakes in een kom, melk erover, banaan in plakjes erbij. Klaar in één minuut.",
+ "Besmeer het brood dun met de plattekaas of schep ze in een kom met het fruit erbij.",
+ "Beslag: 100 g bloem, 250 ml melk en 1 ei per 4 pannenkoeken. Bak ze goudbruin in een hete pan. Weekendklassieker, ook voor de kinderen.",
+ "Bak het spek krokant, daarna de eieren in hetzelfde vet. Brood erbij.",
+ "Yoghurt in een kom, honing erover lepelen, walnoten grof breken erbij.",
+ "Crackers beleggen met kaas en plakjes tomaat. Peper erover.",
+ "Alles in de blender, 30 seconden mixen. Smaakt als een dessert, telt als een eiwitontbijt.",
+ "Champignons en ui bakken in de olie, losgeklopte eieren erover en laten stollen. Peper en zout."],
+["Prak de avocado met peper en zout op het brood, beleg met de kipfilet, tomaat en sla. Mosterd naar smaak.",
+ "Besmeer de wraps met hummus, verdeel de kip en groenten erover en rol op. Kort in een grillpan maakt ze extra lekker.",
+ "Laat de tonijn goed uitlekken en meng met een lepel yoghurt of mosterd. Verdeel over het brood met de avocado en tomaat.",
+ "Kook de rijst en laat afkoelen (of gebruik de rest van gisteren). Meng met de kip, rauwkost en olijfolie. Peper, zout en wat citroen.",
+ "Beleg het brood met de gerookte kip, tomaat en augurk. Klaar.",
+ "Warm de soep op (zelfgemaakt of een goeie uit de winkel). Boterhammen beleggen met kip en kaas.",
+ "Beleg twee sneden met hesp en kaas, dek af, bak goudbruin in een pan met wat margarine of in het croque-ijzer.",
+ "Klop de eieren los met peper en zout, bak de groenten kort mee in de olie en giet de eieren erover. Brood erbij.",
+ "Kook de pasta en laat afkoelen. Meng met de pesto, kip en tomaatjes. Ideaal om 's avonds al te maken voor de lunchbox.",
+ "Besmeer de wrap met roomkaas, beleg met zalm, sla en komkommer, rol op.",
+ "Kook de aardappelen en het ei. Meng met de uitgelekte tonijn, boontjes en tomaat, dressing erover.",
+ "'s Ochtends smeren, shaker met droog poeder mee, water vind je overal. Overleeft de hele voormiddag in een brooddoos zonder koeling. Alle andere boterham-lunches uit deze lijst zijn trouwens ook brooddoos-proof.",
+ "Beleg het brood met plakjes gehaktbrood, augurk en een likje mosterd.",
+ "Meng de sla, komkommer en tomaatjes met de kip. Roer knoflook door de kwark als dressing, amandelen erover, boterham erbij."],
+["Kook de rijst volgens de verpakking. Kruid de kip en bak 6-7 minuten per kant in de olijfolie tot gaar. Roerbak de groenten in dezelfde pan en kruid af naar smaak.",
+ "Kook de aardappelen 15-20 minuten. Bak het gehakt rul, voeg de groenten toe en laat kort meestoven. De olijfolie over de aardappelen.",
+ "Kook de pasta. Bak de zalm 3-4 minuten per kant. Roerbak de groenten, meng alles door elkaar en knijp er citroen over.",
+ "Bak het kipgehakt rul met paprikapoeder en komijn, roerbak de groenten kort mee en vul de wraps.",
+ "Kook de aardappelen. Bak de vis 3-4 minuten per kant in de boter, of gaar hem 15 minuten in de oven op 180°C. Groenten stomen of koken.",
+ "Bak het gehakt rul, voeg de fijngesneden ui, wortel en selder toe en stoof 5 minuten mee. Passata erbij, 15 minuten laten pruttelen. Kook intussen de spaghetti. Parmezaan erover aan tafel.",
+ "Snijd de aardappelen in partjes, meng met de olijfolie, peper, zout en paprikapoeder. 35 minuten in de oven op 200°C, halfweg omscheppen. Kip kruiden en bakken, groenten erbij.",
+ "Zoete aardappel in blokjes, 25 minuten in de oven op 200°C of gekookt. Kip bakken, groenten roerbakken. Beetje paprikapoeder over de zoete aardappel maakt het af.",
+ "Bak de kip aan, voeg de wokgroenten toe en roerbak kort. Kokosmelk en currypasta erbij, 5 minuten zachtjes laten koken. Serveer over de rijst.",
+ "Rol balletjes van het gehakt en bak ze rondom bruin. Passata erbij en 10 minuten zachtjes garen. Aardappelen koken, groenten stomen. Klassieker die iedereen aan tafel meeëet.",
+ "Roerbak de bloemkoolrijst 5 minuten met de gekookte rijst erdoor. Kip kruiden (kaneel en chilipoeder passen verrassend goed) en bakken. Rozijnen en amandelen erover. Groot bord, weinig calorieën.",
+ "Bak de kipdij goudbruin, spinazie en champignons erbij tot ze geslonken zijn. Pesto erdoor roeren, feta erover verkruimelen. Zonder koolhydraten het meest vullende lichte avondmaal dat er is.",
+ "Bak het gehakt rul met ui en paprika, voeg tomatenblokjes, bonen en chilikruiden toe en laat 15 minuten pruttelen. Rijst erbij. Wordt de volgende dag alleen maar beter.",
+ "Kneed burgers van het gehakt met peper en zout, bak 4-5 minuten per kant. Broodje, sla, tomaat, augurk, saus. Gezinsklassieker die gewoon in je schema past.",
+ "Klop de eieren los en bak als omelet, snijd in reepjes. Wok de groenten, gekookte rijst erbij, ei en cashews erdoor, ketjap naar smaak."],
+["Schep de skyr in een kom, fruit en noten erover.",
+ "Kwark in een kom, appel in blokjes erdoor of ernaast, pindakaas erover lepelen.",
+ "Skyr in een kom, banaan in plakjes erop.",
+ "Kwark in een kom, bessen erover.",
+ "Melk en eiwitpoeder shaken of blenden, noten ernaast.",
+ "Appel en een handje noten. Simpeler wordt het niet.",
+ "Besmeer de rijstwafels met plattekaas. Snuifje kaneel erover mag.",
+ "Boterham smeren met pindakaas. Eventueel plakjes banaan erop.",
+ "Melk verwarmen, chocoladepoeder erdoor roeren. Voor de hele familie te maken.",
+ "Pof de mais met een scheutje olie in een pot met deksel op hoog vuur. Grote kom, weinig calorieën: de beste filmsnack in een cut.",
+ "Zakje afwegen en klaar. Let op: calorierijk, dus weeg echt af.",
+ "Banaan in de lengte snijden, pindakaas ertussen of erop."]];
+
+// eigen ingrediënten (blijven bewaard)
+let eigen=JSON.parse(localStorage.getItem('vg_eigen')||'[]');
+function eigenBewaar(){localStorage.setItem('vg_eigen',JSON.stringify(eigen))}
+function eigenToevoegen(){
+  const n=document.getElementById('e_naam').value.trim();
+  const kcal=+document.getElementById('e_kcal').value;
+  const gram=+document.getElementById('e_gram').value;
+  if(!n||!kcal||!gram){alert('Vul minstens naam, kcal per 100 g en hoeveelheid in.');return}
+  eigen.push({maaltijd:+document.getElementById('e_maaltijd').value,n,
+    kcal:kcal/100,p:(+document.getElementById('e_p').value||0)/100,
+    k:(+document.getElementById('e_k').value||0)/100,v:(+document.getElementById('e_v').value||0)/100,
+    basis:gram,schaal:document.getElementById('e_schaal').value,stap:5});
+  eigenBewaar();toonEigen();
+  document.getElementById('e_naam').value='';document.getElementById('e_kcal').value='';
+  document.getElementById('e_p').value='';document.getElementById('e_k').value='';
+  document.getElementById('e_v').value='';document.getElementById('e_gram').value='';
+}
+function eigenWeg(i){eigen.splice(i,1);eigenBewaar();toonEigen()}
+function toonEigen(){
+  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack'];
+  document.getElementById('eigenlijst').innerHTML=eigen.map((e,i)=>
+    `<div class="eigenrij"><span>${e.n} — ${e.basis} g bij ${namen[e.maaltijd]} (${Math.round(e.kcal*100)} kcal/100g)</span><button class="verwijder" onclick="eigenWeg(${i})">×</button></div>`
+  ).join('')||'';
+}
+toonEigen();
+
+const AANDEEL=[0.25,0.30,0.35,0.15];
+function aandeelNu(){
+  const v=document.getElementById('m0').value;
+  const o=MAALTIJDEN[0].opties[v===''?1:+v];
+  return (o&&o.items.length===0)?[0,0.40,0.42,0.18]:AANDEEL;
+}
+function labels(){
+  const va=document.getElementById('variant').value;
+  const fase=document.getElementById('fase').value;
+  const doel=+document.getElementById('kcal').value||2250;
+  const deel=aandeelNu();
+  // avondmaal eerst: zijn budget komt uit het volledige doel, de rest uit wat overblijft
+  const m2sel=document.getElementById('m2');
+  const m2idx=m2sel.value===''?0:+m2sel.value;
+  const avondKcal=MAALTIJDEN[2].opties[m2idx].items.reduce((a,x)=>a+x.kcal*x.basis,0);
+  const rest=Math.max(doel-avondKcal,doel*0.3);
+  const restDeel=1-deel[2];
+  MAALTIJDEN.forEach((m,i)=>{
+    const sel=document.getElementById('m'+i);
+    const huidige=sel.value;
+    const budget=i===2?doel*deel[2]:rest*(deel[i]/Math.max(restDeel,0.01));
+    const kcals=m.opties.map(o=>o.items.reduce((a,x)=>a+x.kcal*x.basis,0));
+    const dens=m.opties.map(o=>{const g=o.items.reduce((a,x)=>a+x.basis,0);return g?kcals[m.opties.indexOf(o)]/g:0});
+    const score=(j)=>{
+      let s=Math.abs(kcals[j]/Math.max(budget,1)-1);
+      if(fase==='cut')s+=dens[j]*0.06;
+      if(fase==='bulk')s+=Math.max(0,2.5-dens[j])*0.05;
+      return s;
+    };
+    let beste=1e9;
+    m.opties.forEach((o,j)=>{if(o.items.length&&score(j)<beste)beste=score(j)});
+    sel.innerHTML=m.opties.map((o,j)=>{
+      let lbl=o.label;
+      if(va==='vis'&&o.items.some(x=>x.visAlt))lbl=lbl.replace(/tonijn|zalm|witvis/g,'kip')+' (visvrij)';
+      const optKcal=kcals[j];
+      if(o.items.length&&score(j)<=beste+0.06)lbl='★ '+lbl;
+      if(o.items.length&&optKcal>budget*1.3)lbl+=' · zwaar voor dit budget';
+      else if(o.items.length&&optKcal<budget*0.75)lbl+=' · licht';
+      return `<option value="${j}">${lbl}</option>`;
+    }).join('');
+    if(huidige)sel.value=huidige;
+    else if(i===0)sel.value='1';
+  });
+}
+labels();
+
+function stapVan(i){return i.per?i.per.g:(i.stap||10)}
+function ondergrensVan(i){
+  if(i.kwart)return 25;
+  const s=stapVan(i);
+  if(i.min)return i.min;
+  if(i.per)return Math.max(i.per.g,Math.ceil(i.basis*0.65/i.per.g)*i.per.g);
+  if(i.schaal==='kh'||i.schaal==='eiwit')return Math.max(s,Math.round(i.basis*0.6/s)*s);
+  return s;
+}
+function rondStap(x,i){
+  if(i.kwart)return Math.min(100,Math.max(25,Math.round(x/i.kwart)*i.kwart));
+  const s=stapVan(i);
+  return Math.max(ondergrensVan(i),Math.round(x/s)*s);
+}
+function vulbaar(i){return /roente|soep|sla\b|tomaat|boontjes|komkommer|augurk|rucola/i.test(i.n)}
+function maak(){
+  const dagdoel=+document.getElementById('kcal').value;
+  const drank=Math.max(0,+document.getElementById('drank').value||0);
+  const doel=Math.max(1200,dagdoel-drank);
+  const gew=+document.getElementById('gew').value||85;
+  const va=document.getElementById('variant').value;
+  const fase=document.getElementById('fase').value;
+  const eiwitdoel=Math.round(gew*1.8);
+  let items=[];
+  MAALTIJDEN.forEach((m,i)=>{
+    const keuze=m.opties[+document.getElementById('m'+i).value];
+    keuze.items.forEach(it=>{
+      let x={...it,m:m.naam};
+      if(va==='vis'&&x.visAlt)x={...x,...x.visAlt};
+      if(fase==='cut'&&x.cutAlt)x={...x,...x.cutAlt};
+      items.push(x);
+    });
+    eigen.filter(e=>e.maaltijd===i).forEach(e=>items.push({...e,m:m.naam,eigen:true}));
+  });
+  const basisKcal=items.reduce((a,i)=>a+i.kcal*i.basis,0);
+  const k=doel/basisKcal;
+  items.forEach(i=>{
+    let f;
+    if(i.schaal==="vast")f=(k<1&&vulbaar(i))?Math.min(1.5,2-k):1;
+    else if(i.schaal==="vet")f=k<0.85?k:(0.6+0.4*k);
+    else f=k;
+    i.gram=rondStap(i.basis*f,i);
+  });
+  const tot=()=>items.reduce((a,i)=>a+i.kcal*i.gram,0);
+  const eiw=()=>items.reduce((a,i)=>a+i.p*i.gram,0);
+  let ronde=0;
+  while(eiw()<eiwitdoel&&ronde<40){
+    items.filter(i=>i.schaal==="eiwit"&&i.p>=0.18).forEach(i=>i.gram+=stapVan(i)<=25?stapVan(i):0);
+    let teveel=tot()-doel;
+    for(const i of items.filter(i=>i.schaal==="kh")){
+      const s=stapVan(i),sk=i.kcal*s,onder=ondergrensVan(i);
+      while(teveel>sk/2&&i.gram-s>=onder){i.gram-=s;teveel-=sk}
+    }
+    ronde++;
+  }
+  let verschil=doel-tot();
+  for(const i of items.filter(i=>i.schaal==="kh")){
+    const s=stapVan(i),sk=i.kcal*s,onder=ondergrensVan(i);
+    while(verschil>sk/2){i.gram+=s;verschil-=sk}
+    while(verschil<-sk/2&&i.gram-s>=onder){i.gram-=s;verschil+=sk}
+  }
+  // renderen met macro's per maaltijd
+  let h='<h2 style="margin-top:0">Dagschema — '+dagdoel+' kcal'+(drank?' (waarvan '+drank+' kcal dranken)':'')+(va!=='std'?' · '+document.getElementById('variant').selectedOptions[0].text:'')+'</h2>';
+  MAALTIJDEN.forEach((m,mi)=>{
+    h+='<div class="maaltijd">'+m.naam+'</div>';
+    const mItems=items.filter(i=>i.m===m.naam);
+    mItems.forEach(i=>{
+      let naam=i.n;
+      if(va==='gluten'&&i.gv)naam=i.gv;
+      if(va==='lactose'&&i.lac)naam=i.lac;
+      if(va==='melk'&&i.melk)naam=i.melk;
+      let hoeveel=i.toon?i.toon:(i.gram+' '+(i.eenheid||'g'));
+      if(i.per&&!i.toon)hoeveel=Math.round(i.gram/i.per.g)+' '+i.per.label;
+      if(i.kwart)hoeveel=({25:'1/4 stuk',50:'1/2 stuk',75:'3/4 stuk',100:'1 stuk'})[i.gram]||i.gram+' g';
+      h+='<div class="item"><span>'+naam+(i.eigen?' <span style="font-size:11px;color:var(--grijs)">(eigen)</span>':'')+'</span><span>'+hoeveel+'</span></div>';
+    });
+    if(mItems.length){
+      const mk=Math.round(mItems.reduce((a,i)=>a+i.kcal*i.gram,0));
+      const mp=Math.round(mItems.reduce((a,i)=>a+i.p*i.gram,0));
+      const mkh=Math.round(mItems.reduce((a,i)=>a+(i.k||0)*i.gram,0));
+      const mv=Math.round(mItems.reduce((a,i)=>a+(i.v||0)*i.gram,0));
+      h+='<div class="sub"><span>Deze maaltijd</span><span>± '+mk+' kcal · E '+mp+' · K '+mkh+' · V '+mv+'</span></div>';
+    }
+    const r=RECEPTEN[mi][+document.getElementById('m'+mi).value];
+    if(r)h+='<div class="recept">Bereiding: '+r+'</div>';
+  });
+  if(drank)h+='<div class="maaltijd">Dranken en extra\'s</div><div class="item"><span>Vaste dranken/extra\'s (afgesproken)</span><span>'+drank+' kcal</span></div>';
+  const tk=Math.round(items.reduce((a,i)=>a+(i.k||0)*i.gram,0));
+  const tv=Math.round(items.reduce((a,i)=>a+(i.v||0)*i.gram,0));
+  h+='<div class="totaal"><span>Totaal (berekend)</span><span style="color:var(--goldsoft)">'+Math.round(tot()+drank)+' kcal · E '+Math.round(eiw())+' g · K '+tk+' g · V '+tv+' g</span></div>';
+  document.getElementById('schema').innerHTML=h;
+  let adv='';
+  if(tot()>doel*1.06)adv+='<b style="color:var(--rood, #e08a6d)">Let op:</b> deze menukeuze past niet mooi binnen '+dagdoel+' kcal, zelfs met minimale porties ('+Math.round(tot()+drank)+' kcal). Kies een gerecht dat als "licht" gemarkeerd staat in het keuzemenu (bv. plattekaas-ontbijt, soep als lunch, witvis als avondmaal), dan blijft het bord vol en het totaal juist. ';
+  adv+='Eiwitdoel voor '+gew+' kg: <b style="color:var(--goldsoft)">'+eiwitdoel+' g per dag</b> (1,8 g/kg). ';
+  adv+=eiw()>=eiwitdoel-5?'Dit schema haalt dat.':'Dit schema komt er iets onder: voeg een extra eiwitbron toe (ei, mager vlees, eiwitshake).';
+  if(fase==='cut')adv+=' Cut-modus: rijst is vervangen door aardappelen (meest verzadigende koolhydraatbron per calorie). Kies verder vezelrijk: fruit met schil, ruim groenten bij elke warme maaltijd, bruin boven wit. Verzadiging is in een cut je beste wapen.';
+  if(fase==='bulk')adv+=' Bulk-modus: de sterren wijzen naar compactere gerechten (rijst, pasta, smoothies) want bij een overschot is genoeg binnenkrijgen de uitdaging — te veel vezels en volume maken dat onnodig zwaar. Hou verzadigd vet matig: mager vlees en olijfolie boven spek en boter, ook in een bulk blijft dat de gezonde keuze. Drinkcalorieën (melk, smoothie) helpen als eten zwaar wordt.';
+  if(drank>0&&fase==='cut')adv+=' Over die '+drank+' kcal aan dranken: ze tellen mee maar verzadigen niet. Elke drinkcalorie die je schrapt, mag je in eten terugkrijgen — vaak de makkelijkste winst in een cut. Geen verbod, wel een bewuste keuze.';
+  if(va==='melk')adv+=' Let op: koemelkallergie is een allergie voor melkeiwit — lactosevrije producten zijn hier GEEN oplossing. Alle koemelk is vervangen door alternatieven.';
+  if(va==='gluten')adv+=' Gebruik gecertificeerd glutenvrije havermout en muesli (gewone haver is vaak kruisbesmet) en weeg glutenvrij brood af op de verpakking.';
+  if(va==='lactose')adv+=' Harde gerijpte kaas en kleine porties Griekse yoghurt worden meestal wel verdragen.';
+  if(va==='vis')adv+=' Alle vis is vervangen door kip. Overweeg 2-3 g omega 3 per dag (algenolie) als supplement.';
+  document.getElementById('advies').innerHTML=adv;
+  document.getElementById('uit').classList.add('aan');
+}
+</script>
+</body>
+</html>
