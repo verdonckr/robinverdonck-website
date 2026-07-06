@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0e13">
+<title>Gratis tools — Robin Verdonck Coaching</title>
+<meta name="description" content="Gratis caloriecalculator (TDEE) met duidelijke uitleg, en een 1RM-calculator. Geen account, geen mailadres nodig.">
+<style>
+:root{--bg:#0b0e13;--card:#171c24;--line:#232a35;--gold:#c9a962;--goldsoft:#e0c98f;--wit:#f5f4f1;--grijs:#9aa1ab;--groen:#5dca85}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--wit);font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6;padding-bottom:40px}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+header{text-align:center;padding:26px 0 8px}
+header h1{font-size:21px;font-weight:800}
+header h1 span{color:var(--gold)}
+header p{font-size:13px;color:var(--grijs)}
+h2{font-size:18px;font-weight:800;margin:22px 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grijs);margin:12px 0 6px}
+input,select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;color:var(--wit);font-family:inherit;font-size:16px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-weight:700;font-size:15px}
+.btn{background:var(--gold);color:#0b0e13;padding:14px 20px;width:100%;margin-top:16px}
+.rij{display:flex;gap:10px}
+.rij>div{flex:1}
+.uitleg{font-size:13.5px;color:var(--grijs);border-left:3px solid var(--gold);padding:6px 0 6px 14px;margin:14px 0;line-height:1.6}
+.res{display:none;margin-top:18px}
+.res.aan{display:block}
+.resregel{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
+.resregel b{color:var(--goldsoft);font-size:17px}
+.groot{background:rgba(201,169,98,.1);border:1px solid var(--gold);border-radius:10px;padding:14px;text-align:center;margin:14px 0}
+.groot .n{font-size:34px;font-weight:800;color:var(--goldsoft)}
+.groot .s{font-size:12px;color:var(--grijs);text-transform:uppercase;letter-spacing:.08em}
+.cta{background:linear-gradient(180deg,rgba(201,169,98,.08),transparent),var(--card);border:1px solid var(--gold);border-radius:14px;padding:20px;text-align:center;margin-top:22px}
+.cta p{font-size:14px;color:var(--grijs);margin:8px 0 14px}
+.cta a{display:inline-block;background:var(--gold);color:#0b0e13;padding:12px 22px;border-radius:99px;font-weight:700;font-size:14px;text-decoration:none;margin:4px}
+.cta a.lijn{background:transparent;border:1px solid var(--line);color:var(--wit)}
+footer{text-align:center;font-size:12.5px;color:var(--grijs);padding:26px 16px 0}
+footer a{color:var(--goldsoft);text-decoration:none}
+</style>
+</head>
+<body>
+<a href="index.html" style="display:block;background:var(--gold);color:#0b0e13;text-align:center;padding:11px 16px;font-size:13.5px;font-weight:800;text-decoration:none;letter-spacing:.02em">Gratis aangeboden door ROBIN VERDONCK — coach voor mannen met een druk leven ›</a>
+<header>
+  <h1>GRATIS <span>TOOLS</span></h1>
+  <p>Robin Verdonck Coaching — gewone mensen kunnen meer dan ze denken</p>
+</header>
+<div class="wrap">
+
+<a href="index.html" style="display:inline-block;color:var(--grijs);font-size:13.5px;font-weight:700;text-decoration:none;margin-bottom:10px">‹ Terug naar de homepagina</a>
+<div style="display:flex;gap:8px;margin-bottom:6px">
+  <a href="#tdee" style="flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 4px;font-size:12.5px;font-weight:700;color:var(--wit);text-decoration:none">Calorieën</a>
+  <a href="#race" style="flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 4px;font-size:12.5px;font-weight:700;color:var(--wit);text-decoration:none">Racetijden</a>
+  <a href="#rmax" style="flex:1;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 4px;font-size:12px;font-weight:700;color:var(--wit);text-decoration:none">Krachtcalculator</a>
+</div>
+
+<h2 id="tdee">Caloriecalculator (TDEE)</h2>
+<div class="card">
+  <p style="font-size:14px;color:var(--grijs)">Bereken hoeveel calorieën jij per dag verbruikt en wat je moet eten om af te vallen, op gewicht te blijven of spier op te bouwen. Duurt 30 seconden, geen mailadres nodig.</p>
+  <div class="rij">
+    <div><label>Geslacht</label><select id="ges"><option value="m">Man</option><option value="v">Vrouw</option></select></div>
+    <div><label>Leeftijd</label><input type="number" id="lft" placeholder="34" inputmode="numeric"></div>
+  </div>
+  <div class="rij">
+    <div><label>Gewicht (kg)</label><input type="number" id="gew" placeholder="85" inputmode="decimal"></div>
+    <div><label>Lengte (cm)</label><input type="number" id="lng" placeholder="182" inputmode="numeric"></div>
+  </div>
+  <label>Vetpercentage (optioneel, maakt de berekening nauwkeuriger)</label>
+  <select id="vet">
+    <option value="">Weet ik niet</option>
+    <option value="10">± 10% — zichtbare blokjes, aders op de buik</option>
+    <option value="14">± 14% — bovenste buikspieren zichtbaar, strakke lijn</option>
+    <option value="18">± 18% — vlakke buik, geen zichtbare blokjes</option>
+    <option value="23">± 23% — lichte buikaanzet, geen definitie</option>
+    <option value="28">± 28% — duidelijke buik, broeksmaat gegroeid</option>
+    <option value="33">± 33% — fors overgewicht</option>
+  </select>
+  <select id="act">
+    <option value="1.2">Zittend werk, weinig beweging</option>
+    <option value="1.35" selected>Zittend werk, maar dagelijks wandelen of actief met de kinderen</option>
+    <option value="1.5">Actief werk (rechtstaan, rondlopen, fysiek)</option>
+    <option value="1.65">Zwaar fysiek werk</option>
+  </select>
+  <label>Hoe vaak train je per week?</label>
+  <select id="tra">
+    <option value="0">Niet (nog niet)</option>
+    <option value="0.05">1-2 keer</option>
+    <option value="0.1" selected>3-4 keer</option>
+    <option value="0.15">5-6 keer</option>
+    <option value="0.2">Dagelijks of meer</option>
+  </select>
+  <label>Je doel</label>
+  <select id="doel" onchange="vulTempo()">
+    <option value="cut">Vet verliezen</option>
+    <option value="onderhoud">Op gewicht blijven, fitter worden</option>
+    <option value="bulk">Spiermassa opbouwen</option>
+  </select>
+  <div id="tempoblok">
+    <label>Hoe snel wil je gaan?</label>
+    <select id="tempo" onchange="tempoUitleg()"></select>
+    <div class="uitleg" id="tempotekst"></div>
+  </div>
+  <button class="btn" onclick="bereken()">Bereken mijn calorieën</button>
+
+  <div class="res" id="resultaat">
+    <div class="groot"><div class="n" id="doelkcal">—</div><div class="s" id="doellabel">kcal per dag</div></div>
+    <div class="resregel"><span>Je rustverbruik (BMR)</span><b id="bmr">—</b></div>
+    <div class="resregel"><span>Je totale dagverbruik (TDEE)</span><b id="tdee">—</b></div>
+    <div class="resregel"><span>Eiwit per dag</span><b id="eiwit">—</b></div>
+    <div class="resregel"><span>Vetten per dag</span><b id="vet">—</b></div>
+    <div class="resregel"><span>Koolhydraten per dag</span><b id="kh">—</b></div>
+    <div class="uitleg" id="uitlegtekst"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Hoe werkt dit?</h2>
+  <p style="font-size:14px;color:var(--grijs);margin-bottom:10px">Je <b style="color:var(--wit)">rustverbruik (BMR)</b> is wat je lichaam verbrandt als je de hele dag niets zou doen. Berekend met de Mifflin-St Jeor-formule, de meest accurate zonder labo.</p>
+  <p style="font-size:14px;color:var(--grijs);margin-bottom:10px">Je <b style="color:var(--wit)">totale dagverbruik (TDEE)</b> is dat rustverbruik plus je dagelijkse activiteit en je trainingen. Eet je dit, dan blijf je op gewicht.</p>
+  <p style="font-size:14px;color:var(--grijs);margin-bottom:10px">Voor <b style="color:var(--wit)">vetverlies</b> ga je 400 kcal onder je dagverbruik. Groter tekort werkt sneller maar hou je niet vol, en volhouden is het enige dat telt. Verwacht 0,4 tot 0,7% van je lichaamsgewicht per week.</p>
+  <p style="font-size:14px;color:var(--grijs);margin-bottom:10px">Voor <b style="color:var(--wit)">spieropbouw</b> ga je 250 kcal erboven. Meer eten bouwt geen extra spier, alleen extra vet.</p>
+  <p style="font-size:14px;color:var(--grijs)">En <b style="color:var(--wit)">eiwit</b>: 1,8 gram per kilo lichaamsgewicht per dag. Meer heeft geen bewezen voordeel, minder kost je spiermassa. Dure supplementen heb je hier niet voor nodig.</p>
+</div>
+
+<h2 id="rmax">Krachtcalculator</h2>
+<div class="card">
+  <p style="font-size:14px;color:var(--grijs)">Vul één set in die je recent deed (gewicht en herhalingen), en zie je geschatte maximum plus wat je ongeveer kan tillen voor elk aantal herhalingen. Zonder ooit een maximum te moeten testen.</p>
+  <div class="rij">
+    <div><label>Gewicht (kg)</label><input type="number" id="rmkg" placeholder="80" inputmode="decimal"></div>
+    <div><label>Herhalingen</label><input type="number" id="rmreps" placeholder="8" inputmode="numeric"></div>
+  </div>
+  <button class="btn" onclick="rm()">Bereken</button>
+  <div class="res" id="rmres">
+    <div class="groot"><div class="n" id="rmuit">—</div><div class="s">geschat maximum (1 herhaling)</div></div>
+    <div id="rmtabel"></div>
+    <div class="uitleg">Geschat met de Epley-formule. Dit zijn richtwaarden: op sommige oefeningen til je iets meer, op andere iets minder. Gebruik de tabel om je startgewicht te kiezen voor een nieuwe reprange, en bouw van daar op.</div>
+  </div>
+</div>
+
+<h2 id="race">Racetijd-voorspeller</h2>
+<div class="card">
+  <p style="font-size:14px;color:var(--grijs)">Vul één recente racetijd in en zie wat je op de andere afstanden waard bent. Gebaseerd op de Riegel-formule, dé standaard voor duursportvoorspellingen.</p>
+  <div class="rij">
+    <div><label>Afstand</label><select id="rafst"><option value="5">5 km</option><option value="10" selected>10 km</option><option value="21.0975">Halve marathon</option><option value="42.195">Marathon</option></select></div>
+    <div><label>Jouw tijd (uu:mm:ss of mm:ss)</label><input type="text" id="rtijd" placeholder="48:30" inputmode="numeric"></div>
+  </div>
+  <label>Hoeveel km loop je gemiddeld per week? (optioneel, maakt de marathonvoorspelling eerlijker)</label>
+  <input type="number" id="rweekkm" placeholder="bv. 35" inputmode="numeric">
+  <button class="btn" onclick="race()">Voorspel mijn tijden</button>
+  <div class="res" id="raceres">
+    <div id="racetabel"></div>
+    <div class="uitleg" id="raceuitleg"></div>
+  </div>
+</div>
+
+<div class="cta">
+  <b style="font-size:16px">Wil je hier iets mee dóén?</b>
+  <p>Ik help mannen van 30-45 met een job en een gezin om fitter en sterker te worden, of toe te werken naar een marathon, Hyrox of Ironman. Klanten krijgen een volledig plan, opvolging en mijn eigen trainings-app.</p>
+  <a href="https://wa.me/32472502086?text=Hey%20Robin,%20ik%20gebruikte%20je%20gratis%20calculator%20en%20wil%20meer%20weten%20over%20je%20coaching">Stuur me een berichtje</a>
+  <a class="lijn" href="https://www.instagram.com/robinverdonck">Volg me op Instagram</a>
+</div>
+
+<footer>
+  <p>Gemaakt door Robin Verdonck — militair, vader van 2, Ironman-finisher, Menno Henselmans gecertificeerd PT.<br>Dit is algemene informatie, geen medisch advies.</p>
+</footer>
+</div>
+
+<script>
+const TEMPO={
+cut:[
+ [250,'Rustig (-250 kcal)','Nauwelijks honger, makkelijk vol te houden, maar traag: reken op 0,2-0,3% van je lichaamsgewicht per week. Goed als je weinig te verliezen hebt of al vaak gejojood hebt.'],
+ [400,'Standaard (-400 kcal) — aanrader','De beste balans tussen tempo en volhoudbaarheid: ongeveer 0,4-0,5% van je lichaamsgewicht per week, met behoud van spiermassa als je eiwit en krachttraining op orde zijn.'],
+ [600,'Stevig (-600 kcal)','Sneller resultaat, maar meer honger, minder energie voor je trainingen en meer risico op spierverlies. Alleen zinvol bij duidelijk overgewicht of voor een korte, bewuste periode.']],
+bulk:[
+ [150,'Heel lean (+150 kcal) — aanrader','Spieropbouw is traag: meer dan 0,25-0,5 kg spier per maand zit er voor de meeste mannen niet in. Een klein overschot dekt precies die opbouw, de rest zou vet worden. Je blijft er strak uitzien en moet achteraf niet maandenlang cutten.'],
+ [300,'Lean (+300 kcal)','Iets meer marge, geschikt voor beginners die nog snel spier bouwen of voor magere mannen die moeilijk aankomen. Kleine vetaangroei is mogelijk.'],
+ [450,'Sneller (+450 kcal)','Je wordt vooral sneller zwaarder, niet sneller gespierder. Het extra komt grotendeels als vet. Alleen te verantwoorden voor echte hardgainers met een zeer hoog verbruik.']]};
+function vulTempo(){
+  const doel=document.getElementById('doel').value;
+  const blok=document.getElementById('tempoblok');
+  if(doel==='onderhoud'){blok.style.display='none';return}
+  blok.style.display='block';
+  const sel=document.getElementById('tempo');
+  sel.innerHTML=TEMPO[doel].map((t,i)=>`<option value="${t[0]}"${i===(doel==='cut'?1:0)?' selected':''}>${t[1]}</option>`).join('');
+  tempoUitleg();
+}
+function tempoUitleg(){
+  const doel=document.getElementById('doel').value;
+  if(doel==='onderhoud')return;
+  const v=+document.getElementById('tempo').value;
+  const t=TEMPO[doel].find(x=>x[0]===v);
+  document.getElementById('tempotekst').textContent=t?t[2]:'';
+}
+vulTempo();
+function bereken(){
+  const ges=document.getElementById('ges').value;
+  const lft=+document.getElementById('lft').value,gew=+document.getElementById('gew').value,lng=+document.getElementById('lng').value;
+  if(!lft||!gew||!lng){alert('Vul leeftijd, gewicht en lengte in.');return}
+  const vp=+document.getElementById('vet').value||0;
+  const bmr=vp?Math.round(370+21.6*(gew*(1-vp/100))):Math.round(10*gew+6.25*lng-5*lft+(ges==='m'?5:-161));
+  const act=+document.getElementById('act').value,tra=+document.getElementById('tra').value;
+  const tdee=Math.round(bmr*(act+tra));
+  const doel=document.getElementById('doel').value;
+  const tempo=doel==='onderhoud'?0:+document.getElementById('tempo').value;
+  let dkcal=tdee,lbl='kcal per dag om op gewicht te blijven',uitleg='';
+  if(doel==='cut'){dkcal=tdee-tempo;lbl='kcal per dag om vet te verliezen';
+    uitleg=`Met ${dkcal} kcal per dag (${tempo} onder je verbruik) verlies je ongeveer ${(gew*(tempo/250)*0.0025).toFixed(1)} kg per week. Weeg je elke ochtend en kijk naar het weekgemiddelde, niet naar dagschommelingen. Gaat het na 3 weken niet vooruit, trek er dan nog 150 kcal af.`;
+  }else if(doel==='bulk'){dkcal=tdee+tempo;lbl='kcal per dag om spier op te bouwen';
+    uitleg=`Met ${dkcal} kcal per dag (${tempo} boven je verbruik) bouw je spier op met minimale vetaangroei. Kom je meer dan 1 kg per maand aan, dan is het vet: schroef iets terug.`;
+  }else{
+    uitleg=`Met ${dkcal} kcal per dag blijf je op gewicht. Combineer dit met 2-3 keer krachttraining per week en voldoende eiwit, en je lichaamssamenstelling verbetert ook zonder tekort.`;
+  }
+  const eiwit=Math.round(gew*1.8);
+  const vetg=Math.round(dkcal*0.25/9);
+  const khg=Math.round((dkcal-eiwit*4-vetg*9)/4);
+  document.getElementById('bmr').textContent=bmr+' kcal';
+  document.getElementById('tdee').textContent=tdee+' kcal';
+  document.getElementById('doelkcal').textContent=dkcal;
+  document.getElementById('doellabel').textContent=lbl;
+  document.getElementById('eiwit').textContent=eiwit+' g';
+  document.getElementById('vet').textContent='± '+vetg+' g';
+  document.getElementById('kh').textContent='± '+khg+' g';
+  document.getElementById('uitlegtekst').textContent=uitleg;
+  document.getElementById('resultaat').classList.add('aan');
+}
+function parseTijd(t){
+  const p=t.trim().split(':').map(Number);
+  if(p.some(isNaN)||p.length<2||p.length>3)return null;
+  return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*60+p[1];
+}
+function fmtTijd(s){
+  s=Math.round(s);
+  const u=Math.floor(s/3600),m=Math.floor(s%3600/60),ss=s%60;
+  return (u?u+':':'')+String(m).padStart(u?2:1,'0')+':'+String(ss).padStart(2,'0');
+}
+function race(){
+  const d1=+document.getElementById('rafst').value;
+  const t1=parseTijd(document.getElementById('rtijd').value);
+  if(!t1){alert('Vul je tijd in als uu:mm:ss of mm:ss, bv. 48:30');return}
+  const wk=+document.getElementById('rweekkm').value||0;
+  const afst=[[5,'5 km'],[10,'10 km'],[21.0975,'Halve marathon'],[42.195,'Marathon']];
+  let html='<div style="margin-top:14px">';
+  let mtekst='';
+  afst.forEach(a=>{
+    const t2=t1*Math.pow(a[0]/d1,1.06);
+    const pace=t2/a[0];
+    let extra='';
+    if(a[0]>42&&wk){
+      let f=0;
+      if(wk<30)f=0.08;else if(wk<50)f=0.04;else if(wk<70)f=0.015;
+      if(f>0){extra=' → realistisch bij '+wk+' km/week: <b style="color:var(--goldsoft)">'+fmtTijd(t2*(1+f))+' à '+fmtTijd(t2*(1+f+0.03))+'</b>';
+        mtekst='De theoretische marathontijd geldt alleen bij voldoende trainingsvolume. Met '+wk+' km per week is de bijgestelde schatting eerlijker: de laatste 10 km van een marathon vergeven geen tekort aan kilometers.';}
+    }
+    html+=`<div class="resregel"><span>${a[1]}${a[0]===d1?' (jouw invoer)':''}</span><b>${fmtTijd(t2)} <span style="font-size:12px;color:var(--grijs);font-weight:400">(${fmtTijd(pace)}/km)</span></b></div>${extra?'<div style="font-size:13px;color:var(--grijs);padding:4px 0 8px">'+extra+'</div>':''}`;
+  });
+  html+='</div>';
+  document.getElementById('racetabel').innerHTML=html;
+  document.getElementById('raceuitleg').textContent=mtekst||'Deze voorspelling klopt het best tussen afstanden die dicht bij elkaar liggen, en als je voor de langere afstand ook echt getraind hebt.';
+  document.getElementById('raceres').classList.add('aan');
+}
+function rm(){
+  const kg=+document.getElementById('rmkg').value,reps=+document.getElementById('rmreps').value;
+  if(!kg||!reps){alert('Vul gewicht en herhalingen in.');return}
+  if(reps>15){alert('Boven 15 herhalingen wordt de schatting onbetrouwbaar.');return}
+  const max=kg*(1+reps/30);
+  document.getElementById('rmuit').textContent=(Math.round(max*2)/2).toFixed(1)+' kg';
+  const rijen=[2,3,4,5,6,8,10,12].map(n=>{
+    const w=Math.round(max/(1+n/30)*2)/2;
+    return `<div class="resregel"><span>${n} herhalingen</span><b>± ${w.toFixed(1)} kg</b></div>`;
+  }).join('');
+  document.getElementById('rmtabel').innerHTML='<div style="margin-top:10px">'+rijen+'</div>';
+  document.getElementById('rmres').classList.add('aan');
+}
+</script>
+</body>
+</html>
