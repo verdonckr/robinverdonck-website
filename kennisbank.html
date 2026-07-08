@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kennisbank — Robin Verdonck</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
+<meta property="og:title" content="Robin Verdonck — Hybride coaching voor drukbezette ouders en ondernemers">
+<meta property="og:description" content="Fitter en sterker worden zonder dat sport je hele leven inpalmt. Voor ouders en ondernemers met een druk leven.">
+<meta property="og:image" content="https://verdonckr.github.io/robinverdonck-website/finish-almere.jpeg">
+<meta property="og:url" content="https://verdonckr.github.io/robinverdonck-website/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="google-site-verification" content="twQuaS1yo-BB5kxqgw5fKp27ie6QR8a8OMrxpaKdluY" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQPNEP9SLS"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-YQPNEP9SLS');
+</script>
+<meta name="description" content="Kennisbank van Robin Verdonck. Eerlijke, wetenschappelijk onderbouwde antwoorden over voeding, krachttraining en hybride sporten zoals marathon, Hyrox en triatlon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --obsidian:#0b0e13; --slate:#12161d; --card:#171c24; --line:#232a35;
+  --gold:#c9a962; --gold-soft:#e0c98f; --white:#f5f4f1; --muted:#9aa1ab;
+  --radius:14px; --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--obsidian);color:var(--white);font-family:'Manrope',system-ui,sans-serif;line-height:1.7;font-size:16.5px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:920px;margin:0 auto;padding:0 24px}
+h1,h2,h3{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.15;letter-spacing:-.01em}
+.muted{color:var(--muted)}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(11,14,19,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.nav-inner{max-width:920px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:70px}
+.logo{font-family:'Fraunces',serif;font-size:19px;font-weight:600}
+.logo em{font-style:italic;color:var(--gold)}
+.nav-back{font-size:14px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.nav-back:hover{color:var(--gold-soft)}
+
+header.hero{padding:150px 0 60px;background:radial-gradient(900px 500px at 85% -10%,rgba(201,169,98,.10),transparent 60%),var(--obsidian)}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:var(--gold);margin-bottom:18px}
+.kicker::before{content:"";width:26px;height:1px;background:var(--gold)}
+header.hero h1{font-size:clamp(34px,5vw,52px);margin-bottom:20px}
+header.hero h1 em{font-style:italic;color:var(--gold)}
+header.hero .sub{font-size:18px;color:var(--muted);max-width:600px}
+
+.snelnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:32px}
+.snelnav a{font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:99px;border:1px solid var(--line);color:var(--muted);transition:.25s var(--ease)}
+.snelnav a:hover{border-color:var(--gold);color:var(--gold-soft)}
+
+.categorie{padding:56px 0;border-top:1px solid var(--line)}
+.categorie-head{display:flex;align-items:baseline;gap:16px;margin-bottom:8px;flex-wrap:wrap}
+.categorie h2{font-size:clamp(24px,3vw,32px)}
+.categorie .aantal{font-size:13px;color:var(--muted);font-weight:600}
+.categorie-intro{color:var(--muted);font-size:15px;max-width:640px;margin-bottom:32px}
+
+.vraag{border-bottom:1px solid var(--line)}
+.vraag summary{cursor:pointer;list-style:none;padding:20px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;font-weight:600;font-size:16.5px}
+.vraag summary::-webkit-details-marker{display:none}
+.vraag summary::after{content:"+";color:var(--gold);font-size:22px;font-weight:400;flex-shrink:0;transition:.25s var(--ease)}
+.vraag[open] summary::after{content:"–"}
+.vraag summary:hover{color:var(--gold-soft)}
+.antwoord{padding:0 0 24px;color:#c9cdd3;font-size:15.5px;max-width:680px}
+.antwoord p{margin-bottom:12px}
+.antwoord p:last-child{margin-bottom:0}
+.antwoord b{color:var(--white)}
+.bron{font-size:12.5px;color:var(--muted);margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+
+.hybride-intro{background:var(--card);border:1px solid rgba(201,169,98,.35);border-radius:var(--radius);padding:26px 28px;margin-bottom:32px}
+.hybride-intro p{color:#c9cdd3;font-size:15px}
+
+.cta-blok{padding:70px 0;text-align:center;border-top:1px solid var(--line)}
+.cta-blok h2{font-size:clamp(24px,3.5vw,34px);margin-bottom:16px}
+.cta-blok p{color:var(--muted);max-width:520px;margin:0 auto 28px}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;border-radius:99px;font-weight:700;font-size:15px;background:linear-gradient(135deg,var(--gold),#b3934e);color:#0b0e13}
+
+footer{border-top:1px solid var(--line);padding:40px 0;color:var(--muted);font-size:13.5px;text-align:center}
+
+@media(max-width:640px){
+  header.hero{padding:120px 0 40px}
+  .categorie{padding:40px 0}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Robin <em>Verdonck</em></a>
+    <a class="nav-back" href="index.html">← Terug naar de site</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker">Kennisbank</span>
+    <h1>Korte, eerlijke antwoorden.<br>Geen <em>theorie</em>, geen hype.</h1>
+    <p class="sub">Alles wat ik weet over voeding, krachttraining en hybride sporten, samengevat zonder poespas. Geen verkooppraat, gewoon wat werkt.</p>
+    <div class="snelnav">
+      <a href="#voeding">Voeding</a>
+      <a href="#training">Training</a>
+      <a href="#hybride">Hybride training</a>
+      <a href="#herstel">Herstel en leefstijl</a>
+      <a href="#mythes">Mythes ontkracht</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ VOEDING ============ -->
+<section class="categorie" id="voeding">
+  <div class="wrap">
+    <div class="categorie-head"><h2>Voeding</h2><span class="aantal">5 vragen</span></div>
+    <p class="categorie-intro">De basis die je 90% van de weg brengt, zonder obsessief te moeten worden over eten.</p>
+
+    <details class="vraag">
+      <summary>Hoeveel eiwit heb je écht nodig?</summary>
+      <div class="antwoord">
+        <p>1,6 tot 2 gram per kg lichaamsgewicht per dag. Meer dan dat heeft voor de meeste mensen geen extra voordeel. Je lichaam kan niet oneindig meer spiereiwit aanmaken, ongeacht hoeveel kip je erbij eet.</p>
+        <p>Voor iemand van 80 kg is dat 130 tot 160 gram per dag. Haalbaar via kip, vis, eieren, kwark en peulvruchten, zonder shakes nodig te hebben.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Creatine: werkt het, en hoe gebruik je het?</summary>
+      <div class="antwoord">
+        <p>Het best onderzochte supplement dat er bestaat. Het verhoogt de fosfocreatinevoorraad in je spieren, waardoor je iets meer herhalingen haalt bij korte, intensieve inspanningen. Over tijd geeft dat iets meer kracht en spiermassa.</p>
+        <p><b>Dosering:</b> 3 tot 5 gram per dag, elke dag, ongeacht of je traint. Geen oplaadfase nodig. Het gewone goedkope creatine monohydraat werkt even goed als duurdere varianten.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Heb ik een proteïne shake nodig?</summary>
+      <div class="antwoord">
+        <p>Nee. Je lichaam maakt geen onderscheid tussen eiwit uit een shake en eiwit uit kip, kwark of eieren. Er zit geen magie in het poeder.</p>
+        <p>Handig als je onderweg bent of moeite hebt om via voeding aan genoeg eiwit te komen. Koop het niet omdat je denkt dat het verplicht is voor spiergroei.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Heb je vitamines of supplementen nodig?</summary>
+      <div class="antwoord">
+        <p>Als je gevarieerd eet met veel groenten en fruit, kom je in de meeste gevallen ver genoeg. Je hoeft er niet obsessief over te zijn.</p>
+        <p>Twee die de meeste mensen wel goed kunnen gebruiken: <b>vitamine D3</b> (zeker in de winter, 1000 tot 3000 IU per dag) en <b>omega-3</b> als je weinig vette vis eet.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Is een ketogeen dieet een goed idee voor krachtsport?</summary>
+      <div class="antwoord">
+        <p>Meestal niet de beste keuze. Koolhydraten zijn je primaire brandstof tijdens intensieve training, en zonder die brandstof presteer je vaak minder goed in de gym.</p>
+        <p>Voor puur vetverlies kan het werken, maar niet omdat het speciaal is. Gewoon omdat het je calorieën vanzelf verlaagt.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ TRAINING ============ -->
+<section class="categorie" id="training">
+  <div class="wrap">
+    <div class="categorie-head"><h2>Training</h2><span class="aantal">2 vragen</span></div>
+    <p class="categorie-intro">Wat echt telt in de gym, zonder de ruis van duizend tegenstrijdige tips.</p>
+
+    <details class="vraag">
+      <summary>Vrije gewichten of machines: wat is beter?</summary>
+      <div class="antwoord">
+        <p>Geen aantoonbaar verschil in spiergroei tussen een halter, een kabel of een machine. Je spier reageert op spanning, niet op het soort toestel.</p>
+        <p>Machines zijn vaak veiliger om dichter bij falen te trainen omdat balans geen beperkende factor is. Kies wat je fijn vindt en wat beschikbaar is.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Kan je cardio en kracht combineren zonder dat het elkaar tegenwerkt?</summary>
+      <div class="antwoord">
+        <p>Ja, met de juiste volgorde. Cardio na kracht plannen werkt beter dan ervoor, anders begin je je krachttraining al vermoeid. Plan zware beensessies ook niet vlak voor een harde looptraining.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ HYBRIDE ============ -->
+<section class="categorie" id="hybride">
+  <div class="wrap">
+    <div class="categorie-head"><h2>Hybride training</h2><span class="aantal">10 vragen</span></div>
+    <div class="hybride-intro">
+      <p>Dit is het onderdeel dat de meeste coaches overslaan. Kracht combineren met een marathon, Hyrox of triatlon vraagt een andere aanpak dan pure bodybuilding, en dat is precies waar ik zelf doorheen ben gegaan.</p>
+    </div>
+
+    <details class="vraag">
+      <summary>Hoeveel cardio kan je doen zonder je krachtvooruitgang te verliezen?</summary>
+      <div class="antwoord">
+        <p>Meer dan de meeste mensen denken. Zolang je voeding en herstel meevolgen, kan je serieus cardiovolume combineren met krachttraining zonder in te leveren op kracht.</p>
+        <p>Het interferentie-effect bestaat wel, maar is kleiner dan de mythe doet geloven, en goed te beperken met de juiste planning.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Wat is zone 2 trainen en waarom doet iedereen er zo moeilijk over?</summary>
+      <div class="antwoord">
+        <p>Zone 2 is een tempo waarbij je nog vlot een gesprek kan voeren. Voelt bijna beledigend traag aan als je fit bent. Het bouwt je aerobe basis op zonder je zenuwstelsel of gewrichten zwaar te belasten.</p>
+        <p>Trager lopen dan je ego wil, maakt je op termijn net sneller. Geen tegenstrijdigheid, gewoon hoe uithoudingsvermogen werkt.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Hoeveel kilometer per week is genoeg voor een eerste marathon?</summary>
+      <div class="antwoord">
+        <p>Minder dan je denkt. Consistentie en een geleidelijke opbouw tellen zwaarder dan absoluut volume. Meer kilometers stapelen zonder aandacht voor tempo werkt zelfs vaak tegen je, zeker als je al een basis hebt.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Moet je stoppen met krachttraining tijdens marathonvoorbereiding?</summary>
+      <div class="antwoord">
+        <p>Nee. Krachttraining beschermt je tegen blessures en houdt je economisch tijdens het lopen. Bouw het wel af in de laatste 2 tot 3 weken voor de wedstrijd, zodat je fris aan de start staat.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Waar begin je met een Hyrox-voorbereiding?</summary>
+      <div class="antwoord">
+        <p>Bij de stations die je nog nooit gedaan hebt, niet bij het lopen. Sled push en wall balls kosten beginners de meeste tijd, niet door gebrek aan kracht, maar door onbekendheid met de beweging.</p>
+        <p>Train die specifiek, naast je gewone kracht- en loopwerk.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Wat zijn hartslagzones en waarom zou je ze kennen?</summary>
+      <div class="antwoord">
+        <p>Zone 2 is rustig, zone 5 is maximale inspanning. De meeste mensen trainen te vaak in het grijze midden: te hard om goed te herstellen, te licht om echt sneller te worden.</p>
+        <p>Weten waar je zit, helpt je bewust kiezen: rustig bouwen of hard pushen, niet toevallig ergens tussenin hangen.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Moet je koolhydraten stapelen voor een wedstrijd?</summary>
+      <div class="antwoord">
+        <p>Carb loading werkt, maar is voor de meeste amateurs minder ingewikkeld dan het klinkt. Iets meer koolhydraten de laatste 1 à 2 dagen voor een lange inspanning volstaat, geen weekenlang protocol nodig.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Hoeveel hersteltijd heb je nodig tussen een zware kracht- en een zware cardiosessie?</summary>
+      <div class="antwoord">
+        <p>Minstens een halve tot een hele dag als beide sessies dezelfde spiergroepen zwaar belasten. Plan een zware beentraining niet vlak voor een harde looptraining, dat is waar de meeste mensen zichzelf in de weg zitten.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Waar begin je als je van nul start aan je eerste triatlon of Ironman?</summary>
+      <div class="antwoord">
+        <p>Bij zwemmen, meestal de zwakste discipline. Zoek een start-to-crawl cursus als je de techniek nog niet onder de knie hebt. Dat was voor mij ook het startpunt.</p>
+        <p>Bouw daarna geleidelijk op in alle drie de disciplines. Je hoeft niet alles tegelijk perfect te doen, gewoon consistent beginnen.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Werkt cardio na kracht beter dan cardio ervoor?</summary>
+      <div class="antwoord">
+        <p>Meestal wel. Kracht eerst zorgt dat je met volle energie aan je zwaarste, meest technische werk begint. Cardio erna kan je prima vermoeid doen zonder dat je vorm eronder lijdt.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ HERSTEL ============ -->
+<section class="categorie" id="herstel">
+  <div class="wrap">
+    <div class="categorie-head"><h2>Herstel en leefstijl</h2><span class="aantal">3 vragen</span></div>
+    <p class="categorie-intro">Wat je buiten de gym doet, bepaalt vaak meer dan wat je erin doet.</p>
+
+    <details class="vraag">
+      <summary>Waarom is slaap zo belangrijk voor resultaat?</summary>
+      <div class="antwoord">
+        <p>Slaap is het krachtigste herstelgereedschap dat er bestaat. 7 tot 9 uur is de richtlijn. Slechte slaap verhoogt je cortisol, verlaagt je testosteron en maakt het moeilijker om vet te verliezen of spieren op te bouwen.</p>
+        <p>Met kleine kinderen thuis weet je dat perfect slapen niet altijd lukt. Doe wat je kan: donkere kamer, vaste tijden, geen schermen vlak voor het slapengaan.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Hoeveel invloed heeft stress echt op je progressie?</summary>
+      <div class="antwoord">
+        <p>Meer dan de meeste mensen beseffen. Chronische stress ondermijnt niet alleen via slaap en hormonen, maar ook via je motivatie en consistentie: de twee dingen die op lange termijn het meeste tellen.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Moet je altijd een volledige rustdag inplannen na twee zware trainingen?</summary>
+      <div class="antwoord">
+        <p>Niet per se. Spieren herstellen tussen sessies, dat klopt, maar dat hoeft geen volledige rustdag te zijn. Een rustige zone 2 loop telt voor mij ook als een relatief herstellende dag na twee zware krachttrainingen: de belasting op je spieren en zenuwstelsel is heel anders dan bij een zware sessie in de gym.</p>
+        <p>Waar het om gaat: niet twee zware inspanningen kort na elkaar zonder dat je lichaam de kans krijgt bij te komen. Een lichte inspanning tussenin is vaak beter dan volledige inactiviteit, en kan zelfs het herstel bevorderen door de doorbloeding op gang te houden.</p>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- ============ MYTHES ============ -->
+<section class="categorie" id="mythes">
+  <div class="wrap">
+    <div class="categorie-head"><h2>Mythes, kort ontkracht</h2><span class="aantal">2 vragen</span></div>
+
+    <details class="vraag">
+      <summary>Kan je lokaal afvallen op je buik of armen?</summary>
+      <div class="antwoord">
+        <p>Nee. Spot reduction bestaat niet. Je lichaam beslist zelf waar het vet vandaan haalt, dat kan je niet sturen met buikspieroefeningen. Vet verliezen gebeurt door een calorietekort, verspreid over je hele lichaam.</p>
+      </div>
+    </details>
+
+    <details class="vraag">
+      <summary>Maakt laat op de avond eten dik?</summary>
+      <div class="antwoord">
+        <p>Niet op zich. Je lichaam telt calorieën, geen kloktijd. Als laat eten ervoor zorgt dat je 's ochtends geen honger hebt en per ongeluk minder eet, kan het zelfs helpen, maar er is niets magisch aan het tijdstip zelf.</p>
+      </div>
+    </details>
+
+  </div>
+</section>
+
+<section class="cta-blok">
+  <div class="wrap">
+    <h2>Vraag niet beantwoord?</h2>
+    <p>Deze lijst groeit. Stuur me je vraag en ik voeg ze toe, of we bekijken het samen in een gesprek.</p>
+    <a class="btn" href="https://wa.me/32472502086">Stuur me een berichtje</a>
+  </div>
+</section>
+
+<footer>
+  © 2026 Robin Verdonck — Peer, België
+</footer>
+
+</body>
+</html>
