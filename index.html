@@ -132,6 +132,14 @@ nav.scrolled{background:rgba(11,14,19,.88);backdrop-filter:blur(14px);border-col
 .plan ul{list-style:none;margin:26px 0 30px;flex:1}
 .plan li{padding:11px 0 11px 30px;position:relative;border-bottom:1px solid var(--line);font-size:14.5px;color:#c9cdd3}
 .plan li::before{content:"";position:absolute;left:2px;top:19px;width:14px;height:1.5px;background:var(--gold)}
+/* ============ FAQ ============ */
+.vraag-index{border-bottom:1px solid var(--line)}
+.vraag-index summary{cursor:pointer;list-style:none;padding:22px 0;display:flex;justify-content:space-between;align-items:center;gap:20px;font-weight:600;font-size:16.5px;color:var(--white)}
+.vraag-index summary::-webkit-details-marker{display:none}
+.vraag-index summary::after{content:"+";color:var(--gold);font-size:22px;font-weight:400;flex-shrink:0}
+.vraag-index[open] summary::after{content:"–"}
+.vraag-index summary:hover{color:var(--gold-soft)}
+.antwoord-index{padding:0 0 22px;color:var(--muted);font-size:15px;max-width:640px}
 /* ============ FORM ============ */
 .apply{background:var(--slate);border-top:1px solid var(--line)}
 .form-shell{max-width:640px;margin:52px auto 0;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:44px;position:relative;overflow:hidden}
@@ -345,7 +353,73 @@ footer a:hover{color:var(--gold-soft)}
     </div>
   </div>
 </section>
+<a class="btn btn-line" href="#aanvraag">Vraag een plaats aan</a>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- ============ FAQ ============ -->
+<section id="faq" style="border-top:1px solid var(--line)">
+  <div class="wrap">
+    <span class="kicker reveal">Veelgestelde vragen</span>
+    <h2 class="reveal">Praktische vragen<br>over de coaching zelf.</h2>
+    <p class="muted reveal d1" style="max-width:560px">Voor vragen over voeding of training: bekijk de <a href="kennisbank.html" style="color:var(--gold-soft);text-decoration:underline">kennisbank</a>. Hier gaat het over hoe het traject zelf werkt.</p>
+
+    <div style="margin-top:40px">
+      <details class="vraag-index reveal">
+        <summary>Wat als ik een blessure heb of krijg tijdens het traject?</summary>
+        <div class="antwoord-index">
+          <p>Vertel het me meteen. Ik pas je schema aan rond de blessure, niet omgekeerd. Soms betekent dat tijdelijk minder kracht en meer mobiliteit, soms gewoon een andere oefening voor hetzelfde effect. Bij twijfel verwijs ik door naar een arts of kinesist.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Kan ik pauzeren tijdens een vakantie of drukke periode?</summary>
+        <div class="antwoord-index">
+          <p>Ja. Laat het me op voorhand weten, dan bevriezen we de begeleiding voor die periode. Je betaalt niet voor weken waarin je niet actief begeleid wordt.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Wat als het schema niet bij mij past?</summary>
+        <div class="antwoord-index">
+          <p>Dat gebeurt weleens, en dat is precies waarom de check-ins er zijn. Een schema is een startpunt, geen vaststaand gegeven. We sturen bij zodra iets niet werkt, zowel op vlak van training als voeding.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Hoe snel zie ik resultaat?</summary>
+        <div class="antwoord-index">
+          <p>Dat hangt af van je doel en je startpunt, maar de meeste mensen merken binnen 3 tot 4 weken al verschil in energie en hoe hun training aanvoelt. Zichtbare fysieke verandering vraagt meestal 6 tot 8 weken, daarom is de minimumtermijn ook 3 maanden.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Moet ik naar een specifieke gym?</summary>
+        <div class="antwoord-index">
+          <p>Nee. Ik werk met wat jij beschikbaar hebt, of dat nu een volledig uitgeruste gym is of een beperktere thuisopstelling. Oefeningen worden aangepast aan wat voorhanden is.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Hoe verloopt de betaling?</summary>
+        <div class="antwoord-index">
+          <p>Maandelijks, via factuur, met een minimale looptijd van 3 maanden zodat er genoeg tijd is om echt resultaat te zien.</p>
+        </div>
+      </details>
+
+      <details class="vraag-index reveal">
+        <summary>Kan ik stoppen wanneer ik wil na de eerste 3 maanden?</summary>
+        <div class="antwoord-index">
+          <p>Ja, zonder verdere verplichtingen. Een maand op voorhand laten weten volstaat.</p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GRATIS TOOLS ============ -->
 <!-- ============ GRATIS TOOLS ============ -->
 <section id="gratis" style="border-top:1px solid var(--line)">
   <div class="wrap">
