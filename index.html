@@ -601,6 +601,19 @@ function submitForm(){
   err.style.display='none';
   const doel=document.querySelector('input[name=doel]:checked').value;
   const tijd=document.querySelector('input[name=tijd]:checked').value;
+
+  fetch('https://api.web3forms.com/submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      access_key:'1e5d097e-18ee-4510-b17d-9607ca50d692',
+      subject:'Nieuwe aanvraag via contactformulier',
+      naam:naam,
+      doel:doel,
+      beschikbare_tijd:tijd
+    })
+  }).catch(()=>{});
+
   const msg=`Hey Robin, ik ben ${naam}. Mijn doel: ${doel}. Beschikbare tijd: ${tijd}. Ik wil graag meer weten over je coaching.`;
   window.open('https://wa.me/32472502086?text='+encodeURIComponent(msg),'_blank');
 }
