@@ -417,6 +417,15 @@ footer a:hover{color:var(--gold-soft)}
     <p class="muted reveal d1" style="max-width:560px">Voor vragen over voeding of training: bekijk de <a href="kennisbank.html" style="color:var(--gold-soft);text-decoration:underline">kennisbank</a>. Hier gaat het over hoe het traject zelf werkt.</p>
 
     <div style="margin-top:40px">
+      
+      <details class="vraag-index reveal">
+        <summary>Hoe verloopt het als ik een berichtje stuur?</summary>
+        <div class="antwoord-index">
+          <p>Je krijgt eerst gewoon antwoord van mij, persoonlijk. Geen verkoopgesprek. Past het van beide kanten, dan plannen we een intake: een gesprek over je doel, je agenda en je trainingsverleden, en je kiest alvast je gerechten uit het voedingsmenu.</p>
+    <p>Beslis je om te starten, dan volgt de eerste factuur. Daarna krijg je je trainingsschema en voedingsplan op maat, en toegang tot mijn trainings-app. Je maand begint pas te lopen op de dag dat je die krijgt, niet op de dag van betaling. Vanaf dan: WhatsApp-ondersteuning wanneer je ergens mee zit, om de twee weken een check-in met bijsturing, en elke maand een volledig gesprek. Maandelijks via factuur, en je kan altijd stoppen.</p>
+        </div>
+      </details>
+
       <details class="vraag-index reveal">
         <summary>Wat als ik een blessure heb of krijg tijdens het traject?</summary>
         <div class="antwoord-index">
@@ -544,15 +553,19 @@ footer a:hover{color:var(--gold-soft)}
         <div class="fnav"><button class="btn btn-line" onclick="prev(2)">Terug</button><button class="btn btn-gold" onclick="next(2)">Volgende</button></div>
       </div>
 
-      <div class="fstep" data-step="3">
-        <h3>Hoe mag ik je bereiken?</h3>
-        <p class="fs-sub">Je aanvraag komt rechtstreeks bij mij terecht, nergens anders.</p>
-        <label class="lbl" for="naam">Voornaam</label>
-        <input type="text" id="naam" placeholder="Je voornaam">
-        <p class="err" id="err3">Vul je voornaam in.</p>
-        <div class="fnav"><button class="btn btn-line" onclick="prev(3)">Terug</button><button class="btn btn-gold" onclick="submitForm()">Verstuur via WhatsApp</button></div>
-        <p class="muted" style="font-size:13px;margin-top:18px">Je antwoorden worden in een WhatsApp-bericht gezet dat jij zelf verstuurt. Niets wordt opgeslagen.</p>
-      </div>
+<div class="fstep" data-step="3">
+  <h3>Hoe mag ik je bereiken?</h3>
+  <p class="fs-sub">Je aanvraag komt rechtstreeks bij mij terecht, nergens anders.</p>
+  <label class="lbl" for="naam">Voornaam</label>
+  <input type="text" id="naam" placeholder="Je voornaam">
+  <label class="lbl" for="gsm">GSM-nummer</label>
+  <input type="tel" id="gsm" placeholder="Voor mijn antwoord via WhatsApp">
+  <label class="lbl" for="mail">E-mailadres (mag, hoeft niet)</label>
+  <input type="text" id="mail" placeholder="Als je liever mailt">
+  <p class="err" id="err3">Vul je voornaam en GSM-nummer in.</p>
+  <div class="fnav"><button class="btn btn-line" onclick="prev(3)">Terug</button><button class="btn btn-gold" onclick="submitForm()">Versturen</button></div>
+  <p class="muted" style="font-size:13px;margin-top:18px">Je antwoorden komen rechtstreeks bij mij binnen, zodat ik je gericht kan antwoorden.</p>
+</div>
 
     </div>
   </div>
@@ -596,8 +609,10 @@ function next(n){
 function prev(n){show(n-1)}
 function submitForm(){
   const naam=document.getElementById('naam').value.trim();
+  const gsm=document.getElementById('gsm').value.trim();
+  const mail=document.getElementById('mail').value.trim();
   const err=document.getElementById('err3');
-  if(!naam){err.style.display='block';return}
+  if(!naam||!gsm){err.style.display='block';return}
   err.style.display='none';
   const doel=document.querySelector('input[name=doel]:checked').value;
   const tijd=document.querySelector('input[name=tijd]:checked').value;
@@ -609,6 +624,8 @@ function submitForm(){
       access_key:'1e5d097e-18ee-4510-b17d-9607ca50d692',
       subject:'Nieuwe aanvraag via contactformulier',
       naam:naam,
+      gsm:gsm,
+      email:mail,
       doel:doel,
       beschikbare_tijd:tijd
     })
