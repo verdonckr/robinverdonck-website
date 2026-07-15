@@ -798,13 +798,13 @@ function toonStatus(type, tekst){
 // Aanmaken (1 minuut, geen account nodig): https://web3forms.com/
 // Vul je e-mailadres in, je krijgt de key meteen toegestuurd.
 // ============================================================
-const WEB3FORMS_ACCESS_KEY = "VUL_HIER_JE_ACCESS_KEY_IN";
+const WEB3FORMS_ACCESS_KEY = "1e5d097e-18ee-4510-b17d-9607ca50d692";
 
 async function verstuur(){
   const naamKlant = document.getElementById('naam').value.trim();
   if(!naamKlant){ alert('Vul minstens je naam in.'); return; }
 
-  if(WEB3FORMS_ACCESS_KEY === "VUL_HIER_JE_ACCESS_KEY_IN"){
+  if(WEB3FORMS_ACCESS_KEY === "1e5d097e-18ee-4510-b17d-9607ca50d692"){
     toonStatus('fout', 'Nog niet actief: Robin moet eerst zijn gratis Web3Forms access key invullen in de code.');
     return;
   }
