@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="nl">
 <head>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
@@ -19,10 +18,8 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-YQPNEP9SLS');
 </script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Voedingsschema-generator — Robin Verdonck Coaching</title>
@@ -54,6 +51,7 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
 .sub{display:flex;justify-content:space-between;padding:6px 0 2px;font-size:12.5px;color:var(--grijs);font-weight:700}
 .totaal{display:flex;justify-content:space-between;padding:12px 0 2px;font-weight:800;font-size:15px}
 .recept{font-size:12.5px;color:var(--grijs);font-style:italic;padding:7px 0 2px}
+.gekookt{color:var(--grijs);font-weight:600}
 .uitleg{font-size:13px;color:var(--grijs);border-left:3px solid var(--gold);padding:6px 0 6px 14px;margin:14px 0;line-height:1.6}
 .eigenrij{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:13.5px;gap:8px}
 .res{display:none}
@@ -63,6 +61,7 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   .card{border:1px solid #ddd;background:#fff}
   .geen-print{display:none}
   .item span:last-child{color:#1c1b18}
+  .gekookt{color:#777}
   .maaltijd,.sub{color:#b3934e}
   header h1 span{color:#b3934e}
   header p,.recept,.uitleg{color:#666}
@@ -72,7 +71,7 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
 <body>
 <header>
   <h1>VOEDINGSSCHEMA <span>GENERATOR</span></h1>
-  <p>Robin Verdonck Coaching — intern werkdocument</p>
+  <p>Robin Verdonck Coaching — intern werkdocument · update juli 2026</p>
 </header>
 <div class="wrap">
 
@@ -132,6 +131,24 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   <div id="eigenlijst" style="margin-top:10px"></div>
 </div>
 
+<div class="card geen-print">
+  <h2 style="margin-top:0">Eigen gerecht toevoegen</h2>
+  <p style="font-size:13px;color:var(--grijs)">Zet een volledig gerecht in de keuzelijst van een maaltijd (bv. het lievelingsgerecht van de klant). Vul de waarden in voor één portie zoals jij ze berekend hebt; de generator schaalt de portie mee met het caloriebudget. Blijft bewaard tot je het verwijdert.</p>
+  <div class="rij">
+    <div><label>Bij welke maaltijd</label><select id="g_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option></select></div>
+    <div><label>Naam gerecht</label><input type="text" id="g_naam" placeholder="bv. Vol-au-vent van oma"></div>
+  </div>
+  <label>Per portie: kcal · eiwit (g) · koolhydraten (g) · vetten (g)</label>
+  <div class="rij">
+    <input type="number" id="g_kcal" placeholder="kcal" inputmode="numeric">
+    <input type="number" id="g_p" placeholder="eiwit g" inputmode="decimal">
+    <input type="number" id="g_k" placeholder="kh g" inputmode="decimal">
+    <input type="number" id="g_v" placeholder="vet g" inputmode="decimal">
+  </div>
+  <button class="btn-lijn" onclick="gerechtToevoegen()">Toevoegen aan de keuzelijst</button>
+  <div id="gerechtlijst" style="margin-top:10px"></div>
+</div>
+
 <div class="res" id="uit">
   <div class="card" id="schema"></div>
   <div class="card">
@@ -149,736 +166,971 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
 
 </div>
 <script>
-// Per gram: kcal, p (eiwit), k (koolhydraten), v (vet). Standaard tabelwaarden.
+// Per gram: kcal, p (eiwit), k (koolhydraten), v (vet). Standaard tabelwaarden. Recept zit bij elk gerecht (o.recept).
 const MAALTIJDEN=[
 {naam:"Ontbijt",opties:[
- {label:"Ontbijt overslaan (intermittent fasting)",items:[]},
- {label:"Proats: brinta of havermout met whey",items:[
-  {n:"Brinta of havermout",kcal:3.6,p:0.10,k:0.70,v:0.02,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Maiswafels of cracotten met hüttenkäse",items:[
-  {n:"Maiswafels of cracotten",kcal:3.8,p:0.08,k:0.80,v:0.02,basis:40,schaal:"kh",per:{g:10,label:"stuks"}},
-  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief of kipfilet-beleg"},
-  {n:"Tomaat of komkommer",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Havermout met melk en banaan",items:[
+ {label:"Ontbijt overslaan (intermittent fasting)",
+  recept:"Geen ontbijt: je eet binnen een venster van ongeveer 8 uur, bijvoorbeeld van 12u tot 20u. Zwarte koffie, thee en water mogen 's ochtends gewoon. De andere maaltijden zijn automatisch groter gemaakt zodat je dagtotaal en je eiwit kloppen. Werkt alleen als het bij je leven past; het is een hulpmiddel, geen wondermiddel.",
+  items:[
+]},
+ {label:"Havermout met melk en banaan",
+  recept:"Breng de melk aan de kook, roer de havermout erdoor en laat 3-4 minuten zachtjes koken. Snijd de banaan erover. Kaneel mag altijd.",
+  items:[
   {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:80,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
   {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:200,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Toast met eieren",items:[
-  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Sinaasappel",kcal:0.47,p:0.009,k:0.09,v:0.001,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Griekse yoghurt met muesli",items:[
-  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
-  {n:"Muesli (ongezoet)",kcal:3.75,p:0.10,k:0.60,v:0.08,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije muesli"},
-  {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:100,schaal:"vast",stap:50}]},
- {label:"Smoothie met havermout en eiwitpoeder",items:[
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Proats: brinta of havermout met whey",
+  recept:"Roer de brinta of havermout door de warme melk tot papdikte. Laat even afkoelen en roer dan pas de whey erdoor (anders klontert het). Banaan erover.",
+  items:[
+  {n:"Brinta of havermout",kcal:3.6,p:0.1,k:0.7,v:0.02,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Smoothie met havermout en eiwitpoeder",
+  recept:"Alles samen in de blender en 30 seconden mixen. Te dik? Scheutje water of extra melk erbij.",
+  items:[
   {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:300,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
   {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:40,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"}]},
- {label:"Brood met kaas",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Notenpasta i.p.v. kaas (+extra kip bij de lunch)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"}]},
+ {label:"Choco-banaansmoothie met kwark",
+  recept:"Alles in de blender, 30 seconden mixen. Smaakt als een dessert, telt als een eiwitontbijt.",
+  items:[
+  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"},
+  {n:"Cacaopoeder (puur)",kcal:3.5,p:0.2,k:0.1,v:0.14,basis:5,schaal:"vast",stap:5},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:15,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
+ {label:"Ontbijtsmoothie met spinazie",
+  recept:"Alles in de blender: je proeft de spinazie niet, de banaan wint. Groener kan je ontbijt niet ogen.",
+  items:[
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Verse spinazie",kcal:0.23,p:0.029,k:0.014,v:0.004,basis:50,schaal:"vast",stap:25},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:30,schaal:"kh",stap:10,gv:"Glutenvrije havermout"}]},
+ {label:"Eiwitrijke chiapudding",
+  recept:"Meng chiazaad, melk en whey, zet een nacht in de frigo. 's Ochtends fruit erop en klaar. Maak er meteen twee of drie potjes van.",
+  items:[
+  {n:"Chiazaad",kcal:4.86,p:0.17,k:0.08,v:0.31,basis:25,schaal:"vet",stap:5},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:200,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Skyr bowl met pindakaaspoeder",
+  recept:"Skyr in een kom, pindakaaspoeder erdoor roeren (of erover), banaan en muesli erop. Smaakt als dessert, telt als eiwitbom.",
+  items:[
+  {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
+  {n:"Pindakaaspoeder (PB2)",kcal:3.9,p:0.5,k:0.2,v:0.07,basis:15,schaal:"eiwit",stap:5},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"},
+  {n:"Muesli (ongezoet)",kcal:3.75,p:0.1,k:0.6,v:0.08,basis:20,schaal:"kh",stap:10,gv:"Glutenvrije muesli"}]},
+ {label:"Rijstebrij van basmatirijst",
+  recept:"Kook de rijst 25 minuten zachtjes in de melk, roer regelmatig. Van het vuur de whey erdoor, kaneel erover. Ouderwets en verrassend eiwitrijk.",
+  items:[
+  {n:"Basmatirijst (ongekookt)",kcal:3.5,p:0.075,k:0.76,v:0.01,basis:60,schaal:"kh",stap:10},
+  {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:400,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit (erdoor)",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Bruine suiker en kaneel",kcal:4,p:0,k:1,v:0,basis:10,schaal:"kh",stap:5}]},
+ {label:"Griekse yoghurt met muesli",
+  recept:"Schep de yoghurt in een kom, strooi de muesli en bessen erover. Klaar in één minuut.",
+  items:[
+  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
+  {n:"Muesli (ongezoet)",kcal:3.75,p:0.1,k:0.6,v:0.08,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije muesli"},
+  {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Griekse yoghurt met honing en walnoten",
+  recept:"Yoghurt in een kom, honing erover lepelen, walnoten grof breken erbij.",
+  items:[
+  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:200,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
+  {n:"Honing",kcal:3,p:0,k:0.82,v:0,basis:15,schaal:"kh",stap:5},
+  {n:"Walnoten",kcal:6.5,p:0.15,k:0.07,v:0.65,basis:15,schaal:"vet",stap:5}]},
+ {label:"Appel-kaneel ovenhavermout",
+  recept:"Meng havermout, ei, melk, appelblokjes en kaneel in een ovenschaaltje. 20 minuten op 180°C. Warm ontbijt dat je koud kan meenemen.",
+  items:[
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:100,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Appel (in blokjes)",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Rozijnen en kaneel",kcal:3,p:0.025,k:0.7,v:0.005,basis:15,schaal:"kh",stap:5}]},
+ {label:"Ovengebakken havermout (baked oats)",
+  recept:"Mix havermout, ei, melk en whey, giet in een schaaltje, bessen erop, 20 minuten op 180°C. Smaakt als cake, telt als havermout.",
+  items:[
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:100,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:75,schaal:"vast",stap:25}]},
+ {label:"Boterhammen met plattekaas en fruit",
+  recept:"Besmeer het brood dun met de plattekaas of schep ze in een kom met het fruit erbij.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Plattekaas (mager)",kcal:0.55,p:0.1,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"},
+  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"Brood met kaas",
+  recept:"Beleg het brood met de kaas. Appel ernaast, of in partjes erop.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Notenpasta i.p.v. kaas (+extra kip bij de lunch)"},
   {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Boterhammen met confituur en ei",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.60,basis:10,schaal:"vet",stap:5},
-  {n:"Confituur",kcal:2.5,p:0.005,k:0.60,v:0,basis:30,schaal:"kh",stap:10},
-  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}}]},
- {label:"Cornflakes met melk en banaan",items:[
+ {label:"Boterhammen met confituur en ei",
+  recept:"Smeer het brood, confituur erop. Kook het ei 7 minuten voor zachtgekookt, 9 voor hard.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.6,basis:10,schaal:"vet",stap:5},
+  {n:"Confituur",kcal:2.5,p:0.005,k:0.6,v:0,basis:30,schaal:"kh",stap:10},
+  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}}]},
+ {label:"Toast met eieren",
+  recept:"Rooster het brood. Bak de eieren in een pan met antiaanbaklaag als spiegelei, of klop ze los voor roerei. Peper en zout, sinaasappel ernaast.",
+  items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Sinaasappel",kcal:0.47,p:0.009,k:0.09,v:0.001,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Gepocheerd ei met avocadotoast",
+  recept:"Pocheer de eieren 3 minuten in zacht kokend water met een scheut azijn. Avocado prakken op de toast, eieren erop, peper en chilivlokken.",
+  items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
+  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Volkoren wentelteefjes",
+  recept:"Klop ei met melk en kaneel, haal het brood erdoor en bak goudbruin in een hete pan. Restjesbrood wordt weekendontbijt.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:50,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Bruine suiker en kaneel",kcal:4,p:0,k:1,v:0,basis:10,schaal:"kh",stap:5}]},
+ {label:"Crackers met kaas en tomaat",
+  recept:"Crackers beleggen met kaas en plakjes tomaat. Peper erover.",
+  items:[
+  {n:"Volkoren crackers",kcal:3.9,p:0.1,k:0.65,v:0.08,basis:60,schaal:"kh",per:{"g":20,"label":"crackers"},gv:"Glutenvrije crackers"},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Hummus i.p.v. kaas"},
+  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Maiswafels of cracotten met hüttenkäse",
+  recept:"Beleg de maiswafels of cracotten met hüttenkäse, tomaat of komkommer erop, peper en zout. Klaar in twee minuten.",
+  items:[
+  {n:"Maiswafels of cracotten",kcal:3.8,p:0.08,k:0.8,v:0.02,basis:40,schaal:"kh",per:{"g":10,"label":"stuks"}},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief of kipfilet-beleg"},
+  {n:"Tomaat of komkommer",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Maiswafels met kipfilet of cottage cheese",
+  recept:"Beleg de wafels met kipfilet of hüttenkäse, komkommer erop. Het hartige zusje van de zoete wafel-ontbijten.",
+  items:[
+  {n:"Maiswafels of cracotten",kcal:3.8,p:0.08,k:0.8,v:0.02,basis:40,schaal:"kh",per:{"g":10,"label":"stuks"}},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:60,schaal:"eiwit",stap:20},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:100,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Extra kipfilet i.p.v. hüttenkäse"},
+  {n:"Komkommer",kcal:0.15,p:0.007,k:0.02,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Knäckebröd met beleg naar keuze",
+  recept:"Beleg het knäckebröd met smeerkaas en kipfilet, of hüttenkäse en tomaat. Krokant, licht en klaar in twee minuten.",
+  items:[
+  {n:"Knäckebröd",kcal:3.5,p:0.1,k:0.65,v:0.05,basis:45,schaal:"kh",per:{"g":15,"label":"stuks"},gv:"Glutenvrij knäckebröd"},
+  {n:"Zuivelspread licht",kcal:1.5,p:0.09,k:0.04,v:0.11,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije variant",melk:"Hummus"},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:60,schaal:"eiwit",stap:20},
+  {n:"Komkommer of tomaat",kcal:0.18,p:0.008,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Cornflakes met melk en banaan",
+  recept:"Cornflakes in een kom, melk erover, banaan in plakjes erbij. Klaar in één minuut.",
+  items:[
   {n:"Cornflakes (naturel)",kcal:3.8,p:0.07,k:0.84,v:0.008,basis:50,schaal:"kh",stap:10,gv:"Glutenvrije cornflakes"},
   {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Boterhammen met plattekaas en fruit",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Plattekaas (mager)",kcal:0.55,p:0.10,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"},
-  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50}]},
- {label:"Pannenkoeken",items:[
-  {n:"Pannenkoeken",kcal:2.2,p:0.06,k:0.28,v:0.09,basis:160,schaal:"kh",per:{g:80,label:"pannenkoeken"},gv:"Met glutenvrije bloem",melk:"Beslag met sojadrink"},
-  {n:"Bruine suiker",kcal:4.0,p:0,k:1.0,v:0,basis:10,schaal:"kh",stap:5},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Spiegeleieren met spek",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Ontbijtspek",kcal:3.0,p:0.15,k:0,v:0.27,basis:30,schaal:"vet",stap:10}]},
- {label:"Griekse yoghurt met honing en walnoten",items:[
-  {n:"Griekse yoghurt",kcal:0.97,p:0.09,k:0.04,v:0.05,basis:200,schaal:"eiwit",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief yoghurt"},
-  {n:"Honing",kcal:3.0,p:0,k:0.82,v:0,basis:15,schaal:"kh",stap:5},
-  {n:"Walnoten",kcal:6.5,p:0.15,k:0.07,v:0.65,basis:15,schaal:"vet",stap:5}]},
- {label:"Crackers met kaas en tomaat",items:[
-  {n:"Volkoren crackers",kcal:3.9,p:0.10,k:0.65,v:0.08,basis:60,schaal:"kh",per:{g:20,label:"crackers"},gv:"Glutenvrije crackers"},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas (wordt meestal verdragen)",melk:"Hummus i.p.v. kaas"},
-  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Choco-banaansmoothie met kwark",items:[
-  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"},
-  {n:"Cacaopoeder (puur)",kcal:3.5,p:0.20,k:0.10,v:0.14,basis:5,schaal:"vast",stap:5},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:15,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
- {label:"Omelet met champignons",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Omelet met champignons",
+  recept:"Champignons en ui bakken in de olie, losgeklopte eieren erover en laten stollen. Peper en zout.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
   {n:"Champignons en ui",kcal:0.3,p:0.03,k:0.03,v:0.003,basis:150,schaal:"vast",stap:50},
   {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Hüttenkäse pannenkoekjes",items:[
-  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief of extra havermout"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Havermeel",kcal:3.7,p:0.135,k:0.60,v:0.07,basis:40,schaal:"kh",stap:10,gv:"Glutenvrij havermeel"}]},
- {label:"Appel-kaneel ovenhavermout",items:[
-  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Appel (geraspt)",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Rozijnen",kcal:3.0,p:0.03,k:0.79,v:0.005,basis:20,schaal:"kh",stap:10},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:150,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"}]},
- {label:"Breakfast burrito",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Mager rundsgehakt (restjes)",kcal:1.37,p:0.26,k:0,v:0.037,basis:60,schaal:"eiwit",stap:20},
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:40,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Salsa",kcal:0.35,p:0.01,k:0.07,v:0.001,basis:50,schaal:"vast",toon:"naar smaak"}]},
- {label:"Gepocheerd ei met avocadotoast",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:75,schaal:"vet",kwart:25},
-  {n:"Gepocheerd ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Chilivlokken",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Eiwitrijke chiapudding",items:[
-  {n:"Chiazaad",kcal:4.86,p:0.17,k:0.42,v:0.31,basis:30,schaal:"vet",stap:10},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:200,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Amandelmelk (ongezoet)"},
-  {n:"Whey-eiwit (vanille)",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
-  {n:"Rood fruit",kcal:0.4,p:0.008,k:0.08,v:0.003,basis:80,schaal:"vast",stap:40}]},
- {label:"Boerenomelet met hüttenkäse",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:80,schaal:"eiwit",stap:20,lac:"Lactosevrije hüttenkäse",melk:"Weglaten, extra ei"},
-  {n:"Groenten (restjes)",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",stap:50}]},
- {label:"Skyr bowl met pindakaaspoeder",items:[
-  {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
-  {n:"Ontvet pindakaaspoeder (PB2)",kcal:1.9,p:0.30,k:0.30,v:0.06,basis:20,schaal:"vet",stap:10},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:80,schaal:"vast",toon:"1 stuk"},
-  {n:"Cacaonibs",kcal:3.5,p:0.20,k:0.10,v:0.14,basis:10,schaal:"vast",stap:5}]},
- {label:"Volkoren wentelteefjes",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:80,schaal:"kh",stap:20,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Kaneel",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Ontbijtsmoothie met spinazie",items:[
-  {n:"Spinazie (vers)",kcal:0.23,p:0.03,k:0.036,v:0.004,basis:40,schaal:"vast",stap:20},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Diepvriesmango",kcal:0.6,p:0.008,k:0.15,v:0.004,basis:80,schaal:"vast",stap:40},
-  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:30,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:25,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
- {label:"Rijstebrij van basmatirijst",items:[
-  {n:"Basmatirijst (gekookt)",kcal:1.3,p:0.027,k:0.28,v:0.003,basis:200,schaal:"kh",stap:50},
-  {n:"Amandelmelk (ongezoet)",kcal:0.24,p:0.006,k:0.03,v:0.011,basis:150,schaal:"kh",stap:50,eenheid:"ml"},
-  {n:"Whey-eiwit (vanille)",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:25,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
-  {n:"Kaneel",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Eiwitrijke havermoutwaffels",items:[
+ {label:"Boerenomelet met hüttenkäse",
+  recept:"Bak de groenten, giet de losgeklopte eieren erover en laat stollen. Hüttenkäse er koud bovenop: romig zonder room.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Paprika, ui en champignons",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:100,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Weglaten"},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Gevulde omeletrol",
+  recept:"Bak een dunne omelet, besmeer met roomkaas, beleg met zalm en rucola en rol op. Koud in plakjes ook een prima lunch.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"},
+  {n:"Gerookte zalm",kcal:1.8,p:0.2,k:0,v:0.11,basis:50,schaal:"eiwit",stap:25,visAlt:{"n":"Gerookte kipfilet (beleg)","kcal":1.05,"p":0.22,"k":0.01,"v":0.015}},
+  {n:"Rucola",kcal:0.25,p:0.026,k:0.02,v:0.007,basis:30,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Shakshuka met brood",
+  recept:"Stoof paprika, ui en tomatenblokjes met komijn en paprikapoeder, maak kuiltjes en breek er de eieren in. Deksel erop tot ze gestold zijn, brood erbij om te dippen.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Tomatenblokjes, paprika en ui",kcal:0.32,p:0.013,k:0.05,v:0.002,basis:300,schaal:"vast",stap:50},
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Spiegeleieren met spek",
+  recept:"Bak het spek krokant, daarna de eieren in hetzelfde vet. Brood erbij.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Ontbijtspek",kcal:3,p:0.15,k:0,v:0.27,basis:30,schaal:"vet",stap:10}]},
+ {label:"Pannenkoeken",
+  recept:"Beslag: 100 g bloem, 250 ml melk en 1 ei per 4 pannenkoeken. Bak ze goudbruin in een hete pan. Weekendklassieker, ook voor de kinderen.",
+  items:[
+  {n:"Pannenkoeken",kcal:2.2,p:0.06,k:0.28,v:0.09,basis:160,schaal:"kh",per:{"g":80,"label":"pannenkoeken"},gv:"Met glutenvrije bloem",melk:"Beslag met sojadrink"},
+  {n:"Bruine suiker",kcal:4,p:0,k:1,v:0,basis:10,schaal:"kh",stap:5},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Hüttenkäse pannenkoekjes",
+  recept:"Mix ei, hüttenkäse en havermout tot beslag en bak kleine pannenkoekjes. Banaan erop. Eiwitrijk alternatief voor de klassieke pannenkoek.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:100,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief"},
   {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:50,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:80,schaal:"eiwit",stap:20,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
- {label:"Shakshuka met brood",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Tomatensaus met paprika en ui",kcal:0.45,p:0.015,k:0.07,v:0.015,basis:250,schaal:"vast",stap:50},
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"}]},
- {label:"Ovengebakken havermout (baked oats)",items:[
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"}]},
+ {label:"Eiwitrijke havermoutwaffels",
+  recept:"Mix havermout, ei, whey en banaan, bak in het wafelijzer. Vries de rest in: 30 seconden toaster en je hebt ontbijt.",
+  items:[
   {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:100,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"}]},
- {label:"Gevulde omeletrol",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:60,schaal:"eiwit",stap:20,lac:"Lactosevrije hüttenkäse",melk:"Weglaten, extra zalm"},
-  {n:"Gerookte zalm",kcal:1.8,p:0.20,k:0,v:0.11,basis:50,schaal:"eiwit",stap:25,visAlt:{n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015}},
-  {n:"Bieslook",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Maiswafels met kipfilet of cottage cheese",items:[
-  {n:"Maiswafels of cracotten",kcal:3.8,p:0.08,k:0.80,v:0.02,basis:40,schaal:"kh",per:{g:10,label:"stuks"}},
-  {n:"Kipfilet (gegaard) of hüttenkäse",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:25},
-  {n:"Tomaat",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Knäckebröd met beleg naar keuze",items:[
-  {n:"Knäckebröd",kcal:3.6,p:0.10,k:0.68,v:0.02,basis:30,schaal:"kh",per:{g:10,label:"stuks"}},
-  {n:"Kaas (jong belegen) of kipfilet",kcal:2.5,p:0.20,k:0.02,v:0.16,basis:60,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Kipfilet i.p.v. kaas"}]},
- {label:"Proats (klassiek)",items:[
-  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:60,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:200,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]}
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:50,schaal:"vast",toon:"1/2 stuk"}]},
+ {label:"Breakfast burrito",
+  recept:"Roerei bakken met paprika, in de wrap met kaas en een lepel salsa, oprollen en kort aanbakken. Stevige start, ook koud mee te nemen.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"},
+  {n:"Paprika en tomaat",kcal:0.28,p:0.012,k:0.045,v:0.002,basis:100,schaal:"vast",stap:50}]}
 ]},
 {naam:"Middagmaal",opties:[
- {label:"Brood met kipfilet en avocado",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+ {label:"Brood met kipbeleg",
+  recept:"Beleg het brood met de gerookte kip, tomaat en augurk. Klaar.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:80,schaal:"eiwit",stap:20},
+  {n:"Tomaat, augurk",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Boterhammen met gehaktbrood",
+  recept:"Beleg het brood met plakjes gehaktbrood, augurk en een likje mosterd.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gehaktbrood (beleg)",kcal:2.5,p:0.14,k:0.03,v:0.2,basis:60,schaal:"eiwit",stap:20},
+  {n:"Augurk, mosterd",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:50,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Brood met kipfilet en avocado",
+  recept:"Prak de avocado met peper en zout op het brood, beleg met de kipfilet, tomaat en sla. Mosterd naar smaak.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:120,schaal:"eiwit",stap:10},
   {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
   {n:"Tomaat, sla, mosterd",kcal:0.38,p:0.01,k:0.05,v:0.003,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Wraps met kip en hummus",items:[
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
-  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.20,basis:30,schaal:"vet",stap:10},
-  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Brood met tonijn",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:100,schaal:"eiwit",stap:50,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
+ {label:"Brood met tonijn",
+  recept:"Laat de tonijn goed uitlekken en meng met een lepel yoghurt of mosterd. Verdeel over het brood met de avocado en tomaat.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:100,schaal:"eiwit",stap:50,min:80,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
   {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
   {n:"Tomaat, sla",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Rijstsalade met kip",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:120,schaal:"eiwit",stap:10},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5},
-  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
- {label:"Brood met kipbeleg",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+ {label:"Ei- en avocadosalade op brood",
+  recept:"Prak de gekookte eieren met de avocado, peper en citroen. Op het brood, tomaat erbij. Romig zonder mayo.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gekookte eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
+  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Gerookte zalmsalade op toast",
+  recept:"Roomkaas op de geroosterde toast, zalm en komkommer erop, citroen erover. Voelt als luxe, klaar in vijf minuten.",
+  items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gerookte zalm",kcal:1.8,p:0.2,k:0,v:0.11,basis:75,schaal:"eiwit",stap:25,visAlt:{"n":"Gerookte kipfilet (beleg)","kcal":1.05,"p":0.22,"k":0.01,"v":0.015}},
+  {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"},
+  {n:"Komkommer en sla",kcal:0.15,p:0.008,k:0.02,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Geroosterd brood met hummus en kip",
+  recept:"Hummus royaal op het geroosterde brood, kip en tomaat erop, peper erover. Simpel en verrassend vullend.",
+  items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.2,basis:40,schaal:"vet",stap:10},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
+  {n:"Tomaat",kcal:0.22,p:0.009,k:0.035,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Boterham met kaas",
+  recept:"Boterhammen smeren, kaas erop, tomaat ertussen als je wil. Stuk fruit erbij. De simpelste lunch die bestaat.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Kipfilet-beleg i.p.v. kaas"},
+  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Croque monsieur (2 stuks)",
+  recept:"Beleg twee sneden met hesp en kaas, dek af, bak goudbruin in een pan met wat margarine of in het croque-ijzer.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gekookte hesp",kcal:1.1,p:0.2,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Extra hesp i.p.v. kaas"},
+  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.6,basis:10,schaal:"vet",stap:5}]},
+ {label:"Uitsmijter met kaas en ham",
+  recept:"Beleg het brood met ham en kaas, bak de eieren als spiegelei en schuif ze erbovenop. Cafeklassieker, gewoon doorgerekend.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Gekookte hesp",kcal:1.1,p:0.2,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:30,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Club sandwich deluxe",
+  recept:"Drie sneden geroosterd brood, ertussen kip, krokant spek, ei, tomaat en sla met een dun laagje lichte mayo. In vieren snijden en vastprikken.",
+  items:[
+  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
   {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:80,schaal:"eiwit",stap:20},
-  {n:"Tomaat, augurk",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Soep met boterhammen",items:[
-  {n:"Groentesoep",kcal:0.35,p:0.015,k:0.05,v:0.01,basis:400,schaal:"vast",stap:100,eenheid:"ml"},
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:60,schaal:"eiwit",stap:20},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:20,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
- {label:"Croque monsieur (2 stuks)",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Gekookte hesp",kcal:1.1,p:0.20,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:40,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Extra hesp i.p.v. kaas"},
-  {n:"Smeerbare margarine",kcal:5.4,p:0,k:0,v:0.60,basis:10,schaal:"vet",stap:5}]},
- {label:"Omelet met brood",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Ontbijtspek",kcal:3,p:0.15,k:0,v:0.27,basis:15,schaal:"vet",stap:5},
+  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Lichte mayonaise",kcal:3.7,p:0.01,k:0.08,v:0.36,basis:15,schaal:"vet",stap:5},
+  {n:"Tomaat en sla",kcal:0.2,p:0.01,k:0.03,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Omelet met brood",
+  recept:"Klop de eieren los met peper en zout, bak de groenten kort mee in de olie en giet de eieren erover. Brood erbij.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
   {n:"Groenten naar keuze (tomaat, champignons, paprika)",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"},
   {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Pastasalade met pesto en kip",items:[
-  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije pasta",cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
+ {label:"Wraps met kip en hummus",
+  recept:"Besmeer de wraps met hummus, verdeel de kip en groenten erover en rol op. Kort in een grillpan maakt ze extra lekker.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
-  {n:"Groene pesto",kcal:4.5,p:0.05,k:0.06,v:0.45,basis:20,schaal:"vet",stap:10,melk:"Pesto zonder kaas (of tapenade)"},
-  {n:"Kerstomaatjes, rucola",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Wrap met gerookte zalm",items:[
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Gerookte zalm",kcal:1.8,p:0.20,k:0,v:0.11,basis:75,schaal:"eiwit",stap:25,visAlt:{n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015}},
+  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.2,basis:30,schaal:"vet",stap:10},
+  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Wrap met gerookte zalm",
+  recept:"Besmeer de wrap met roomkaas, beleg met zalm, sla en komkommer, rol op.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Gerookte zalm",kcal:1.8,p:0.2,k:0,v:0.11,basis:75,schaal:"eiwit",stap:25,visAlt:{"n":"Gerookte kipfilet (beleg)","kcal":1.05,"p":0.22,"k":0.01,"v":0.015}},
   {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"},
   {n:"Sla, komkommer",kcal:0.15,p:0.01,k:0.02,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Slaatje met ei, tonijn en aardappel",items:[
-  {n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:200,schaal:"kh",stap:50},
-  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:80,schaal:"eiwit",stap:40,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Boontjes, tomaat",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50},
-  {n:"Olijfolie (dressing)",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
- {label:"Brooddoos voor de werf (geen koeling of microgolf nodig)",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:150,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:25,schaal:"vet",stap:5},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Whey-eiwit (shaker met water)",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
-  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
- {label:"Boterhammen met gehaktbrood",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Gehaktbrood (beleg)",kcal:2.5,p:0.14,k:0.03,v:0.20,basis:60,schaal:"eiwit",stap:20},
-  {n:"Augurk, mosterd",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:50,schaal:"vast",toon:"naar smaak"}]},
- {label:"Maaltijdsalade met kip en kwarkdressing",items:[
+ {label:"Tonijnsalade wraps",
+  recept:"Meng de uitgelekte tonijn met de yoghurt, peper en een beetje mosterd. In de wraps met de groenten, oprollen.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:100,schaal:"eiwit",stap:50,min:80,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Magere yoghurt (dressing)",kcal:0.6,p:0.05,k:0.07,v:0.01,basis:50,schaal:"vast",stap:50,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief"},
+  {n:"Sla, tomaat, komkommer",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Griekse kipsalade wraps",
+  recept:"Yoghurt met knoflook en komkommer als tzatziki, kip en feta in de wraps, oprollen. Vakantie in een brooddoos.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
+  {n:"Tzatziki van magere yoghurt",kcal:0.6,p:0.05,k:0.05,v:0.02,basis:50,schaal:"vast",stap:50,lac:"Op lactosevrije yoghurt",melk:"Hummus i.p.v. tzatziki"},
+  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:30,schaal:"vet",stap:10,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten"},
+  {n:"Tomaat en komkommer",kcal:0.18,p:0.008,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Omeletwrap met rookvlees",
+  recept:"Bak een dunne omelet als 'wrap', besmeer met roomkaas, beleg met rookvlees en rucola en rol op. Koolhydraatarm en verrassend vullend.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Rookvlees",kcal:1.15,p:0.24,k:0.005,v:0.02,basis:40,schaal:"eiwit",stap:20},
+  {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:20,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Weglaten"},
+  {n:"Rucola",kcal:0.25,p:0.026,k:0.02,v:0.007,basis:30,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Veggie wrap met hummus en falafel",
+  recept:"Warm de falafel kort op, besmeer de wraps met hummus en vul met falafel en groenten. Vegetarische lunch die ook koud meekan in de brooddoos.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Falafel",kcal:3,p:0.13,k:0.3,v:0.15,basis:100,schaal:"eiwit",stap:25,gv:"Check het etiket (meestal glutenvrij)"},
+  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.2,basis:40,schaal:"vet",stap:10},
+  {n:"Sla, tomaat, komkommer",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Maaltijdsalade met kip en kwarkdressing",
+  recept:"Meng de sla, komkommer en tomaatjes met de kip. Roer knoflook door de kwark als dressing, amandelen erover, boterham erbij.",
+  items:[
   {n:"Sla, komkommer, kerstomaatjes",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:200,schaal:"vast",stap:50},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:150,schaal:"eiwit",stap:10},
   {n:"Magere kwark met knoflook (dressing)",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:50,schaal:"vast",stap:50,lac:"Lactosevrije kwark",melk:"Sojayoghurt met knoflook"},
   {n:"Geroosterde amandelen",kcal:6.2,p:0.21,k:0.07,v:0.53,basis:15,schaal:"vet",stap:5},
-  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood"}]},
- {label:"Kip-pastasalade",items:[
-  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:130,schaal:"eiwit",stap:10},
-  {n:"Komkommer en kerstomaatjes",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:150,schaal:"vast",stap:50},
-  {n:"Lichte dressing",kcal:2.5,p:0.01,k:0.05,v:0.24,basis:15,schaal:"vet",stap:5}]},
- {label:"Rijkgevulde groentesoep met balletjes",items:[
-  {n:"Groentesoep met linzen",kcal:0.45,p:0.03,k:0.06,v:0.01,basis:400,schaal:"vast",stap:100,eenheid:"ml"},
-  {n:"Magere rundergehaktballetjes",kcal:1.37,p:0.26,k:0,v:0.037,basis:120,schaal:"eiwit",stap:25},
-  {n:"Bruin brood erbij",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood"}]},
- {label:"Club sandwich deluxe",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood"}]},
+ {label:"Slaatje met ei, tonijn en aardappel",
+  recept:"Kook de aardappelen en het ei. Meng met de uitgelekte tonijn, boontjes en tomaat, dressing erover.",
+  items:[
+  {n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:200,schaal:"kh",stap:50},
+  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:80,schaal:"eiwit",stap:40,min:80,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Boontjes, tomaat",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie (dressing)",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Rijstsalade met kip",
+  recept:"Kook de rijst en laat afkoelen (of gebruik de rest van gisteren). Meng met de kip, rauwkost en olijfolie. Peper, zout en wat citroen.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:120,schaal:"eiwit",stap:10},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5},
+  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
+ {label:"Pastasalade met pesto en kip",
+  recept:"Kook de pasta en laat afkoelen. Meng met de pesto, kip en tomaatjes. Ideaal om 's avonds al te maken voor de lunchbox.",
+  items:[
+  {n:"Volkoren pasta (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije pasta",cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
-  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Mager spek of kalkoenspek",kcal:1.5,p:0.20,k:0,v:0.08,basis:30,schaal:"vet",stap:10}]},
- {label:"Tonijnsalade wraps",items:[
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Tonijn in water (uitgelekt)",kcal:1.16,p:0.26,k:0,v:0.01,basis:100,schaal:"eiwit",stap:50,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Mais",kcal:0.86,p:0.032,k:0.19,v:0.012,basis:50,schaal:"vast",stap:25},
-  {n:"Augurk en lichte zuivelspread",kcal:1.2,p:0.05,k:0.05,v:0.09,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije spread",melk:"Weglaten"}]},
- {label:"Couscous met gegrilde groenten en feta",items:[
-  {n:"Couscous (ongekookt)",kcal:3.76,p:0.126,k:0.77,v:0.006,basis:70,schaal:"kh",stap:10,gv:"Quinoa i.p.v. couscous"},
-  {n:"Kikkererwten (uitgelekt)",kcal:1.64,p:0.09,k:0.27,v:0.03,basis:100,schaal:"eiwit",stap:25},
-  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:40,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen",melk:"Weglaten, extra kikkererwten"},
-  {n:"Gegrilde courgette en munt",kcal:0.25,p:0.015,k:0.03,v:0.002,basis:150,schaal:"vast",stap:50}]},
- {label:"Uitsmijter met kaas en ham",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Gekookte hesp",kcal:1.1,p:0.20,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:30,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten, extra hesp"}]},
- {label:"Quinoasalade met feta",items:[
-  {n:"Quinoa (ongekookt)",kcal:3.68,p:0.14,k:0.64,v:0.06,basis:60,schaal:"kh",stap:10},
-  {n:"Zwarte bonen (uitgelekt)",kcal:1.32,p:0.089,k:0.24,v:0.005,basis:100,schaal:"eiwit",stap:25},
+  {n:"Groene pesto",kcal:4.5,p:0.05,k:0.06,v:0.45,basis:20,schaal:"vet",stap:10,melk:"Pesto zonder kaas (of tapenade)"},
+  {n:"Kerstomaatjes, rucola",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Meal-prep bowl: kip, rijst en broccoli",
+  recept:"Dé fitnessklassieker. Kook rijst en broccoli, bak de kip met kruiden. Verdeel over bakjes voor meerdere dagen; olijfolie er pas bij het opwarmen over.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:150,schaal:"eiwit",stap:10},
+  {n:"Broccoli",kcal:0.35,p:0.03,k:0.03,v:0.004,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Rijstsalade met ei",
+  recept:"Kook rijst en eieren, meng met erwtjes, mais en de yoghurtdressing. Koud op zijn best, dus ideaal om vooraf te maken.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Gekookte eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Erwtjes en mais",kcal:0.7,p:0.04,k:0.11,v:0.007,basis:100,schaal:"vast",stap:50},
+  {n:"Magere yoghurt (dressing)",kcal:0.6,p:0.05,k:0.07,v:0.01,basis:50,schaal:"vast",stap:50,lac:"Lactosevrije yoghurt",melk:"Olijfolie-dressing"}]},
+ {label:"Quinoasalade met feta",
+  recept:"Kook de quinoa en laat afkoelen. Meng met kikkererwten, komkommer, tomaat en feta, olijfolie en citroen erover.",
+  items:[
+  {n:"Quinoa (ongekookt)",gek:2.6,kcal:3.68,p:0.14,k:0.64,v:0.06,basis:60,schaal:"kh",stap:10},
+  {n:"Kikkererwten (uitgelekt)",kcal:1.39,p:0.08,k:0.17,v:0.025,basis:80,schaal:"kh",stap:40},
+  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:50,schaal:"vet",stap:10,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten, extra kikkererwten"},
+  {n:"Komkommer en tomaat",kcal:0.18,p:0.008,k:0.03,v:0.001,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Linzensalade met geitenkaas",
+  recept:"Meng de linzen met rucola, tomaat en verkruimelde geitenkaas, olijfolie en balsamico erover, brood erbij.",
+  items:[
+  {n:"Linzen (gekookt, uitgelekt)",kcal:1.16,p:0.09,k:0.17,v:0.004,basis:200,schaal:"eiwit",stap:50},
+  {n:"Geitenkaas (zacht)",kcal:2.6,p:0.18,k:0.02,v:0.2,basis:40,schaal:"vet",stap:20,lac:"Geitenkaas wordt vaak verdragen",melk:"Weglaten, extra linzen"},
+  {n:"Rucola en tomaat",kcal:0.22,p:0.015,k:0.03,v:0.003,basis:100,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood"}]},
+ {label:"Mexicaanse bonensalade met kip",
+  recept:"Meng de bonen, mais, paprika en ui met de kip, limoensap en wat komijn erover. Wordt beter naarmate hij langer staat.",
+  items:[
+  {n:"Kidneybonen (uitgelekt)",kcal:0.85,p:0.07,k:0.12,v:0.005,basis:150,schaal:"kh",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
+  {n:"Mais",kcal:0.8,p:0.03,k:0.15,v:0.01,basis:80,schaal:"vast",stap:40},
+  {n:"Paprika en ui",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:100,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Poke bowl met kip of tofu",
+  recept:"Rijst in de kom, kip (of tofu) met sojasaus erop, edamame, komkommer, wortel en avocado errond. Sesamzaadjes erover als je die hebt.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10},
+  {n:"Kipfilet of tofu",kcal:1.1,p:0.22,k:0.01,v:0.02,basis:120,schaal:"eiwit",stap:10},
+  {n:"Edamame",kcal:1.2,p:0.11,k:0.09,v:0.05,basis:80,schaal:"vast",stap:40},
+  {n:"Komkommer en wortel",kcal:0.25,p:0.01,k:0.04,v:0.001,basis:100,schaal:"vast",stap:50},
   {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
-  {n:"Feta en mais",kcal:2.3,p:0.10,k:0.11,v:0.15,basis:60,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen",melk:"Weglaten"}]},
- {label:"Hartige kip-groenten muffins",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
+  {n:"Sojasaus",kcal:0.7,p:0.06,k:0.1,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]},
+ {label:"Koude noedelsalade met pindadressing",
+  recept:"Kook de noedels en spoel koud. Dressing: pindakaas losroeren met sojasaus en warm water. Meng met kip en groenten. Aziatische brooddoos-topper.",
+  items:[
+  {n:"Noedels (ongekookt)",gek:2.4,kcal:3.5,p:0.12,k:0.68,v:0.02,basis:70,schaal:"kh",stap:10,gv:"Rijstnoedels"},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
-  {n:"Broccoli en paprika",kcal:0.3,p:0.025,k:0.05,v:0.003,basis:150,schaal:"vast",stap:50}]},
- {label:"Geroosterd brood met hummus en kip",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Hummus",kcal:2.66,p:0.08,k:0.12,v:0.20,basis:40,schaal:"vet",stap:10},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:100,schaal:"eiwit",stap:10},
-  {n:"Kiemgroenten",kcal:0.2,p:0.02,k:0.02,v:0.002,basis:20,schaal:"vast",toon:"naar smaak"}]},
- {label:"Rijstsalade met ei",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Doperwten en wortel",kcal:0.6,p:0.045,k:0.10,v:0.003,basis:100,schaal:"vast",stap:50},
-  {n:"Magere yoghurtdressing",kcal:0.6,p:0.04,k:0.05,v:0.02,basis:40,schaal:"vast",stap:20,lac:"Lactosevrije yoghurt",melk:"Soja-alternatief"}]},
- {label:"Griekse kipsalade wraps",items:[
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:130,schaal:"eiwit",stap:10},
-  {n:"Komkommer, tomaat, rode ui",kcal:0.2,p:0.01,k:0.03,v:0.001,basis:100,schaal:"vast",toon:"naar smaak"},
-  {n:"Tzatziki (light)",kcal:0.7,p:0.04,k:0.03,v:0.05,basis:40,schaal:"vet",stap:20,lac:"Lactosevrije tzatziki",melk:"Weglaten"}]},
- {label:"Linzensalade met geitenkaas",items:[
-  {n:"Linzen (blik, uitgelekt)",kcal:1.16,p:0.09,k:0.20,v:0.004,basis:150,schaal:"kh",stap:50},
-  {n:"Geitenkaas",kcal:3.6,p:0.21,k:0.02,v:0.29,basis:35,schaal:"vet",stap:15,lac:"Geitenkaas wordt vaak verdragen",melk:"Weglaten, extra ham"},
-  {n:"Rode biet en rucola",kcal:0.35,p:0.014,k:0.07,v:0.001,basis:100,schaal:"vast",stap:50},
-  {n:"Magere hamreepjes",kcal:1.1,p:0.20,k:0.01,v:0.03,basis:40,schaal:"eiwit",stap:20}]},
- {label:"Mexicaanse bonensalade met kip",items:[
-  {n:"Kidneybonen en zwarte bonen (uitgelekt)",kcal:1.2,p:0.08,k:0.20,v:0.004,basis:150,schaal:"kh",stap:50},
-  {n:"Gerookte kipfilet",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:100,schaal:"eiwit",stap:20},
-  {n:"Paprika, mais, koriander",kcal:0.5,p:0.02,k:0.10,v:0.005,basis:100,schaal:"vast",stap:50}]},
- {label:"Gerookte zalmsalade op toast",items:[
-  {n:"Bruin brood (geroosterd)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Gerookte zalm",kcal:1.8,p:0.20,k:0,v:0.11,basis:75,schaal:"eiwit",stap:25,visAlt:{n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015}},
-  {n:"Magere kwark met dille en kappertjes",kcal:0.6,p:0.12,k:0.04,v:0.005,basis:60,schaal:"vast",stap:30,lac:"Lactosevrije kwark",melk:"Soja-alternatief"}]},
- {label:"Ei- en avocadosalade op brood",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Gekookte eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25},
-  {n:"Bieslook",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Zoete aardappel-linzensoep",items:[
-  {n:"Zoete aardappel en rode linzen (soep)",kcal:0.65,p:0.03,k:0.13,v:0.006,basis:400,schaal:"vast",stap:100,eenheid:"ml"},
-  {n:"Volkoren knoflookbrood",kcal:2.6,p:0.10,k:0.46,v:0.04,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood"}]},
- {label:"Kalkoen-courgette bootjes",items:[
-  {n:"Courgette",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:250,schaal:"vast",stap:50},
-  {n:"Kalkoengehakt",kcal:1.15,p:0.24,k:0,v:0.02,basis:150,schaal:"eiwit",stap:25},
-  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:100,schaal:"vast",stap:50}]},
- {label:"Poke bowl met kip of tofu",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:65,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet (gegaard) of tofu",kcal:1.1,p:0.23,k:0,v:0.015,basis:130,schaal:"eiwit",stap:10,melk:"Krokante tofu i.p.v. kip"},
-  {n:"Edamame",kcal:1.2,p:0.11,k:0.09,v:0.05,basis:60,schaal:"eiwit",stap:20},
-  {n:"Wortel, komkommer, zeewier",kcal:0.25,p:0.015,k:0.04,v:0.002,basis:100,schaal:"vast",stap:50}]},
- {label:"Omeletwrap met rookvlees",items:[
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Runderrookvlees",kcal:1.3,p:0.30,k:0.01,v:0.02,basis:50,schaal:"eiwit",stap:25},
-  {n:"Rucola",kcal:0.25,p:0.026,k:0.037,v:0.006,basis:30,schaal:"vast",stap:15}]},
- {label:"Koude noedelsalade met pindadressing",items:[
-  {n:"Volkoren noedels (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije noedels"},
-  {n:"Peultjes en wortel",kcal:0.35,p:0.025,k:0.06,v:0.002,basis:150,schaal:"vast",stap:50},
-  {n:"Pindakaas-sojadressing",kcal:5.5,p:0.20,k:0.15,v:0.42,basis:25,schaal:"vet",stap:10,gv:"Glutenvrije sojasaus (tamari)"}]},
- {label:"Boterham met kaas",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Kaas (jong belegen)",kcal:4.0,p:0.25,k:0,v:0.32,basis:50,schaal:"eiwit",stap:20,lac:"Harde gerijpte kaas",melk:"Hummus i.p.v. kaas"},
-  {n:"Tomaat, sla",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Boterham met kipfilet of kalkoen",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Kipfilet- of kalkoenbeleg",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:80,schaal:"eiwit",stap:20},
-  {n:"Groenten naar keuze",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Salade met kip of zalm",items:[
-  {n:"Gemengde sla",kcal:0.18,p:0.014,k:0.03,v:0.002,basis:150,schaal:"vast",stap:50},
-  {n:"Kipfilet (gegaard) of zalm",kcal:1.3,p:0.22,k:0,v:0.06,basis:150,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Olijfolie-dressing",kcal:9,p:0,k:0,v:1,basis:12,schaal:"vet",stap:6}]}
+  {n:"Pindakaas (100% pinda, dressing)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:25,schaal:"vet",stap:5},
+  {n:"Sojasaus",kcal:0.7,p:0.06,k:0.1,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"},
+  {n:"Komkommer en wortel (reepjes)",kcal:0.25,p:0.01,k:0.04,v:0.001,basis:150,schaal:"vast",stap:50}]},
+ {label:"Soep met boterhammen",
+  recept:"Warm de soep op (zelfgemaakt of een goeie uit de winkel). Boterhammen beleggen met kip en kaas.",
+  items:[
+  {n:"Groentesoep",kcal:0.35,p:0.015,k:0.05,v:0.01,basis:400,schaal:"vast",stap:100,eenheid:"ml"},
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:60,schaal:"eiwit",stap:20},
+  {n:"Kaas (jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:20,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Rijkgevulde groentesoep met balletjes (verzadigend)",
+  recept:"Warm de soep op en laat de balletjes de laatste 10 minuten meegaren. Grote kom, veel volume, veel eiwit.",
+  items:[
+  {n:"Groentesoep (rijk gevuld)",kcal:0.35,p:0.015,k:0.05,v:0.01,basis:500,schaal:"vast",stap:100,eenheid:"ml"},
+  {n:"Magere soepballetjes (rund)",kcal:1.6,p:0.2,k:0.03,v:0.08,basis:120,schaal:"eiwit",stap:25},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"}]},
+ {label:"Zoete aardappel-linzensoep (vegetarisch, verzadigend)",
+  recept:"Stoof de ui en wortel aan, voeg de zoete aardappel, linzen en bouillon toe en laat 20 minuten koken.",
+  items:[
+  {n:"Zoete aardappel (in de soep)",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:200,schaal:"kh",stap:50},
+  {n:"Rode linzen (droog)",gek:2.5,kcal:3.4,p:0.24,k:0.5,v:0.02,basis:60,schaal:"eiwit",stap:10},
+  {n:"Bouillon, ui, wortel en tomaat",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:300,schaal:"vast",stap:100},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"}]},
+ {label:"Hartige kip-groenten muffins",
+  recept:"Klop de eieren los, meng met kipgehakt, groenten en kaas, verdeel over een muffinvorm en bak 25 minuten op 180°C. Meal-prep die je koud uit de hand eet.",
+  items:[
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Kipgehakt",kcal:1.45,p:0.25,k:0,v:0.05,basis:100,schaal:"eiwit",stap:25},
+  {n:"Paprika, courgette en ui",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Kalkoen-courgette bootjes",
+  recept:"Halveer de courgettes en hol ze uit, vul met gebakken kalkoengehakt en tomatensaus, kaas erover en 20 minuten in de oven op 200°C. Brood erbij.",
+  items:[
+  {n:"Courgette",kcal:0.2,p:0.012,k:0.03,v:0.003,basis:300,schaal:"vast",stap:50},
+  {n:"Kalkoengehakt",kcal:1.35,p:0.24,k:0,v:0.045,basis:125,schaal:"eiwit",stap:25},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"},
+  {n:"Bruin brood (erbij)",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:30,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood"}]},
+ {label:"Couscous met gegrilde groenten en feta",
+  recept:"Kokend water op de couscous, 5 minuten afgedekt. Grill de groenten, meng alles, feta erover verkruimelen. Kikkererwten maken er een volwaardige maaltijd van.",
+  items:[
+  {n:"Couscous (ongekookt)",gek:2.5,kcal:3.6,p:0.13,k:0.72,v:0.01,basis:70,schaal:"kh",stap:10,gv:"Rijst of quinoa i.p.v. couscous"},
+  {n:"Kikkererwten (uitgelekt)",kcal:1.39,p:0.08,k:0.17,v:0.025,basis:100,schaal:"eiwit",stap:50},
+  {n:"Gegrilde groenten (courgette, paprika, aubergine)",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:60,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten, extra kikkererwten"},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Brooddoos voor de werf (geen koeling of microgolf nodig)",
+  recept:"'s Ochtends smeren, shaker met droog poeder mee, water vind je overal. Overleeft de hele voormiddag in een brooddoos zonder koeling. Alle andere boterham-lunches uit deze lijst zijn trouwens ook brooddoos-proof.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:150,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:25,schaal:"vet",stap:5},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Whey-eiwit (shaker met water)",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
+ {label:"Overschotjes-lunch (restje avondmaal van gisteren)",
+  recept:"Maak 's avonds bewust één portie extra en zet ze klaar in de frigo. Weeg ongeveer het aangegeven gewicht af en warm op. De cijfers zijn een richtwaarde op basis van de gemiddelde warme maaltijd uit deze lijst; ken je de exacte cijfers van het avondmaal, gebruik dan die.",
+  items:[
+  {n:"Restje warm avondmaal van gisteren",kcal:1.15,p:0.09,k:0.12,v:0.04,basis:400,schaal:"kh",stap:50},
+  {n:"Stuk fruit erbij",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"}]}
 ]},
 {naam:"Avondmaal",opties:[
- {label:"Rijst met kip en groenten",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
-  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
- {label:"Aardappelen met mager gehakt",items:[
+ {label:"Aardappelen met mager gehakt",
+  recept:"Kook de aardappelen 15-20 minuten. Bak het gehakt rul, voeg de groenten toe en laat kort meestoven. De olijfolie over de aardappelen.",
+  items:[
   {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
   {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
   {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
   {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Pasta met zalm",items:[
-  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
-  {n:"Zalm",kcal:2.08,p:0.20,k:0,v:0.14,basis:150,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Wraps met kipgehakt",items:[
-  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.50,v:0.07,basis:80,schaal:"kh",per:{g:40,label:"wraps"},gv:"Glutenvrije wraps"},
-  {n:"Kipgehakt",kcal:1.45,p:0.25,k:0,v:0.05,basis:150,schaal:"eiwit",stap:25},
-  {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Aardappelen met witvis",items:[
-  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
-  {n:"Kabeljauw of andere witvis",kcal:0.82,p:0.18,k:0,v:0.007,basis:200,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
-  {n:"Boter",kcal:7.2,p:0.006,k:0.006,v:0.81,basis:10,schaal:"vet",stap:5,melk:"Olijfolie i.p.v. boter"}]},
- {label:"Spaghetti bolognese",items:[
-  {n:"Volkoren spaghetti (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije spaghetti"},
-  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+ {label:"Balletjes in tomatensaus met aardappelen",
+  recept:"Rol balletjes van het gehakt en bak ze rondom bruin. Passata erbij en 10 minuten zachtjes garen. Aardappelen koken, groenten stomen. Klassieker die iedereen aan tafel meeëet.",
+  items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Rundsballetjes (mager)",kcal:1.6,p:0.2,k:0.03,v:0.08,basis:150,schaal:"eiwit",stap:25},
   {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Ui, wortel, selder in de saus",kcal:0.35,p:0.012,k:0.06,v:0.002,basis:150,schaal:"vast",stap:50},
-  {n:"Parmezaan",kcal:4.0,p:0.35,k:0,v:0.28,basis:15,schaal:"vet",stap:5,lac:"Oude parmezaan wordt meestal verdragen",melk:"Weglaten"}]},
- {label:"Ovenpatatjes met kipfilet",items:[
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
+ {label:"Ovenpatatjes met kipfilet",
+  recept:"Snijd de aardappelen in partjes, meng met de olijfolie, peper, zout en paprikapoeder. 35 minuten in de oven op 200°C, halfweg omscheppen. Kip kruiden en bakken, groenten erbij.",
+  items:[
   {n:"Aardappelen (in partjes)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
   {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
   {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
   {n:"Olijfolie (voor de oven)",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
- {label:"Zoete aardappel met kip",items:[
-  {n:"Zoete aardappel",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
-  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Kip curry met rijst",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
-  {n:"Kokosmelk light + currypasta",kcal:0.73,p:0.005,k:0.03,v:0.065,basis:100,schaal:"vet",stap:50},
-  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Balletjes in tomatensaus met aardappelen",items:[
+ {label:"Vol-au-vent met rijst (magere versie)",
+  recept:"Kook de rijst. Bak de kip en champignons, maak een lichte saus van melk met maïszetmeel en een blokje kippenbouillon en roer alles erdoor. Smaakt als de klassieker van de traiteur, met een fractie van de calorieën.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet in blokjes (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Champignons",kcal:0.25,p:0.03,k:0.01,v:0.003,basis:150,schaal:"vast",stap:50},
+  {n:"Lichte saus op melkbasis (gebonden met maïszetmeel)",kcal:0.85,p:0.035,k:0.08,v:0.04,basis:150,schaal:"vast",stap:50,lac:"Saus op lactosevrije melk",melk:"Saus op kippenbouillon, gebonden met maïszetmeel"}]},
+ {label:"Stoemp met spekjes (magere versie)",
+  recept:"Kook de aardappelen samen met de wortel en boontjes en stamp alles samen met de melk. Bak de spekjes en het spiegelei. Vlaamser wordt het niet, en het past gewoon in je schema.",
+  items:[
   {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Rundsballetjes (mager)",kcal:1.6,p:0.20,k:0.03,v:0.08,basis:150,schaal:"eiwit",stap:25},
-  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:150,schaal:"vast",stap:50}]},
- {label:"Bloemkoolrijst met kip (licht en veel)",items:[
-  {n:"Bloemkoolrijst",kcal:0.25,p:0.02,k:0.03,v:0.003,basis:350,schaal:"vast",stap:50},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
-  {n:"Zilvervliesrijst (ongekookt, gemengd erdoor)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:40,schaal:"kh",stap:10,min:30},
-  {n:"Rozijnen en amandelen",kcal:4.5,p:0.09,k:0.45,v:0.20,basis:20,schaal:"vet",stap:10},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Pesto kip met spinazie en feta (koolhydraatarm)",items:[
-  {n:"Spinazie en champignons",kcal:0.28,p:0.025,k:0.02,v:0.004,basis:250,schaal:"vast",stap:50},
-  {n:"Kipdijfilet",kcal:1.6,p:0.19,k:0,v:0.09,basis:150,schaal:"eiwit",stap:25},
-  {n:"Rode pesto",kcal:4.0,p:0.04,k:0.08,v:0.38,basis:15,schaal:"vet",stap:5,melk:"Pesto zonder kaas"},
-  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:40,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten, extra kip"}]},
- {label:"Chili con carne met rijst",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
-  {n:"Kidneybonen (uitgelekt)",kcal:0.85,p:0.07,k:0.12,v:0.005,basis:120,schaal:"kh",stap:40},
-  {n:"Tomatenblokjes, paprika, ui",kcal:0.32,p:0.013,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50}]},
- {label:"Huisgemaakte hamburgers",items:[
-  {n:"Hamburgerbroodjes (volkoren)",kcal:2.6,p:0.10,k:0.46,v:0.04,basis:100,schaal:"kh",per:{g:50,label:"broodjes"},gv:"Glutenvrije broodjes"},
+  {n:"Wortel en boontjes (door de stoemp)",kcal:0.35,p:0.02,k:0.05,v:0.003,basis:250,schaal:"vast",stap:50},
+  {n:"Magere spekblokjes",kcal:2.2,p:0.17,k:0,v:0.16,basis:75,schaal:"eiwit",stap:25},
+  {n:"Spiegelei erop",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Scheutje melk (in de stoemp)",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:50,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Weglaten of ongezoete sojadrink"}]},
+ {label:"Biefstuk met groenten en aardappel",
+  recept:"Bak de biefstuk 2-3 minuten per kant in de boter en laat 5 minuten rusten onder folie. Aardappelen koken, groenten stomen of roerbakken. Simpel, snel en het hele gezin eet mee.",
+  items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Biefstuk (mager rund)",kcal:1.3,p:0.215,k:0,v:0.05,basis:175,schaal:"eiwit",stap:25},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Boter (om te bakken)",kcal:7.2,p:0.006,k:0.006,v:0.81,basis:10,schaal:"vet",stap:5,melk:"Olijfolie i.p.v. boter"}]},
+ {label:"Zoete aardappelfriet met biefstuk en salade",
+  recept:"Snijd de zoete aardappel in frieten, meng met olijfolie, peper en paprikapoeder en bak 25-30 minuten in de oven op 200°C. Biefstuk 2-3 minuten per kant, grote salade ernaast. Gewone aardappel als ovenfriet mag ook: zelfde gewicht.",
+  items:[
+  {n:"Zoete aardappel (ovenfrieten)",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Biefstuk (mager rund)",kcal:1.3,p:0.215,k:0,v:0.05,basis:175,schaal:"eiwit",stap:25},
+  {n:"Grote salade (sla, tomaat, komkommer)",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie (frieten en dressing)",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
+ {label:"Zelfgemaakte hamburger met zoete aardappelfriet",
+  recept:"Kneed burgers van het gehakt, bak 4-5 minuten per kant. Zoete aardappelfrieten 25-30 minuten in de oven op 200°C. Frietjesdag zonder frituur.",
+  items:[
+  {n:"Hamburgerbroodje (volkoren)",kcal:2.6,p:0.1,k:0.46,v:0.04,basis:50,schaal:"kh",per:{"g":50,"label":"broodjes"},gv:"Glutenvrij broodje"},
+  {n:"Mager rundsgehakt (burgers)",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
+  {n:"Zoete aardappel (ovenfrieten)",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:250,schaal:"kh",stap:50},
+  {n:"Sla, tomaat en augurk",kcal:0.2,p:0.01,k:0.03,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"},
+  {n:"Saus (ketchup/mosterd)",kcal:1.2,p:0.01,k:0.25,v:0.01,basis:20,schaal:"vast",stap:10}]},
+ {label:"Huisgemaakte hamburgers",
+  recept:"Kneed burgers van het gehakt met peper en zout, bak 4-5 minuten per kant. Broodje, sla, tomaat, augurk, saus. Gezinsklassieker die gewoon in je schema past.",
+  items:[
+  {n:"Hamburgerbroodjes (volkoren)",kcal:2.6,p:0.1,k:0.46,v:0.04,basis:100,schaal:"kh",per:{"g":50,"label":"broodjes"},gv:"Glutenvrije broodjes"},
   {n:"Mager rundsgehakt (burgers)",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
   {n:"Sla, tomaat, augurk, ui",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"},
   {n:"Saus (ketchup/mosterd)",kcal:1.2,p:0.01,k:0.25,v:0.01,basis:20,schaal:"vast",stap:10}]},
- {label:"Roerbakrijst met ei en groenten (vegetarisch)",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{g:50,label:"eieren"}},
+ {label:"Kippendijen met stoofgroenten (verzadigend)",
+  recept:"Bak de kippendijen goudbruin, stoofgroenten en bouillon erbij, 25 minuten stoven. Aardappelen erbij koken.",
+  items:[
+  {n:"Kippendijfilet",kcal:1.6,p:0.19,k:0,v:0.09,basis:200,schaal:"eiwit",stap:25},
+  {n:"Stoofgroenten (wortel, prei, ui, selder)",kcal:0.35,p:0.015,k:0.05,v:0.003,basis:350,schaal:"vast",stap:50},
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:250,schaal:"kh",stap:50}]},
+ {label:"Hele kip uit de oven met wortelgroenten",
+  recept:"Kip met de groenten en aardappelen in één ovenschaal, olijfolie en kruiden erover, 60-75 minuten op 190°C. Zondagsklassieker; weeg jouw portie vlees zonder vel.",
+  items:[
+  {n:"Kip uit de oven (zonder vel, gegaard)",kcal:1.65,p:0.25,k:0,v:0.07,basis:200,schaal:"eiwit",stap:25},
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Wortel, pastinaak en ui",kcal:0.4,p:0.012,k:0.07,v:0.003,basis:300,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Kalkoenfilet met groenten",
+  recept:"Bak de kalkoenfilet in wat olie, aardappelen koken, groenten stomen. Magerder dan kip en net zo veelzijdig.",
+  items:[
+  {n:"Kalkoenfilet",kcal:1.05,p:0.24,k:0,v:0.01,basis:180,schaal:"eiwit",stap:20},
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Mager varkenshaasje met groenten",
+  recept:"Bak het haasje rondom bruin en laat 10 minuten nagaren in de pan of oven. Aardappelen en boontjes erbij. Het magerste stukje varken dat er is.",
+  items:[
+  {n:"Varkenshaasje",kcal:1.2,p:0.22,k:0,v:0.035,basis:175,schaal:"eiwit",stap:25},
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Boontjes en wortel",kcal:0.35,p:0.02,k:0.05,v:0.003,basis:250,schaal:"vast",stap:50},
+  {n:"Boter (om te bakken)",kcal:7.2,p:0.006,k:0.006,v:0.81,basis:10,schaal:"vet",stap:5,melk:"Olijfolie i.p.v. boter"}]},
+ {label:"Spaghetti bolognese",
+  recept:"Bak het gehakt rul, voeg de fijngesneden ui, wortel en selder toe en stoof 5 minuten mee. Passata erbij, 15 minuten laten pruttelen. Kook intussen de spaghetti. Parmezaan erover aan tafel.",
+  items:[
+  {n:"Volkoren spaghetti (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije spaghetti"},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Ui, wortel, selder in de saus",kcal:0.35,p:0.012,k:0.06,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Parmezaan",kcal:4,p:0.35,k:0,v:0.28,basis:15,schaal:"vet",stap:5,lac:"Oude parmezaan wordt meestal verdragen",melk:"Weglaten"}]},
+ {label:"Macaroni met hesp en kaas",
+  recept:"Kook de macaroni. Maak een lichte kaassaus van de melk, maïszetmeel en de geraspte kaas, meng met de hesp en de erwtjes. Dé kindklassieker, gewoon doorgerekend.",
+  items:[
+  {n:"Volkoren macaroni (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije macaroni"},
+  {n:"Gekookte hesp (blokjes)",kcal:1.1,p:0.2,k:0.01,v:0.03,basis:100,schaal:"eiwit",stap:25},
+  {n:"Kaas (geraspt, jong belegen)",kcal:4,p:0.25,k:0,v:0.32,basis:30,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten, extra hesp"},
+  {n:"Erwtjes of broccoli",kcal:0.4,p:0.03,k:0.06,v:0.003,basis:150,schaal:"vast",stap:50},
+  {n:"Halfvolle melk (voor de saus)",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:150,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Kippenbouillon i.p.v. melksaus"}]},
+ {label:"Lasagne",
+  recept:"Bak het gehakt rul en meng met de passata. Laagjes maken: saus, bladen, bechamel, herhalen. Kaas erover en 35 minuten in de oven op 180°C. Maak er gerust twee: lasagne invriezen werkt perfect.",
+  items:[
+  {n:"Lasagnebladen (ongekookt)",kcal:3.6,p:0.13,k:0.7,v:0.015,basis:75,schaal:"kh",stap:15,gv:"Glutenvrije lasagnebladen"},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Lichte bechamel (melk + maïszetmeel)",kcal:0.85,p:0.035,k:0.08,v:0.04,basis:150,schaal:"vast",stap:50,lac:"Op lactosevrije melk",melk:"Op ongezoete sojadrink"},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Moussaka met vetarm gehakt",
+  recept:"Laagjes gebakken aubergine, gehakt in tomatensaus en aardappelschijfjes, lichte bechamel en kaas erover, 40 minuten op 180°C.",
+  items:[
+  {n:"Aubergine",kcal:0.25,p:0.01,k:0.03,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
+  {n:"Aardappelen (schijfjes)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:200,schaal:"kh",stap:50},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Lichte bechamel (melk + maïszetmeel)",kcal:0.85,p:0.035,k:0.08,v:0.04,basis:150,schaal:"vast",stap:50,lac:"Op lactosevrije melk",melk:"Op ongezoete sojadrink"},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Pasta met zalm",
+  recept:"Kook de pasta. Bak de zalm 3-4 minuten per kant. Roerbak de groenten, meng alles door elkaar en knijp er citroen over.",
+  items:[
+  {n:"Volkoren pasta (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
+  {n:"Zalm",kcal:2.08,p:0.2,k:0,v:0.14,basis:150,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
+ {label:"Pasta pesto met garnalen",
+  recept:"Kook de pasta, bak de garnalen 2-3 minuten met knoflook, meng met pesto, spinazie en tomaatjes. Klaar in een kwartier.",
+  items:[
+  {n:"Volkoren pasta (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
+  {n:"Garnalen",kcal:0.99,p:0.21,k:0,v:0.01,basis:150,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Groene pesto",kcal:4.5,p:0.05,k:0.06,v:0.45,basis:20,schaal:"vet",stap:10,melk:"Pesto zonder kaas"},
+  {n:"Spinazie en kerstomaatjes",kcal:0.25,p:0.02,k:0.03,v:0.003,basis:150,schaal:"vast",stap:50}]},
+ {label:"Pasta met linzenbolognese (vegetarisch)",
+  recept:"Bak de ui, wortel en selder, voeg de linzen en passata toe en laat 10 minuten pruttelen met Italiaanse kruiden. Smaakt zo dicht bij bolognese dat kinderen het verschil amper proeven. Linzen leveren minder eiwit dan vlees: check het dagtotaal onderaan.",
+  items:[
+  {n:"Volkoren pasta (ongekookt)",gek:2.4,kcal:3.5,p:0.13,k:0.62,v:0.025,basis:90,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
+  {n:"Linzen (gekookt, uitgelekt)",kcal:1.16,p:0.09,k:0.17,v:0.004,basis:200,schaal:"eiwit",stap:50},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Ui, wortel, selder in de saus",kcal:0.35,p:0.012,k:0.06,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Parmezaan",kcal:4,p:0.35,k:0,v:0.28,basis:15,schaal:"vet",stap:5,lac:"Oude parmezaan wordt meestal verdragen",melk:"Weglaten of edelgistvlokken"}]},
+ {label:"Volkoren lasagne met spinazie",
+  recept:"Als de gewone lasagne, maar met een dikke laag gesmoorde spinazie door de saus. Groente verstopt waar kinderen ze niet vinden.",
+  items:[
+  {n:"Volkoren lasagnebladen (ongekookt)",kcal:3.6,p:0.13,k:0.7,v:0.015,basis:75,schaal:"kh",stap:15,gv:"Glutenvrije lasagnebladen"},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Spinazie (gesmoord)",kcal:0.25,p:0.028,k:0.015,v:0.004,basis:200,schaal:"vast",stap:50},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Lichte bechamel (melk + maïszetmeel)",kcal:0.85,p:0.035,k:0.08,v:0.04,basis:150,schaal:"vast",stap:50,lac:"Op lactosevrije melk",melk:"Op ongezoete sojadrink"},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Rijst met kip en groenten",
+  recept:"Kook de rijst volgens de verpakking. Kruid de kip en bak 6-7 minuten per kant in de olijfolie tot gaar. Roerbak de groenten in dezelfde pan en kruid af naar smaak.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
+ {label:"Kip curry met rijst",
+  recept:"Bak de kip aan, voeg de wokgroenten toe en roerbak kort. Kokosmelk en currypasta erbij, 5 minuten zachtjes laten koken. Serveer over de rijst.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Kokosmelk light + currypasta",kcal:0.73,p:0.005,k:0.03,v:0.065,basis:100,schaal:"vet",stap:50},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
+ {label:"Kip tandoori met rijst",
+  recept:"Marineer de kip minstens een uur in yoghurt met tandoorikruiden, bak of grill. Rijst en groenten erbij. De yoghurt maakt de kip botermals.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Magere yoghurt (marinade)",kcal:0.6,p:0.05,k:0.07,v:0.01,basis:75,schaal:"vast",stap:25,lac:"Lactosevrije yoghurt",melk:"Sojayoghurt (ongezoet)"},
+  {n:"Bloemkool en erwten",kcal:0.4,p:0.03,k:0.05,v:0.003,basis:200,schaal:"vast",stap:50}]},
+ {label:"Kip marengo met rijst",
+  recept:"Stoof de kip met champignons, tomaat en ui in een scheut bouillon, 20 minuten zachtjes. Rijst erbij. Klassieker uit de Vlaamse keuken.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Champignons, tomaat en ui",kcal:0.3,p:0.018,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Chili con carne met rijst",
+  recept:"Bak het gehakt rul met ui en paprika, voeg tomatenblokjes, bonen en chilikruiden toe en laat 15 minuten pruttelen. Rijst erbij. Wordt de volgende dag alleen maar beter.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:125,schaal:"eiwit",stap:25},
+  {n:"Kidneybonen (uitgelekt)",kcal:0.85,p:0.07,k:0.12,v:0.005,basis:120,schaal:"kh",stap:40},
+  {n:"Tomatenblokjes, paprika, ui",kcal:0.32,p:0.013,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50}]},
+ {label:"Mexicaanse burrito bowl (verzadigend)",
+  recept:"Kook de rijst. Bak de kip met Mexicaanse kruiden, warm de bonen op. Alles in een kom.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:150,schaal:"eiwit",stap:10},
+  {n:"Zwarte bonen (uitgelekt)",kcal:0.9,p:0.06,k:0.14,v:0.005,basis:120,schaal:"kh",stap:40},
+  {n:"Mais, paprika en tomaat",kcal:0.5,p:0.02,k:0.09,v:0.005,basis:150,schaal:"vast",stap:50},
+  {n:"Avocado",kcal:2.4,p:0.02,k:0.02,v:0.22,basis:50,schaal:"vet",kwart:25}]},
+ {label:"Runderreepjes stir-fry",
+  recept:"Wok de rundsreepjes kort op hoog vuur, haal ze eruit, wok de groenten, alles samen met de sojasaus en noedels erdoor.",
+  items:[
+  {n:"Noedels (ongekookt)",gek:2.4,kcal:3.5,p:0.12,k:0.68,v:0.02,basis:70,schaal:"kh",stap:10,gv:"Rijstnoedels"},
+  {n:"Rundsreepjes (mager)",kcal:1.35,p:0.26,k:0,v:0.035,basis:150,schaal:"eiwit",stap:25},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Sojasaus",kcal:0.7,p:0.06,k:0.1,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"},
+  {n:"Sesamolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Kalkoen stir-fry met cashewnoten",
+  recept:"Zelfde aanpak als de runder-stir-fry maar met kalkoen en een handje cashews op het einde. Mager vlees, krokante noten.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:70,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Kalkoenfilet (reepjes)",kcal:1.05,p:0.24,k:0,v:0.01,basis:175,schaal:"eiwit",stap:25},
   {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
   {n:"Cashewnoten",kcal:5.9,p:0.18,k:0.27,v:0.44,basis:20,schaal:"vet",stap:10},
-  {n:"Ketjap of sojasaus",kcal:0.7,p:0.06,k:0.10,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]},
- {label:"Mexicaanse burrito bowl",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
-  {n:"Bonen en mais",kcal:1.0,p:0.06,k:0.19,v:0.008,basis:100,schaal:"eiwit",stap:50},
-  {n:"Sla en salsa",kcal:0.3,p:0.01,k:0.05,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]},
- {label:"Traybake zalm met zoete aardappel",items:[
-  {n:"Zoete aardappel",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Zalm",kcal:2.08,p:0.20,k:0,v:0.14,basis:150,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Broccoli",kcal:0.3,p:0.028,k:0.05,v:0.003,basis:200,schaal:"vast",stap:50}]},
- {label:"Kip tandoori met rijst",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet in tandoorikruiden",kcal:1.15,p:0.23,k:0.01,v:0.02,basis:180,schaal:"eiwit",stap:10},
-  {n:"Snijbonen",kcal:0.3,p:0.02,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Runderreepjes stir-fry",items:[
-  {n:"Volkoren noedels (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:80,schaal:"kh",stap:10,gv:"Glutenvrije noedels"},
-  {n:"Runderreepjes (mager)",kcal:1.3,p:0.27,k:0,v:0.03,basis:160,schaal:"eiwit",stap:25},
-  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Witte vis met puree",items:[
-  {n:"Aardappelpuree",kcal:0.9,p:0.02,k:0.18,v:0.02,basis:300,schaal:"kh",stap:50},
-  {n:"Kabeljauw of tilapia",kcal:0.82,p:0.18,k:0,v:0.007,basis:200,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Worteltjes",kcal:0.35,p:0.008,k:0.08,v:0.002,basis:150,schaal:"vast",stap:50}]},
- {label:"Volkorenpizza zelfgemaakt",items:[
-  {n:"Volkorenpizzadeeg",kcal:2.4,p:0.09,k:0.46,v:0.02,basis:150,schaal:"kh",stap:25,gv:"Glutenvrij pizzadeeg"},
-  {n:"Tomatensaus",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:80,schaal:"vast",stap:20},
-  {n:"Magere mozzarella",kcal:2.5,p:0.22,k:0.02,v:0.17,basis:70,schaal:"eiwit",stap:20,lac:"Lactosevrije kaasalternatief",melk:"Extra kip i.p.v. kaas"},
-  {n:"Kipfilet of ham en groenten",kcal:1.1,p:0.22,k:0.01,v:0.02,basis:100,schaal:"eiwit",stap:20}]},
- {label:"Gevulde paprika's",items:[
-  {n:"Paprika's",kcal:0.31,p:0.01,k:0.06,v:0.003,basis:200,schaal:"vast",stap:50},
-  {n:"Mager gehakt of tartaar",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:50,schaal:"kh",stap:10},
-  {n:"Tomatenblokjes",kcal:0.3,p:0.012,k:0.05,v:0.002,basis:100,schaal:"vast",stap:50}]},
- {label:"Kippendijen met stoofgroenten",items:[
-  {n:"Kippendijfilet",kcal:1.6,p:0.19,k:0,v:0.09,basis:180,schaal:"eiwit",stap:25},
-  {n:"Pompoen, courgette",kcal:0.3,p:0.014,k:0.06,v:0.003,basis:250,schaal:"vast",stap:50},
-  {n:"Krieltjes",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:200,schaal:"kh",stap:50}]},
- {label:"Moussaka met vetarm gehakt",items:[
-  {n:"Aubergine en aardappel",kcal:0.5,p:0.015,k:0.10,v:0.003,basis:300,schaal:"kh",stap:50},
-  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
-  {n:"Lichte yoghurtsaus",kcal:0.7,p:0.05,k:0.05,v:0.03,basis:80,schaal:"vast",stap:40,lac:"Lactosevrije yoghurt",melk:"Sojayoghurt"}]},
- {label:"Kip marengo met rijst",items:[
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{n:"Aardappelen (gekookt)",kcal:0.87,p:0.02,k:0.19,v:0.001,stap:50}},
-  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
-  {n:"Tomaten-champignonsaus met ui",kcal:0.35,p:0.02,k:0.05,v:0.01,basis:200,schaal:"vast",stap:50}]},
- {label:"Gegrilde witvis mediterraans",items:[
-  {n:"Kabeljauw of schelvis",kcal:0.82,p:0.18,k:0,v:0.007,basis:200,schaal:"eiwit",stap:25,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Cherrytomaten, olijven, courgette",kcal:0.5,p:0.01,k:0.06,v:0.04,basis:200,schaal:"vast",stap:50},
-  {n:"Krieltjes",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:250,schaal:"kh",stap:50}]},
- {label:"Marokkaanse couscous met rundvlees",items:[
-  {n:"Couscous (ongekookt)",kcal:3.76,p:0.126,k:0.77,v:0.006,basis:80,schaal:"kh",stap:10},
-  {n:"Runderreepjes (mager)",kcal:1.3,p:0.27,k:0,v:0.03,basis:150,schaal:"eiwit",stap:25},
-  {n:"Rozijnen, courgette, kikkererwten",kcal:0.9,p:0.04,k:0.16,v:0.005,basis:150,schaal:"vast",stap:50}]},
- {label:"Kalkoen stir-fry met cashewnoten",items:[
-  {n:"Kalkoenfilet (blokjes)",kcal:1.15,p:0.24,k:0,v:0.02,basis:180,schaal:"eiwit",stap:25},
-  {n:"Broccoli en paprika",kcal:0.3,p:0.025,k:0.05,v:0.003,basis:200,schaal:"vast",stap:50},
-  {n:"Cashewnoten",kcal:5.9,p:0.18,k:0.27,v:0.44,basis:20,schaal:"vet",stap:10},
-  {n:"Milde sojasaus",kcal:0.7,p:0.06,k:0.10,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]},
- {label:"Volkoren lasagne met spinazie",items:[
-  {n:"Volkoren lasagnebladen",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:70,schaal:"kh",stap:10,gv:"Glutenvrije lasagnebladen"},
-  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
-  {n:"Spinazie (veel)",kcal:0.23,p:0.03,k:0.036,v:0.004,basis:150,schaal:"vast",stap:50},
-  {n:"Ricotta (i.p.v. bechamel)",kcal:1.74,p:0.09,k:0.03,v:0.13,basis:60,schaal:"vet",stap:20,lac:"Lactosevrije ricotta-alternatief",melk:"Weglaten, extra spinazie"}]},
- {label:"Zalmburgers met zoete aardappelfriet",items:[
-  {n:"Zoete aardappel (frietjes)",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Zelfgemaakte zalmburger",kcal:2.0,p:0.19,k:0.02,v:0.13,basis:160,schaal:"eiwit",stap:20,visAlt:{n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015}},
-  {n:"Volkoren broodje",kcal:2.6,p:0.10,k:0.46,v:0.04,basis:50,schaal:"kh",per:{g:50,label:"broodjes"},gv:"Glutenvrij broodje"}]},
- {label:"Chili con carne (of sin carne)",items:[
-  {n:"Mager rundsgehakt of vega-gehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25,melk:"Vega-gehakt of extra bonen i.p.v. rundsgehakt"},
-  {n:"Kidneybonen",kcal:0.85,p:0.07,k:0.12,v:0.005,basis:150,schaal:"kh",stap:50},
-  {n:"Paprika, tomatenpuree",kcal:0.35,p:0.015,k:0.06,v:0.002,basis:200,schaal:"vast",stap:50},
-  {n:"Zilvervliesrijst (ongekookt)",kcal:3.5,p:0.075,k:0.74,v:0.025,basis:60,schaal:"kh",stap:10}]},
- {label:"Hele kip uit de oven met wortelgroenten",items:[
-  {n:"Kipfilet of -bout (ovengegaard)",kcal:1.3,p:0.24,k:0,v:0.04,basis:200,schaal:"eiwit",stap:25},
-  {n:"Pastinaak, wortel, pompoen",kcal:0.45,p:0.012,k:0.09,v:0.003,basis:250,schaal:"vast",stap:50},
-  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
- {label:"Pasta pesto met garnalen",items:[
-  {n:"Volkoren pasta (ongekookt)",kcal:3.5,p:0.13,k:0.62,v:0.025,basis:80,schaal:"kh",stap:10,gv:"Glutenvrije pasta"},
-  {n:"Garnalen",kcal:0.99,p:0.24,k:0.002,v:0.003,basis:180,schaal:"eiwit",stap:25},
-  {n:"Groene pesto",kcal:4.5,p:0.05,k:0.06,v:0.45,basis:20,schaal:"vet",stap:10,melk:"Pesto zonder kaas"},
-  {n:"Spinazie",kcal:0.23,p:0.03,k:0.036,v:0.004,basis:100,schaal:"vast",stap:50}]},
- {label:"Biefstuk met groenten en aardappel",items:[
-  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Biefstuk",kcal:1.5,p:0.28,k:0,v:0.04,basis:180,schaal:"eiwit",stap:25},
+  {n:"Sojasaus",kcal:0.7,p:0.06,k:0.1,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]},
+ {label:"Wraps met kipgehakt",
+  recept:"Bak het kipgehakt rul met paprikapoeder en komijn, roerbak de groenten kort mee en vul de wraps.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:80,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Kipgehakt",kcal:1.45,p:0.25,k:0,v:0.05,basis:150,schaal:"eiwit",stap:25},
   {n:"Groenten naar keuze",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Fajita's met kipgehakt",
+  recept:"Bak het kipgehakt rul met fajitakruiden, roerbak de paprika en ui kort mee. Iedereen vult aan tafel zijn eigen wrap. Weeg jouw kipgehakt en kaas af, de rest is vrij.",
+  items:[
+  {n:"Volkoren wraps",kcal:2.9,p:0.09,k:0.5,v:0.07,basis:120,schaal:"kh",per:{"g":40,"label":"wraps"},gv:"Glutenvrije wraps"},
+  {n:"Kipgehakt",kcal:1.45,p:0.25,k:0,v:0.05,basis:150,schaal:"eiwit",stap:25},
+  {n:"Paprika en ui (reepjes)",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Guacamole i.p.v. kaas"},
+  {n:"Salsa of tomatenblokjes",kcal:0.4,p:0.015,k:0.07,v:0.002,basis:50,schaal:"vast",toon:"naar smaak"}]},
+ {label:"Volkorenpizza zelfgemaakt",
+  recept:"Volkoren bodem (kant-en-klaar of zelf), dun laagje passata, light mozzarella, kip of hesp en groenten. 12-15 minuten op 220°C. Pizza-avond die gewoon in je schema past.",
+  items:[
+  {n:"Volkoren pizzabodem",kcal:2.7,p:0.09,k:0.5,v:0.035,basis:150,schaal:"kh",stap:50,gv:"Glutenvrije pizzabodem"},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:100,schaal:"vast",stap:50},
+  {n:"Mozzarella light",kcal:1.6,p:0.2,k:0.02,v:0.085,basis:100,schaal:"eiwit",stap:25,lac:"Lactosevrije mozzarella",melk:"Weglaten, extra kip"},
+  {n:"Kipfilet of hesp (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015,basis:80,schaal:"eiwit",stap:20},
+  {n:"Paprika, champignons en ui",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:100,schaal:"vast",stap:50}]},
+ {label:"Couscous met kip en groenten",
+  recept:"Giet kokend water op de couscous en laat 5 minuten afgedekt staan. Bak de kip en roerbak de groenten met komijn en paprikapoeder. Alles mengen, klaar in een kwartier.",
+  items:[
+  {n:"Couscous (ongekookt)",gek:2.5,kcal:3.6,p:0.13,k:0.72,v:0.01,basis:80,schaal:"kh",stap:10,gv:"Rijst of quinoa i.p.v. couscous"},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Courgette, paprika en ui",kcal:0.3,p:0.015,k:0.05,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:10,schaal:"vet",stap:5}]},
+ {label:"Marokkaanse couscous met rundvlees",
+  recept:"Stoof het rundvlees zacht met wortel, ui en kikkererwten in bouillon met ras el hanout, rozijnen erbij. Couscous eronder. Zoet, hartig en één pot.",
+  items:[
+  {n:"Couscous (ongekookt)",gek:2.5,kcal:3.6,p:0.13,k:0.72,v:0.01,basis:80,schaal:"kh",stap:10,gv:"Rijst of quinoa i.p.v. couscous"},
+  {n:"Mager rundsvlees (blokjes)",kcal:1.3,p:0.26,k:0,v:0.03,basis:150,schaal:"eiwit",stap:25},
+  {n:"Wortel, ui en kikkererwten",kcal:0.55,p:0.03,k:0.09,v:0.008,basis:250,schaal:"vast",stap:50},
+  {n:"Rozijnen",kcal:3,p:0.025,k:0.7,v:0.005,basis:20,schaal:"kh",stap:10}]},
+ {label:"Gevulde paprika's met gehakt en rijst",
+  recept:"Snijd de paprika's overlangs open. Bak het gehakt rul, meng met de gekookte rijst en de helft van de saus, vul de paprika's. Rest van de saus en de kaas erover, 25 minuten in de oven op 200°C.",
+  items:[
+  {n:"Paprika's (om te vullen)",kcal:0.26,p:0.01,k:0.05,v:0.002,basis:300,schaal:"vast",per:{"g":150,"label":"paprika's"}},
+  {n:"Mager rundsgehakt",kcal:1.37,p:0.26,k:0,v:0.037,basis:150,schaal:"eiwit",stap:25},
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:60,schaal:"kh",stap:10},
+  {n:"Tomatensaus (passata)",kcal:0.35,p:0.014,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Kaas (geraspt)",kcal:4,p:0.25,k:0,v:0.32,basis:20,schaal:"vet",stap:10,lac:"Harde gerijpte kaas",melk:"Weglaten"}]},
+ {label:"Roerbakrijst met ei en groenten (vegetarisch)",
+  recept:"Klop de eieren los en bak als omelet, snijd in reepjes. Wok de groenten, gekookte rijst erbij, ei en cashews erdoor, ketjap naar smaak.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:90,schaal:"kh",stap:10,cutAlt:{"n":"Aardappelen (gekookt)","kcal":0.87,"p":0.02,"k":0.19,"v":0.001,"stap":50}},
+  {n:"Eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:150,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Cashewnoten",kcal:5.9,p:0.18,k:0.27,v:0.44,basis:20,schaal:"vet",stap:10},
+  {n:"Ketjap of sojasaus",kcal:0.7,p:0.06,k:0.1,v:0,basis:15,schaal:"vast",toon:"naar smaak",gv:"Glutenvrije sojasaus (tamari)"}]},
+ {label:"Curry met kikkererwten en rijst (vegetarisch)",
+  recept:"Bak de currypasta kort aan, voeg de kikkererwten, groenten en kokosmelk toe en laat 10 minuten sudderen. Serveer over de rijst. Wil de rest van het gezin vlees? Bak er apart kip bij, jouw portie blijft zoals ze is.",
+  items:[
+  {n:"Zilvervliesrijst (ongekookt)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:80,schaal:"kh",stap:10},
+  {n:"Kikkererwten (uitgelekt)",kcal:1.39,p:0.08,k:0.17,v:0.025,basis:200,schaal:"eiwit",stap:50},
+  {n:"Kokosmelk light + currypasta",kcal:0.73,p:0.005,k:0.03,v:0.065,basis:100,schaal:"vet",stap:50},
+  {n:"Wokgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50}]},
+ {label:"Aardappelen met witvis",
+  recept:"Kook de aardappelen. Bak de vis 3-4 minuten per kant in de boter, of gaar hem 15 minuten in de oven op 180°C. Groenten stomen of koken.",
+  items:[
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
+  {n:"Kabeljauw of andere witvis",kcal:0.82,p:0.18,k:0,v:0.007,basis:200,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:250,schaal:"vast",stap:50},
+  {n:"Boter",kcal:7.2,p:0.006,k:0.006,v:0.81,basis:10,schaal:"vet",stap:5,melk:"Olijfolie i.p.v. boter"}]},
+ {label:"Vispannetje met puree",
+  recept:"Kook de aardappelen en stamp met een scheutje melk. Gaar de vis met de groenten en de saus 20 minuten in een ovenschotel op 180°C. Mild van smaak, ook voor wie 'geen vis lust'.",
+  items:[
+  {n:"Aardappelen (voor puree)",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:350,schaal:"kh",stap:50},
+  {n:"Vismix (witvis en zalm)",kcal:1.3,p:0.19,k:0,v:0.06,basis:175,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Prei en wortel",kcal:0.35,p:0.015,k:0.05,v:0.003,basis:200,schaal:"vast",stap:50},
+  {n:"Lichte saus op melkbasis",kcal:0.85,p:0.035,k:0.08,v:0.04,basis:100,schaal:"vast",stap:50,lac:"Op lactosevrije melk",melk:"Op visbouillon, gebonden met maïszetmeel"}]},
+ {label:"Traybake zalm met zoete aardappel",
+  recept:"Alles op één ovenplaat: zoete aardappel eerst 15 minuten op 200°C, dan zalm en groenten erbij en nog 15 minuten. Eén plaat, nul afwas-stress.",
+  items:[
+  {n:"Zoete aardappel (blokjes)",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Zalm",kcal:2.08,p:0.2,k:0,v:0.14,basis:125,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Broccoli en paprika",kcal:0.32,p:0.025,k:0.04,v:0.003,basis:250,schaal:"vast",stap:50},
   {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
- {label:"Kalkoenfilet met groenten",items:[
-  {n:"Aardappelen of rijst",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:280,schaal:"kh",stap:50},
-  {n:"Kalkoenfilet",kcal:1.15,p:0.24,k:0,v:0.02,basis:180,schaal:"eiwit",stap:25},
-  {n:"Seizoensgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Mager varkenshaasje met groenten",items:[
-  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:280,schaal:"kh",stap:50},
-  {n:"Varkenshaasje",kcal:1.43,p:0.22,k:0,v:0.06,basis:180,schaal:"eiwit",stap:25},
-  {n:"Seizoensgroenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50}]},
- {label:"Zoete aardappelfriet met biefstuk en salade",items:[
-  {n:"Zoete aardappel (frietjes)",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Biefstuk",kcal:1.5,p:0.28,k:0,v:0.04,basis:170,schaal:"eiwit",stap:25},
-  {n:"Grote salade",kcal:0.25,p:0.015,k:0.03,v:0.003,basis:150,schaal:"vast",stap:50}]},
- {label:"Zelfgemaakte hamburger met zoete aardappelfriet",items:[
-  {n:"Zoete aardappel (frietjes)",kcal:0.86,p:0.016,k:0.20,v:0.001,basis:300,schaal:"kh",stap:50},
-  {n:"Rundergehakt (burgers)",kcal:1.37,p:0.26,k:0,v:0.037,basis:160,schaal:"eiwit",stap:25},
-  {n:"Hamburgerbroodje",kcal:2.6,p:0.10,k:0.46,v:0.04,basis:50,schaal:"kh",per:{g:50,label:"broodjes"},gv:"Glutenvrij broodje"},
-  {n:"Sla en groenten",kcal:0.25,p:0.01,k:0.04,v:0.002,basis:100,schaal:"vast",toon:"naar smaak"}]}
+ {label:"Gegrilde witvis mediterraans",
+  recept:"Gril de vis, serveer met aardappelen en gestoofde tomaat, courgette en olijven. Zomers bord met heel weinig calorieën per hap.",
+  items:[
+  {n:"Kabeljauw of andere witvis",kcal:0.82,p:0.18,k:0,v:0.007,basis:250,schaal:"eiwit",stap:25,visAlt:{"n":"Kipfilet (gegaard)","kcal":1.1,"p":0.23,"k":0,"v":0.015}},
+  {n:"Aardappelen",kcal:0.87,p:0.02,k:0.19,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Tomaat, courgette en olijven",kcal:0.45,p:0.012,k:0.04,v:0.025,basis:250,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Zalmburgers met zoete aardappelfriet",
+  recept:"Kant-en-klare zalmburgers of zelf gedraaid van zalmblokjes. Zoete aardappelfrieten in de oven, grote salade ernaast.",
+  items:[
+  {n:"Zalmburgers",kcal:1.9,p:0.19,k:0.03,v:0.12,basis:150,schaal:"eiwit",stap:25,visAlt:{"n":"Kipburgers (mager)","kcal":1.3,"p":0.22,"k":0.02,"v":0.04}},
+  {n:"Zoete aardappel (ovenfrieten)",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Grote salade (sla, tomaat, komkommer)",kcal:0.2,p:0.012,k:0.03,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:8,schaal:"vet",stap:4}]},
+ {label:"Zoete aardappel met kip",
+  recept:"Zoete aardappel in blokjes, 25 minuten in de oven op 200°C of gekookt. Kip bakken, groenten roerbakken. Beetje paprikapoeder over de zoete aardappel maakt het af.",
+  items:[
+  {n:"Zoete aardappel",kcal:0.86,p:0.016,k:0.2,v:0.001,basis:300,schaal:"kh",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:180,schaal:"eiwit",stap:10},
+  {n:"Gemengde groenten",kcal:0.3,p:0.02,k:0.04,v:0.002,basis:200,schaal:"vast",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Bloemkoolrijst met kip (licht en veel)",
+  recept:"Roerbak de bloemkoolrijst 5 minuten met de gekookte rijst erdoor. Kip kruiden (kaneel en chilipoeder passen verrassend goed) en bakken. Rozijnen en amandelen erover. Groot bord, weinig calorieën.",
+  items:[
+  {n:"Bloemkoolrijst",kcal:0.25,p:0.02,k:0.03,v:0.003,basis:350,schaal:"vast",stap:50},
+  {n:"Kipfilet (gegaard)",kcal:1.1,p:0.23,k:0,v:0.015,basis:200,schaal:"eiwit",stap:10},
+  {n:"Zilvervliesrijst (ongekookt, gemengd erdoor)",gek:2.5,kcal:3.5,p:0.075,k:0.74,v:0.025,basis:40,schaal:"kh",stap:10,min:30},
+  {n:"Rozijnen en amandelen",kcal:4.5,p:0.09,k:0.45,v:0.2,basis:20,schaal:"vet",stap:10},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Pesto kip met spinazie en feta (koolhydraatarm)",
+  recept:"Bak de kipdij goudbruin, spinazie en champignons erbij tot ze geslonken zijn. Pesto erdoor roeren, feta erover verkruimelen. Zonder koolhydraten het meest vullende lichte avondmaal dat er is.",
+  items:[
+  {n:"Spinazie en champignons",kcal:0.28,p:0.025,k:0.02,v:0.004,basis:250,schaal:"vast",stap:50},
+  {n:"Kipdijfilet",kcal:1.6,p:0.19,k:0,v:0.09,basis:150,schaal:"eiwit",stap:25},
+  {n:"Rode pesto",kcal:4,p:0.04,k:0.08,v:0.38,basis:15,schaal:"vet",stap:5,melk:"Pesto zonder kaas"},
+  {n:"Feta",kcal:2.7,p:0.14,k:0.04,v:0.21,basis:40,schaal:"vet",stap:20,lac:"Feta wordt vaak verdragen (schaap/geit)",melk:"Weglaten, extra kip"}]}
 ]},
 {naam:"Avondsnack",opties:[
- {label:"Skyr met fruit en noten",items:[
+ {label:"Skyr met fruit en noten",
+  recept:"Schep de skyr in een kom, fruit en noten erover.",
+  items:[
   {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
   {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50},
   {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
- {label:"Kwark met appel en pindakaas",items:[
-  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
-  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
- {label:"Skyr met banaan",items:[
+ {label:"Skyr met banaan",
+  recept:"Skyr in een kom, banaan in plakjes erop.",
+  items:[
   {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Kwark met bessen",items:[
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Kwark met bessen",
+  recept:"Kwark in een kom, bessen erover.",
+  items:[
   {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
   {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:100,schaal:"vast",stap:50}]},
- {label:"Eiwitshake met noten",items:[
+ {label:"Kwark met appel en pindakaas",
+  recept:"Kwark in een kom, appel in blokjes erdoor of ernaast, pindakaas erover lepelen.",
+  items:[
+  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:300,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
+  {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:20,schaal:"vet",stap:10}]},
+ {label:"Eiwitrijke speculaas-fluff",
+  recept:"Klop caseïne (of whey) met een flinke scheut koude melk en speculaaskruiden 2-3 minuten op tot mousse. Grote kom, amper calorieën.",
+  items:[
+  {n:"Caseïne- of whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:100,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Speculaaskruiden",kcal:3,p:0.05,k:0.55,v:0.05,basis:5,schaal:"vast",toon:"snuifje"}]},
+ {label:"Eiwitshake met noten",
+  recept:"Melk en eiwitpoeder shaken of blenden, noten ernaast.",
+  items:[
   {n:"Volle melk",kcal:0.64,p:0.034,k:0.047,v:0.035,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Whey-eiwit",kcal:3.7,p:0.80,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"},
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat (nagenoeg lactosevrij)",melk:"Soja- of erwteneiwit"},
   {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
- {label:"Fruit met een handje noten",items:[
+ {label:"Gekookt ei met rookvlees",
+  recept:"Eieren koken (7-9 minuten), rookvlees errond wikkelen. Nul koolhydraten, puur eiwit.",
+  items:[
+  {n:"Gekookte eieren",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Rookvlees",kcal:1.15,p:0.24,k:0.005,v:0.02,basis:30,schaal:"eiwit",stap:15}]},
+ {label:"Beef jerky (mager)",
+  recept:"Zakje afwegen, klaar. Puur eiwit voor onderweg; let op het zout als je er dagelijks naar grijpt.",
+  items:[
+  {n:"Beef jerky",kcal:2.5,p:0.5,k:0.05,v:0.04,basis:30,schaal:"eiwit",stap:10}]},
+ {label:"Banaan met pindakaas",
+  recept:"Banaan in de lengte snijden, pindakaas ertussen of erop.",
+  items:[
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:20,schaal:"vet",stap:10}]},
+ {label:"Selderij met pindakaas",
+  recept:"Stengels wassen, pindakaas in de geul. Krokant, vet en vullend — de klassieke Amerikaanse snack.",
+  items:[
+  {n:"Selderijstengels",kcal:0.16,p:0.007,k:0.03,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:20,schaal:"vet",stap:10}]},
+ {label:"Fruit met een handje noten",
+  recept:"Appel en een handje noten. Simpeler wordt het niet.",
+  items:[
   {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:100,schaal:"vast",toon:"1 stuk"},
   {n:"Gemengde noten",kcal:6.2,p:0.2,k:0.12,v:0.53,basis:20,schaal:"vet",stap:10}]},
- {label:"Rijstwafels met plattekaas",items:[
-  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.82,v:0.03,basis:30,schaal:"kh",per:{g:10,label:"rijstwafels"}},
-  {n:"Plattekaas (mager)",kcal:0.55,p:0.10,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"}]},
- {label:"Boterham met pindakaas",items:[
-  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{g:30,label:"sneden"},gv:"Glutenvrij brood (weeg af)"},
-  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
- {label:"Warme chocolademelk",items:[
-  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
-  {n:"Chocoladepoeder",kcal:3.8,p:0.05,k:0.75,v:0.03,basis:15,schaal:"kh",stap:5}]},
- {label:"Popcorn (zelf gepoft)",items:[
+ {label:"Magere snackkaasjes met druiven",
+  recept:"Kaasje uit de verpakking, handje druiven erbij. Meer bereiding is er niet.",
+  items:[
+  {n:"Magere snackkaasjes",kcal:2.4,p:0.22,k:0.02,v:0.15,basis:40,schaal:"eiwit",stap:20,lac:"Vaak goed verdragen (hard kaasje)",melk:"Gekookt ei i.p.v. kaasje"},
+  {n:"Druiven",kcal:0.7,p:0.006,k:0.16,v:0.002,basis:100,schaal:"vast",stap:50}]},
+ {label:"Komkommer-zalmrolletjes",
+  recept:"Komkommer in linten schaven, dun besmeren met roomkaas, reepje zalm erop en oprollen. Fris en licht.",
+  items:[
+  {n:"Komkommer",kcal:0.15,p:0.007,k:0.02,v:0.001,basis:150,schaal:"vast",stap:50},
+  {n:"Gerookte zalm",kcal:1.8,p:0.2,k:0,v:0.11,basis:50,schaal:"eiwit",stap:25,visAlt:{"n":"Gerookte kipfilet (beleg)","kcal":1.05,"p":0.22,"k":0.01,"v":0.015}},
+  {n:"Roomkaas light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:20,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"}]},
+ {label:"Studentenhaver",
+  recept:"Zakje afwegen en klaar. Let op: calorierijk, dus weeg echt af.",
+  items:[
+  {n:"Studentenhaver (noten en rozijnen)",kcal:4.9,p:0.14,k:0.35,v:0.32,basis:30,schaal:"vet",stap:10}]},
+ {label:"Geroosterde kikkererwten",
+  recept:"Kikkererwten droogdeppen, met olie en paprikapoeder 30 minuten in de oven op 200°C tot ze knapperig zijn. Krokant zonder chips.",
+  items:[
+  {n:"Kikkererwten (uitgelekt)",kcal:1.39,p:0.08,k:0.17,v:0.025,basis:100,schaal:"kh",stap:50},
+  {n:"Olijfolie",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
+ {label:"Havermout-bananenkoekjes",
+  recept:"Prak de banaan, meng met havermout, ei en rozijnen, schep hoopjes op bakpapier en bak 15 minuten op 180°C. Koekjes zonder suiker.",
+  items:[
+  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:40,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
+  {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{"g":50,"label":"eieren"}},
+  {n:"Rozijnen",kcal:3,p:0.025,k:0.7,v:0.005,basis:10,schaal:"kh",stap:5}]},
+ {label:"Rijstwafels met plattekaas",
+  recept:"Besmeer de rijstwafels met plattekaas. Snuifje kaneel erover mag.",
+  items:[
+  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.82,v:0.03,basis:30,schaal:"kh",per:{"g":10,"label":"rijstwafels"}},
+  {n:"Plattekaas (mager)",kcal:0.55,p:0.1,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije plattekaas",melk:"Soja-alternatief"}]},
+ {label:"Rijstwafels met hüttenkäse en jam",
+  recept:"Wafels beleggen met hüttenkäse, dun laagje confituur erover. Zoet en hartig tegelijk.",
+  items:[
+  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.82,v:0.03,basis:30,schaal:"kh",per:{"g":10,"label":"rijstwafels"}},
+  {n:"Hüttenkäse (cottage cheese)",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:100,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief"},
+  {n:"Confituur",kcal:2.5,p:0.005,k:0.6,v:0,basis:15,schaal:"kh",stap:5}]},
+ {label:"Boterham met pindakaas",
+  recept:"Boterham smeren met pindakaas. Eventueel plakjes banaan erop.",
+  items:[
+  {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:60,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.5,basis:20,schaal:"vet",stap:10}]},
+ {label:"Popcorn (zelf gepoft)",
+  recept:"Pof de mais met een scheutje olie in een pot met deksel op hoog vuur. Grote kom, weinig calorieën: de beste filmsnack in een cut.",
+  items:[
   {n:"Popcornmais",kcal:3.87,p:0.12,k:0.78,v:0.045,basis:25,schaal:"kh",stap:5},
   {n:"Olijfolie (om te poffen)",kcal:9,p:0,k:0,v:1,basis:5,schaal:"vet",stap:5}]},
- {label:"Studentenhaver",items:[
-  {n:"Studentenhaver (noten en rozijnen)",kcal:4.9,p:0.14,k:0.35,v:0.32,basis:30,schaal:"vet",stap:10}]},
- {label:"Banaan met pindakaas",items:[
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
-  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
- {label:"Eiwitrijke speculaas-fluff",items:[
-  {n:"Magere kwark",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:250,schaal:"eiwit",stap:50,lac:"Lactosevrije kwark",melk:"Soja-alternatief"},
-  {n:"Speculaaskruiden en zoetstof",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Geroosterde kikkererwten",items:[
-  {n:"Kikkererwten (uitgelekt)",kcal:1.64,p:0.09,k:0.27,v:0.03,basis:120,schaal:"vast",stap:30},
-  {n:"Paprikapoeder",kcal:0,p:0,k:0,v:0,basis:1,schaal:"vast",toon:"naar smaak"}]},
- {label:"Rijstwafels met hüttenkäse en jam",items:[
-  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.82,v:0.03,basis:30,schaal:"kh",per:{g:10,label:"rijstwafels"}},
-  {n:"Hüttenkäse",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:100,schaal:"eiwit",stap:50,lac:"Lactosevrije hüttenkäse",melk:"Soja-alternatief"},
-  {n:"Suikervrije jam",kcal:1.2,p:0,k:0.28,v:0,basis:15,schaal:"kh",stap:5}]},
- {label:"Komkommer-zalmrolletjes",items:[
-  {n:"Komkommer",kcal:0.12,p:0.007,k:0.02,v:0.001,basis:100,schaal:"vast",stap:50},
-  {n:"Zuivelspread light",kcal:1.6,p:0.08,k:0.04,v:0.13,basis:30,schaal:"vet",stap:10,lac:"Lactosevrije roomkaas",melk:"Hummus"},
-  {n:"Gerookte zalm",kcal:1.8,p:0.20,k:0,v:0.11,basis:30,schaal:"eiwit",stap:15,visAlt:{n:"Gerookte kipfilet (beleg)",kcal:1.05,p:0.22,k:0.01,v:0.015}}]},
- {label:"Magere snackkaasjes met druiven",items:[
-  {n:"Light snackkaasjes",kcal:2.2,p:0.28,k:0.02,v:0.11,basis:40,schaal:"eiwit",stap:20,lac:"Lactosevrije kaas",melk:"Handje noten i.p.v. kaas"},
-  {n:"Druiven",kcal:0.69,p:0.006,k:0.18,v:0.002,basis:100,schaal:"vast",stap:50}]},
- {label:"Zelfgemaakte waterijsjes met eiwitpoeder",items:[
-  {n:"Water met whey of EAA",kcal:0.4,p:0.06,k:0.02,v:0,basis:250,schaal:"eiwit",stap:50,eenheid:"ml",lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
- {label:"Havermout-bananenkoekjes",items:[
-  {n:"Havermout",kcal:3.72,p:0.135,k:0.58,v:0.07,basis:50,schaal:"kh",stap:10,gv:"Glutenvrije havermout"},
-  {n:"Banaan",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"}]},
- {label:"Gekookt ei met rookvlees",items:[
-  {n:"Gekookt ei",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:50,schaal:"eiwit",per:{g:50,label:"eieren"}},
-  {n:"Runderrookvlees",kcal:1.3,p:0.30,k:0.01,v:0.02,basis:20,schaal:"eiwit",stap:10}]},
- {label:"Beef jerky (mager)",items:[
-  {n:"Beef jerky (mager)",kcal:1.5,p:0.28,k:0.03,v:0.03,basis:30,schaal:"eiwit",stap:10}]},
- {label:"Selderij met pindakaas",items:[
-  {n:"Bleekselderij",kcal:0.16,p:0.007,k:0.03,v:0.002,basis:100,schaal:"vast",stap:50},
-  {n:"Pindakaas (100% pinda)",kcal:6.3,p:0.25,k:0.12,v:0.50,basis:20,schaal:"vet",stap:10}]},
- {label:"IJsje: light roomijs (bv. Carte D'Or Light of vergelijkbaar)",items:[
-  {n:"Light roomijs",kcal:0.9,p:0.02,k:0.14,v:0.03,basis:100,schaal:"vast",stap:50}]},
- {label:"IJsje: waterijsjes / ijslolly's (bv. Calippo, Winners)",items:[
-  {n:"Waterijsje",kcal:0.8,p:0,k:0.18,v:0,basis:100,schaal:"vast",toon:"1 ijsje"}]},
- {label:"IJsje: proteïne-ijs (bv. Halo Top of vergelijkbaar merk)",items:[
-  {n:"Proteïne-ijs",kcal:1.2,p:0.10,k:0.16,v:0.03,basis:100,schaal:"eiwit",stap:50}]},
- {label:"IJsje: zelfgemaakte nicecream (bevroren banaan)",items:[
-  {n:"Bevroren banaan (gemixt)",kcal:0.89,p:0.011,k:0.20,v:0.003,basis:150,schaal:"vast",stap:50},
-  {n:"Cacaopoeder (optioneel)",kcal:3.5,p:0.20,k:0.10,v:0.14,basis:5,schaal:"vast",stap:5}]},
- {label:"IJsje: light schepijs (supermarkt eigen merk)",items:[
-  {n:"Light schepijs",kcal:0.85,p:0.02,k:0.13,v:0.03,basis:100,schaal:"vast",stap:50}]}
+ {label:"Warme chocolademelk",
+  recept:"Melk verwarmen, chocoladepoeder erdoor roeren. Voor de hele familie te maken.",
+  items:[
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:250,schaal:"kh",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink (verrijkt)"},
+  {n:"Chocoladepoeder",kcal:3.8,p:0.05,k:0.75,v:0.03,basis:15,schaal:"kh",stap:5}]},
+ {label:"Zelfgemaakte waterijsjes met eiwitpoeder",
+  recept:"Mix whey met water en fruit, giet in ijsvormpjes en vries in. Zomerse snack van bijna niets.",
+  items:[
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:20,schaal:"eiwit",stap:5,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"},
+  {n:"Aardbeien of ander fruit",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:100,schaal:"vast",stap:50}]},
+ {label:"IJsje: zelfgemaakte nicecream",
+  recept:"Bevroren banaan met een scheutje melk en cacao in de blender tot softijs. Direct opeten.",
+  items:[
+  {n:"Banaan (bevroren)",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:100,schaal:"vast",toon:"1 stuk"},
+  {n:"Halfvolle melk",kcal:0.47,p:0.035,k:0.048,v:0.017,basis:50,schaal:"vast",stap:50,eenheid:"ml",lac:"Lactosevrije melk",melk:"Sojadrink"},
+  {n:"Cacaopoeder (puur)",kcal:3.5,p:0.2,k:0.1,v:0.14,basis:5,schaal:"vast",stap:5}]},
+ {label:"IJsje: proteïne-ijs",
+  recept:"Potje uit de winkel (type eiwit-ijs). Check het etiket en log wat er echt in zit.",
+  items:[
+  {n:"Proteïne-ijs",kcal:1,p:0.09,k:0.12,v:0.03,basis:130,schaal:"eiwit",per:{"g":130,"label":"potje(s)"},lac:"Vaak lactosearm, check etiket",melk:"Sorbet of nicecream i.p.v. zuivelijs"}]},
+ {label:"IJsje: light roomijs",
+  recept:"Bewust afgewogen bolletjes, niet uit de doos lepelen. Eén keer per week past dit gewoon.",
+  items:[
+  {n:"Light roomijs",kcal:1.5,p:0.04,k:0.25,v:0.04,basis:100,schaal:"kh",stap:50,lac:"Lactosevrij roomijs",melk:"Sorbet"}]},
+ {label:"IJsje: light schepijs",
+  recept:"Zelfde regel als het roomijs: schep af, weeg, geniet.",
+  items:[
+  {n:"Light schepijs",kcal:1.2,p:0.05,k:0.22,v:0.025,basis:100,schaal:"kh",stap:50,lac:"Lactosevrij schepijs",melk:"Sorbet"}]},
+ {label:"IJsje: waterijsjes / ijslolly's",
+  recept:"Waterijs is de lichtste keuze van allemaal: vooral water en wat suiker.",
+  items:[
+  {n:"Waterijsjes",kcal:0.7,p:0.002,k:0.17,v:0.001,basis:100,schaal:"kh",per:{"g":50,"label":"ijsjes"}}]}
 ]}];
-
-const RECEPTEN=[
-["Geen ontbijt: je eet binnen een venster van ongeveer 8 uur, bijvoorbeeld van 12u tot 20u. Zwarte koffie, thee en water mogen 's ochtends gewoon. De andere maaltijden zijn automatisch groter gemaakt zodat je dagtotaal en je eiwit kloppen. Werkt alleen als het bij je leven past; het is een hulpmiddel, geen wondermiddel.",
-"Breng de melk aan de kook, roer de havermout erdoor en laat 3-4 minuten zachtjes koken. Snijd de banaan erover. Kaneel mag altijd.",
- "Rooster het brood. Bak de eieren in een pan met antiaanbaklaag als spiegelei, of klop ze los voor roerei. Peper en zout, sinaasappel ernaast.",
- "Schep de yoghurt in een kom, strooi de muesli en bessen erover. Klaar in één minuut.",
- "Alles samen in de blender en 30 seconden mixen. Te dik? Scheutje water of extra melk erbij.",
- "Beleg het brood met de kaas. Appel ernaast, of in partjes erop.",
- "Smeer het brood, confituur erop. Kook het ei 7 minuten voor zachtgekookt, 9 voor hard.",
- "Cornflakes in een kom, melk erover, banaan in plakjes erbij. Klaar in één minuut.",
- "Besmeer het brood dun met de plattekaas of schep ze in een kom met het fruit erbij.",
- "Beslag: 100 g bloem, 250 ml melk en 1 ei per 4 pannenkoeken. Bak ze goudbruin in een hete pan. Weekendklassieker, ook voor de kinderen.",
- "Bak het spek krokant, daarna de eieren in hetzelfde vet. Brood erbij.",
- "Yoghurt in een kom, honing erover lepelen, walnoten grof breken erbij.",
- "Crackers beleggen met kaas en plakjes tomaat. Peper erover.",
- "Alles in de blender, 30 seconden mixen. Smaakt als een dessert, telt als een eiwitontbijt.",
- "Champignons en ui bakken in de olie, losgeklopte eieren erover en laten stollen. Peper en zout.",
- "Hüttenkäse, eieren en havermeel mixen tot een glad beslag, in een pan met antiaanbaklaag kleine pannenkoekjes bakken.",
- "Havermout met geraspte appel, rozijnen en kaneel samen in een pannetje warm maken, af met een scheutje melk.",
- "Eieren loskloppen en bakken met de restjes gehakt, kruiden naar smaak, in een opgewarmde wrap rollen met salsa.",
- "Brood roosteren, avocado erop prakken met peper en zout, een gepocheerd ei erbovenop en chilivlokken erover.",
- "Chiazaad een nacht laten weken in de melk. 's Ochtends whey erdoor roeren en fruit erover.",
- "Restjes groenten kort bakken, eieren erover gieten, hüttenkäse er halverwege doorheen roeren tot de omelet gestold is.",
- "Ontvet pindakaaspoeder mengen met de skyr, banaan in plakjes en cacaonibs erover.",
- "Brood dopen in een mengsel van losgeklopt ei, melk en kaneel, vetarm bakken tot goudbruin.",
- "Alles in de blender en 30 seconden mixen tot een gladde smoothie.",
- "Rijst met de amandelmelk warm laten trekken op laag vuur, whey en kaneel erdoor roeren als het van het vuur is.",
- "Havermout, ei, kwark en whey mixen tot een dik beslag, in een wafelijzer bakken tot goudbruin.",
- "Eieren pocheren in een kruidige tomaten-paprikasaus met ui, brood erbij om te soppen.",
- "Alle ingrediënten mixen, in een ovenschaaltje gieten en 20 minuten bakken op 180°C tot gestold.",
- "Hüttenkäse of zalm in een dunne omelet rollen met bieslook erbij.",
- "Maiswafels of cracotten beleggen met kipfilet of hüttenkäse, tomaat ernaast.",
- "Knäckebröd beleggen met kaas of kipfilet naar smaak.",
- "Havermout koken in de melk, whey erdoor roeren na het koken, banaan erbij."
-],
-["Prak de avocado met peper en zout op het brood, beleg met de kipfilet, tomaat en sla. Mosterd naar smaak.",
- "Besmeer de wraps met hummus, verdeel de kip en groenten erover en rol op. Kort in een grillpan maakt ze extra lekker.",
- "Laat de tonijn goed uitlekken en meng met een lepel yoghurt of mosterd. Verdeel over het brood met de avocado en tomaat.",
- "Kook de rijst en laat afkoelen (of gebruik de rest van gisteren). Meng met de kip, rauwkost en olijfolie. Peper, zout en wat citroen.",
- "Beleg het brood met de gerookte kip, tomaat en augurk. Klaar.",
- "Warm de soep op (zelfgemaakt of een goeie uit de winkel). Boterhammen beleggen met kip en kaas.",
- "Beleg twee sneden met hesp en kaas, dek af, bak goudbruin in een pan met wat margarine of in het croque-ijzer.",
- "Klop de eieren los met peper en zout, bak de groenten kort mee in de olie en giet de eieren erover. Brood erbij.",
- "Kook de pasta en laat afkoelen. Meng met de pesto, kip en tomaatjes. Ideaal om 's avonds al te maken voor de lunchbox.",
- "Besmeer de wrap met roomkaas, beleg met zalm, sla en komkommer, rol op.",
- "Kook de aardappelen en het ei. Meng met de uitgelekte tonijn, boontjes en tomaat, dressing erover.",
- "'s Ochtends smeren, shaker met droog poeder mee, water vind je overal. Overleeft de hele voormiddag in een brooddoos zonder koeling. Alle andere boterham-lunches uit deze lijst zijn trouwens ook brooddoos-proof.",
- "Beleg het brood met plakjes gehaktbrood, augurk en een likje mosterd.",
- "Meng de sla, komkommer en tomaatjes met de kip. Roer knoflook door de kwark als dressing, amandelen erover, boterham erbij.",
- "Kook de pasta en laat afkoelen. Meng met kip, komkommer en tomaatjes, dressing erdoor.",
- "Warm de soep op, balletjes erin laten meegaren. Brood erbij.",
- "Beleg drie sneden brood laagsgewijs met kip, ei en spek, opstapelen en doormidden snijden.",
- "Tonijn mengen met mais en augurk, zuivelspread erdoor, in de wrap rollen.",
- "Kikkererwten en feta door de couscous mengen, gegrilde courgette en munt erbij.",
- "Brood beleggen met ham en kaas, ei erbovenop bakken en op het brood leggen.",
- "Quinoa koken en laten afkoelen. Mengen met bonen, avocado, feta en mais.",
- "Ei loskloppen met stukjes kip en groenten, in muffinvormpjes gieten, 20 minuten oven op 180°C.",
- "Brood roosteren, hummus erop smeren, kip en kiemgroenten erover.",
- "Rijst koken en laten afkoelen, mengen met ei, erwten en wortel, dressing erdoor.",
- "Kip, groenten en tzatziki in de wrap rollen.",
- "Linzen mengen met rode biet, rucola, geitenkaas en ham.",
- "Bonen mengen met paprika, mais, koriander en gerookte kip.",
- "Brood roosteren, zalm-kwarksalade met dille en kappertjes erop scheppen.",
- "Eieren koken en prakken met avocado, bieslook erdoor, op het brood.",
- "Soep opwarmen, knoflookbrood erbij serveren.",
- "Courgette uithollen, vullen met gekruid kalkoengehakt en tomatensaus, 20 minuten oven op 190°C.",
- "Rijst koken, kip of tofu bakken, alles met edamame en groenten in een kom opbouwen.",
- "Dunne omelet bakken, vullen met rookvlees en rucola, oprollen.",
- "Noedels koken en afspoelen met koud water, mengen met groenten en pindadressing.",
- "Brood beleggen met kaas naar smaak, groenten erbij.",
- "Brood beleggen met kipfilet- of kalkoenbeleg, groenten naar smaak.",
- "Sla, kip of zalm en dressing samen in een kom mengen."
-],
-["Kook de rijst volgens de verpakking. Kruid de kip en bak 6-7 minuten per kant in de olijfolie tot gaar. Roerbak de groenten in dezelfde pan en kruid af naar smaak.",
- "Kook de aardappelen 15-20 minuten. Bak het gehakt rul, voeg de groenten toe en laat kort meestoven. De olijfolie over de aardappelen.",
- "Kook de pasta. Bak de zalm 3-4 minuten per kant. Roerbak de groenten, meng alles door elkaar en knijp er citroen over.",
- "Bak het kipgehakt rul met paprikapoeder en komijn, roerbak de groenten kort mee en vul de wraps.",
- "Kook de aardappelen. Bak de vis 3-4 minuten per kant in de boter, of gaar hem 15 minuten in de oven op 180°C. Groenten stomen of koken.",
- "Bak het gehakt rul, voeg de fijngesneden ui, wortel en selder toe en stoof 5 minuten mee. Passata erbij, 15 minuten laten pruttelen. Kook intussen de spaghetti. Parmezaan erover aan tafel.",
- "Snijd de aardappelen in partjes, meng met de olijfolie, peper, zout en paprikapoeder. 35 minuten in de oven op 200°C, halfweg omscheppen. Kip kruiden en bakken, groenten erbij.",
- "Zoete aardappel in blokjes, 25 minuten in de oven op 200°C of gekookt. Kip bakken, groenten roerbakken. Beetje paprikapoeder over de zoete aardappel maakt het af.",
- "Bak de kip aan, voeg de wokgroenten toe en roerbak kort. Kokosmelk en currypasta erbij, 5 minuten zachtjes laten koken. Serveer over de rijst.",
- "Rol balletjes van het gehakt en bak ze rondom bruin. Passata erbij en 10 minuten zachtjes garen. Aardappelen koken, groenten stomen. Klassieker die iedereen aan tafel meeëet.",
- "Roerbak de bloemkoolrijst 5 minuten met de gekookte rijst erdoor. Kip kruiden (kaneel en chilipoeder passen verrassend goed) en bakken. Rozijnen en amandelen erover. Groot bord, weinig calorieën.",
- "Bak de kipdij goudbruin, spinazie en champignons erbij tot ze geslonken zijn. Pesto erdoor roeren, feta erover verkruimelen. Zonder koolhydraten het meest vullende lichte avondmaal dat er is.",
- "Bak het gehakt rul met ui en paprika, voeg tomatenblokjes, bonen en chilikruiden toe en laat 15 minuten pruttelen. Rijst erbij. Wordt de volgende dag alleen maar beter.",
- "Kneed burgers van het gehakt met peper en zout, bak 4-5 minuten per kant. Broodje, sla, tomaat, augurk, saus. Gezinsklassieker die gewoon in je schema past.",
- "Klop de eieren los en bak als omelet, snijd in reepjes. Wok de groenten, gekookte rijst erbij, ei en cashews erdoor, ketjap naar smaak.",
- "Rijst koken, gehakt kruiden en bakken, bonen en mais opwarmen. Alles in aparte bakjes serveren, zelf mengen aan tafel.",
- "Zoete aardappel in blokjes, zalm en broccoli samen op een bakplaat, 20-25 minuten oven op 200°C.",
- "Kip marineren in tandoorikruiden en yoghurt, bakken of grillen, rijst en snijbonen erbij.",
- "Runderreepjes kort en heet aanbakken, wokgroenten erbij, noedels erdoor mengen.",
- "Vis 15 minuten garen in de oven op 180°C of bakken in de pan, puree en worteltjes erbij.",
- "Deeg beleggen met saus, kaas en toppings naar keuze, 12-15 minuten bakken op 220°C.",
- "Paprika's uithollen, vullen met een mengsel van gehakt, rijst en tomaat, 30 minuten oven op 190°C.",
- "Kippendijen aanbraden, groenten en krieltjes toevoegen, 25 minuten laten stoven.",
- "Lagen aubergine, aardappel en gehakt afwisselen, yoghurtsaus erover, 35 minuten oven op 180°C.",
- "Kip aanbakken, tomaten-champignonsaus toevoegen, 15 minuten laten sudderen, rijst erbij.",
- "Vis met groenten en krieltjes op een schaal, 20 minuten oven op 190°C met een scheut olijfolie.",
- "Runderreepjes wokken, couscous met heet water laten wellen, rozijnen en groenten erdoor mengen.",
- "Kalkoenblokjes wokken met groenten, cashewnoten en sojasaus erdoor aan het einde.",
- "Lagen lasagnebladen, gehakt-spinaziesaus en ricotta afwisselen, 35 minuten oven op 180°C.",
- "Zalmburger vormen en bakken, zoete aardappelfriet in de airfryer, broodje erbij.",
- "Gehakt of vega-gehakt aanbakken met paprika, bonen en tomatenpuree toevoegen, 20 minuten sudderen. Rijst erbij.",
- "Kip kruiden en 45-60 minuten garen in de oven op 190°C, groenten de laatste 30 minuten erbij.",
- "Garnalen kort bakken, pasta erdoor mengen met pesto en spinazie.",
- "Biefstuk kort en krachtig bakken naar wens, aardappelen en groenten erbij.",
- "Kalkoenfilet bakken, serveren met aardappel of rijst en seizoensgroenten.",
- "Varkenshaasje kort bakken tot vanbinnen nog lichtroze, aardappelen en groenten erbij.",
- "Zoete aardappel in de airfryer, biefstuk bakken naar wens, grote salade ernaast.",
- "Burgers vormen en bakken, zoete aardappelfriet in de airfryer, broodje en sla erbij."
-],
-["Schep de skyr in een kom, fruit en noten erover.",
- "Kwark in een kom, appel in blokjes erdoor of ernaast, pindakaas erover lepelen.",
- "Skyr in een kom, banaan in plakjes erop.",
- "Kwark in een kom, bessen erover.",
- "Melk en eiwitpoeder shaken of blenden, noten ernaast.",
- "Appel en een handje noten. Simpeler wordt het niet.",
- "Besmeer de rijstwafels met plattekaas. Snuifje kaneel erover mag.",
- "Boterham smeren met pindakaas. Eventueel plakjes banaan erop.",
- "Melk verwarmen, chocoladepoeder erdoor roeren. Voor de hele familie te maken.",
- "Pof de mais met een scheutje olie in een pot met deksel op hoog vuur. Grote kom, weinig calorieën: de beste filmsnack in een cut.",
- "Zakje afwegen en klaar. Let op: calorierijk, dus weeg echt af.",
- "Banaan in de lengte snijden, pindakaas ertussen of erop.",
- "Kwark hard opkloppen met een beetje vetarme melk, speculaaskruiden en zoetstof erdoor roeren.",
- "Kikkererwten droogdeppen, mengen met paprikapoeder en een beetje olie, 20 minuten in de oven of airfryer op 200°C.",
- "Rijstwafels beleggen met een dikke laag hüttenkäse en een likje suikervrije jam.",
- "Komkommer in plakjes snijden, besmeren met de zuivelspread, zalm erop leggen en oprollen.",
- "Kaasjes en druiven gewoon samen op een bordje.",
- "Whey of EAA oplossen in water, in ijsvormpjes gieten en minstens 4 uur laten invriezen.",
- "Banaan prakken, mengen met havermout tot een deeg, met een lepel op een bakplaat, 15 minuten oven op 180°C.",
- "Ei koken en doormidden snijden, een plakje rookvlees eromheen wikkelen.",
- "Kant-en-klaar te koop, direct eetbaar.",
- "Selderijstengels vullen met een afgewogen lepel pindakaas.",
- "Kant-en-klaar, twee bolletjes serveren, check het exacte label van het gekozen merk.",
- "Kant-en-klaar uit de vriezer.",
- "Kant-en-klaar, check het label van het specifieke merk en smaak dat je klant koopt.",
- "Bevroren bananenschijfjes in een blender of foodprocessor mixen tot een romige massa, eventueel cacao erdoor.",
- "Kant-en-klaar, twee bolletjes serveren, check het label van het gekozen merk."
-]];
 
 // eigen ingrediënten (blijven bewaard)
 let eigen=JSON.parse(localStorage.getItem('vg_eigen')||'[]');
@@ -950,6 +1202,35 @@ function labels(){
     else if(i===0)sel.value='1';
   });
 }
+
+// eigen gerechten (komen als optie in de keuzelijsten, blijven bewaard)
+let eigenG=JSON.parse(localStorage.getItem('vg_gerechten')||'[]');
+function gBewaar(){localStorage.setItem('vg_gerechten',JSON.stringify(eigenG))}
+function injecteerGerechten(){
+  MAALTIJDEN.forEach(m=>{m.opties=m.opties.filter(o=>!o.eigenG)});
+  eigenG.forEach(g=>{
+    MAALTIJDEN[g.maaltijd].opties.push({label:g.label+" (eigen gerecht)",eigenG:true,items:[
+      {n:g.label,kcal:g.kcal/100,p:g.p/100,k:g.k/100,v:g.v/100,basis:100,schaal:"kh",stap:5,portie:true}]});
+  });
+}
+function gerechtToevoegen(){
+  const n=document.getElementById('g_naam').value.trim();
+  const kcal=+document.getElementById('g_kcal').value;
+  if(!n||!kcal){alert('Vul minstens de naam en de kcal per portie in.');return}
+  eigenG.push({maaltijd:+document.getElementById('g_maaltijd').value,label:n,kcal,
+    p:+document.getElementById('g_p').value||0,k:+document.getElementById('g_k').value||0,v:+document.getElementById('g_v').value||0});
+  gBewaar();injecteerGerechten();toonGerechten();labels();
+  document.getElementById('g_naam').value='';document.getElementById('g_kcal').value='';
+  document.getElementById('g_p').value='';document.getElementById('g_k').value='';document.getElementById('g_v').value='';
+}
+function gerechtWeg(i){eigenG.splice(i,1);gBewaar();injecteerGerechten();toonGerechten();labels()}
+function toonGerechten(){
+  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack'];
+  document.getElementById('gerechtlijst').innerHTML=eigenG.map((g,i)=>
+    `<div class="eigenrij"><span>${g.label} — ${namen[g.maaltijd]} (${g.kcal} kcal · E ${g.p} · K ${g.k} · V ${g.v} per portie)</span><button class="verwijder" onclick="gerechtWeg(${i})">×</button></div>`
+  ).join('')||'';
+}
+injecteerGerechten();toonGerechten();
 labels();
 
 function stapVan(i){return i.per?i.per.g:(i.stap||10)}
@@ -980,8 +1261,8 @@ function maak(){
     const keuze=m.opties[+document.getElementById('m'+i).value];
     keuze.items.forEach(it=>{
       let x={...it,m:m.naam};
-      if(va==='vis'&&x.visAlt)x={...x,...x.visAlt};
-      if(fase==='cut'&&x.cutAlt)x={...x,...x.cutAlt};
+      if(va==='vis'&&x.visAlt){x={...x,...x.visAlt};delete x.gek;}
+      if(fase==="cut"&&x.cutAlt){const b=x.basis*4;x={...x,...x.cutAlt};x.basis=b;delete x.gek;}
       items.push(x);
     });
     eigen.filter(e=>e.maaltijd===i).forEach(e=>items.push({...e,m:m.naam,eigen:true}));
@@ -1026,6 +1307,8 @@ function maak(){
       let hoeveel=i.toon?i.toon:(i.gram+' '+(i.eenheid||'g'));
       if(i.per&&!i.toon)hoeveel=Math.round(i.gram/i.per.g)+' '+i.per.label;
       if(i.kwart)hoeveel=({25:'1/4 stuk',50:'1/2 stuk',75:'3/4 stuk',100:'1 stuk'})[i.gram]||i.gram+' g';
+      if(i.gek&&!i.toon&&!i.per)hoeveel=i.gram+' g ongekookt <span class="gekookt">± '+(Math.round(i.gram*i.gek/25)*25)+' g gekookt</span>';
+      if(i.portie)hoeveel=(i.gram===100?'1 portie (zoals opgegeven)':(i.gram/100).toLocaleString('nl-BE',{maximumFractionDigits:2})+' × jouw portie');
       h+='<div class="item"><span>'+naam+(i.eigen?' <span style="font-size:11px;color:var(--grijs)">(eigen)</span>':'')+'</span><span>'+hoeveel+'</span></div>';
     });
     if(mItems.length){
@@ -1035,7 +1318,7 @@ function maak(){
       const mv=Math.round(mItems.reduce((a,i)=>a+(i.v||0)*i.gram,0));
       h+='<div class="sub"><span>Deze maaltijd</span><span>± '+mk+' kcal · E '+mp+' · K '+mkh+' · V '+mv+'</span></div>';
     }
-    const r=RECEPTEN[mi][+document.getElementById('m'+mi).value];
+    const r=(m.opties[+document.getElementById('m'+mi).value]||{}).recept;
     if(r)h+='<div class="recept">Bereiding: '+r+'</div>';
   });
   if(drank)h+='<div class="maaltijd">Dranken en extra\'s</div><div class="item"><span>Vaste dranken/extra\'s (afgesproken)</span><span>'+drank+' kcal</span></div>';
