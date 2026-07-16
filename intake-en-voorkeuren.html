@@ -13,7 +13,7 @@
 <meta property="og:title" content="Intake & voorkeuren — Robin Verdonck Coaching">
 <meta property="og:description" content="Vul je intake, gezondheid, training en gerechtvoorkeuren in op één plek.">
 <meta property="og:image" content="https://robinverdonck.be/fotos/hero.jpg">
-<meta property="og:url" content="https://robinverdonck.be//">
+<meta property="og:url" content="https://robinverdonck.be/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <!-- Google tag (gtag.js) -->
@@ -274,8 +274,16 @@ details[open] summary::after{content:"–"}
     <div class="sublabel">Geschatte drinkcalorieën</div>
     <div style="font-size:15px;line-height:1.8"><b id="drankWeekdagKcal">0</b> kcal op een gewone dag &nbsp;·&nbsp; <b id="drankWeekendKcal">0</b> kcal op een weekenddag</div>
   </div>
-</div>
 
+  <label style="margin-top:22px">Koude sauzen — hoeveel gebruik je gemiddeld?</label>
+  <div class="uitleg" style="margin-top:6px">Schat in eetlepels (1 lepel ≈ 15 g). Het gaat om koude sauzen die je aan tafel bij je bord doet. Warme sauzen en bakvet zitten al in je schema verwerkt. Een lepel mayonaise is snel 105 kcal, dus dit telt echt mee.</div>
+  <div class="drankkop"><span>Saus</span><span>Doordeweeks /dag</span><span>Weekend /dag</span></div>
+  <div id="sauzenlijst"></div>
+  <div class="tdeebox" style="margin-top:14px">
+    <div class="sublabel">Geschatte sauscalorieën</div>
+    <div style="font-size:15px;line-height:1.8"><b id="sausWeekdagKcal">0</b> kcal op een gewone dag &nbsp;·&nbsp; <b id="sausWeekendKcal">0</b> kcal op een weekenddag</div>
+  </div>
+</div>
 <h2><span class="stapnr">Stap 7</span>Kies je gerechten</h2>
 <div class="uitleg">Klik een categorie open en kruis aan wat je lekker vindt. Dit helpt mij om je weekschema samen te stellen — je hoeft dit niet perfect in te vullen, gewoon een eerlijk beeld van je voorkeuren.</div>
 <div class="card" style="padding:12px">
@@ -432,6 +440,39 @@ function berekenDranken(){
   });
   document.getElementById('drankWeekdagKcal').textContent = Math.round(weekTotaal);
   document.getElementById('drankWeekendKcal').textContent = Math.round(weekendTotaal);
+  return {weekTotaal:Math.round(weekTotaal), weekendTotaal:Math.round(weekendTotaal)};
+}
+
+// ============================================================
+// Sauzencalculator — koude sauzen die aan tafel bijkomen
+// Warme sauzen en bakvet zitten al in de voedingsgenerator verwerkt
+// ============================================================
+const SAUZEN=[
+  {n:"Mayonaise", kcal:105, eenheid:"eetlepel"},
+  {n:"Cocktail-, andalouse- of samoeraisaus", kcal:70, eenheid:"eetlepel"},
+  {n:"Vinaigrette of slasaus op olie", kcal:65, eenheid:"eetlepel"},
+  {n:"Tomaten- of curryketchup", kcal:22, eenheid:"eetlepel"},
+  {n:"Lichte yoghurt- of magere dressing", kcal:15, eenheid:"eetlepel"},
+];
+(function bouwSauzenlijst(){
+  const el = document.getElementById('sauzenlijst');
+  el.innerHTML = SAUZEN.map((s,i)=>`
+    <div class="drankrij">
+      <div class="naam">${s.n}<small>${s.kcal} kcal per ${s.eenheid}</small></div>
+      <input type="number" min="0" step="0.5" id="saus_week_${i}" placeholder="0" oninput="berekenSauzen()">
+      <input type="number" min="0" step="0.5" id="saus_weekend_${i}" placeholder="0" oninput="berekenSauzen()">
+    </div>`).join('');
+})();
+function berekenSauzen(){
+  let weekTotaal=0, weekendTotaal=0;
+  SAUZEN.forEach((s,i)=>{
+    const wk = +document.getElementById('saus_week_'+i).value || 0;
+    const we = +document.getElementById('saus_weekend_'+i).value || 0;
+    weekTotaal += wk*s.kcal;
+    weekendTotaal += we*s.kcal;
+  });
+  document.getElementById('sausWeekdagKcal').textContent = Math.round(weekTotaal);
+  document.getElementById('sausWeekendKcal').textContent = Math.round(weekendTotaal);
   return {weekTotaal:Math.round(weekTotaal), weekendTotaal:Math.round(weekendTotaal)};
 }
 
@@ -661,6 +702,7 @@ function bouwSamenvatting(naamKlant){
   // Bereken TDEE opnieuw voor de samenvatting
   const tdeeResultaat = berekenTDEE();
   const drankResultaat = berekenDranken();
+  const sausResultaat = berekenSauzen();
 
   kop('BEREKENING — VOOR ROBIN');
   if(tdeeResultaat){
@@ -671,8 +713,13 @@ function bouwSamenvatting(naamKlant){
   }
   veld('Drinkcalorieën doordeweeks', drankResultaat.weekTotaal + ' kcal/dag');
   veld('Drinkcalorieën weekend', drankResultaat.weekendTotaal + ' kcal/dag');
-  veld('Aanbevolen dagcalorieën MIN doordeweekse dranken', tdeeResultaat ? (tdeeResultaat.streefKcal - drankResultaat.weekTotaal) + ' kcal' : '—');
-  veld('Aanbevolen dagcalorieën MIN weekend dranken', tdeeResultaat ? (tdeeResultaat.streefKcal - drankResultaat.weekendTotaal) + ' kcal' : '—');
+  veld('Sauscalorieën doordeweeks', sausResultaat.weekTotaal + ' kcal/dag');
+  veld('Sauscalorieën weekend', sausResultaat.weekendTotaal + ' kcal/dag');
+  veld('Dranken + sauzen samen doordeweeks', (drankResultaat.weekTotaal + sausResultaat.weekTotaal) + ' kcal/dag');
+  veld('Dranken + sauzen samen weekend', (drankResultaat.weekendTotaal + sausResultaat.weekendTotaal) + ' kcal/dag');
+  veld('Aanbevolen dagcalorieën MIN doordeweekse dranken en sauzen', tdeeResultaat ? (tdeeResultaat.streefKcal - drankResultaat.weekTotaal - sausResultaat.weekTotaal) + ' kcal' : '—');
+  veld('Aanbevolen dagcalorieën MIN weekend dranken en sauzen', tdeeResultaat ? (tdeeResultaat.streefKcal - drankResultaat.weekendTotaal - sausResultaat.weekendTotaal) + ' kcal' : '—');
+  veld('In te vullen in de voedingsgenerator bij "dranken, sauzen en extra\'s"', (drankResultaat.weekTotaal + sausResultaat.weekTotaal) + ' kcal (doordeweeks)');
 
   kop('Persoonlijke gegevens');
   veld('Naam en voornaam', v('naam'));
@@ -743,6 +790,13 @@ function bouwSamenvatting(naamKlant){
   veld('Eet buitenshuis / bestelt', v('buitenshuis'));
   veld('Alcohol', v('alcohol'));
 
+  kop('Sauzen per dag (in eetlepels)');
+  SAUZEN.forEach((s,i)=>{
+    const wk = +document.getElementById('saus_week_'+i).value || 0;
+    const we = +document.getElementById('saus_weekend_'+i).value || 0;
+    if(wk || we) veld(s.n, wk + ' doordeweeks / ' + we + ' weekend (' + s.kcal + ' kcal per lepel)');
+  });
+
   kop('Aangevinkte gerechtvoorkeuren');
   const gekozenOnt = verzamelAangevinkt('ont', ONTBIJT);
   const gekozenMid = verzamelAangevinkt('mid', MIDDAG);
@@ -794,20 +848,14 @@ function toonStatus(type, tekst){
 }
 
 // ============================================================
-// Vervang dit door je eigen gratis Web3Forms access key.
-// Aanmaken (1 minuut, geen account nodig): https://web3forms.com/
-// Vul je e-mailadres in, je krijgt de key meteen toegestuurd.
+// Web3Forms access key — dezelfde key mag op al je formulieren staan.
+// Nieuwe key nodig? https://web3forms.com/ — e-mailadres invullen, klaar.
 // ============================================================
 const WEB3FORMS_ACCESS_KEY = "1e5d097e-18ee-4510-b17d-9607ca50d692";
 
 async function verstuur(){
   const naamKlant = document.getElementById('naam').value.trim();
   if(!naamKlant){ alert('Vul minstens je naam in.'); return; }
-
-  if(WEB3FORMS_ACCESS_KEY === "1e5d097e-18ee-4510-b17d-9607ca50d692"){
-    toonStatus('fout', 'Nog niet actief: Robin moet eerst zijn gratis Web3Forms access key invullen in de code.');
-    return;
-  }
 
   const btn = document.getElementById('verstuurBtn');
   btn.disabled = true; btn.textContent = 'Bezig met versturen...';
