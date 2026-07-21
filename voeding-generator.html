@@ -67,6 +67,9 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   header h1 span{color:#b3934e}
   header p,.recept,.uitleg{color:#666}
 }
+.kiesmenu{background:var(--card);color:var(--wit);border:1px solid var(--line);border-radius:8px;padding:3px 8px;font:inherit;font-size:13px;max-width:240px;cursor:pointer}
+.kiesmenu:focus{outline:none;border-color:var(--gold)}
+@media print{.kiesmenu{border:none;background:none;padding:0;appearance:none;color:#000}}
 </style>
 </head>
 <body>
@@ -92,12 +95,13 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   </select>
   <label>Vaste caloriehoudende dranken en extra's (kcal per dag)</label>
   <input type="number" id="drank" value="0" inputmode="numeric">
-  <div style="font-size:12px;color:var(--grijs);margin-top:4px">Richtwaarden: blikje cola 139 · glas fruitsap 110 · pintje 140 · glas wijn 85 · koffie met suiker en melk ±35 per tas. Sauzen: 15gr mayonaise 111kcal. 15gr ketchup 15kcal. De maaltijden worden automatisch kleiner zodat het dagtotaal klopt.</div>
+  <div style="font-size:12px;color:var(--grijs);margin-top:4px">Richtwaarden: blikje cola 139 · glas fruitsap 110 · pintje 140 · glas wijn 85 · koffie met suiker en melk ±35 per tas. De maaltijden worden automatisch kleiner zodat het dagtotaal klopt.</div>
   <div style="font-size:12.5px;color:var(--grijs);border-left:3px solid var(--gold);padding:6px 0 6px 12px;margin-top:14px;line-height:1.6">
   <b style="color:var(--goldsoft)">Zo kies je slim:</b> kies eerst je <b style="color:var(--wit)">avondmaal</b> — dat neemt de grootste hap uit je budget, de rest past zich aan wat overblijft. <b style="color:var(--wit)">★</b> = beste keuze binnen dit budget én deze fase · <b style="color:var(--wit)">licht</b> = past makkelijk, groot bord · <b style="color:var(--wit)">zwaar voor dit budget</b> = alleen bewust kiezen. De labels verspringen mee met calorieën, fase en avondmaalkeuze. "Ontbijt overslaan" maakt de andere maaltijden automatisch groter.</div>
   <label>Avondmaal (kies dit eerst)</label><select id="m2" onchange="labels()"></select>
   <label>Middagmaal</label><select id="m1"></select>
   <label>Ontbijt</label><select id="m0" onchange="labels()"></select>
+  <label>Tussendoortje (10-uurtje of 4-uurtje)</label><select id="m4"></select>
   <label>Avondsnack</label><select id="m3"></select>
   <label>Allergie / intolerantie</label>
   <select id="variant" onchange="labels()">
@@ -114,7 +118,7 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   <h2 style="margin-top:0">Eigen ingrediënt toevoegen</h2>
   <p style="font-size:13px;color:var(--grijs)">Voeg iets toe aan een maaltijd (bv. een extra ei bij het ontbijt, of een product dat de klant graag eet). Het telt volledig mee in de berekening en blijft bewaard tot je het verwijdert.</p>
   <div class="rij">
-    <div><label>Bij welke maaltijd</label><select id="e_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option></select></div>
+    <div><label>Bij welke maaltijd</label><select id="e_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option><option value="4">Tussendoortje</option></select></div>
     <div><label>Naam</label><input type="text" id="e_naam" placeholder="bv. Gekookt ei"></div>
   </div>
   <label>Per 100 g (of 100 ml): kcal · eiwit · koolhydraten · vetten</label>
@@ -136,7 +140,7 @@ button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-we
   <h2 style="margin-top:0">Eigen gerecht toevoegen</h2>
   <p style="font-size:13px;color:var(--grijs)">Zet een volledig gerecht in de keuzelijst van een maaltijd (bv. het lievelingsgerecht van de klant). Vul de waarden in voor één portie zoals jij ze berekend hebt; de generator schaalt de portie mee met het caloriebudget. Blijft bewaard tot je het verwijdert.</p>
   <div class="rij">
-    <div><label>Bij welke maaltijd</label><select id="g_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option></select></div>
+    <div><label>Bij welke maaltijd</label><select id="g_maaltijd"><option value="0">Ontbijt</option><option value="1">Middagmaal</option><option value="2">Avondmaal</option><option value="3">Avondsnack</option><option value="4">Tussendoortje</option></select></div>
     <div><label>Naam gerecht</label><input type="text" id="g_naam" placeholder="bv. Vol-au-vent van oma"></div>
   </div>
   <label>Per portie: kcal · eiwit (g) · koolhydraten (g) · vetten (g)</label>
@@ -1133,6 +1137,130 @@ const MAALTIJDEN=[
   {n:"Waterijsjes",kcal:0.7,p:0.002,k:0.17,v:0.001,basis:100,schaal:"kh",per:{"g":50,"label":"ijsjes"}}]}
 ]}];
 
+// ===== Keuzemenu's: groenten, fruit en beleg (per gram, standaard tabelwaarden) =====
+const KEUZEDB={
+GROENTEN:[
+ {n:"Broccoli",kcal:0.34,p:0.028,k:0.04,v:0.004},
+ {n:"Bloemkool",kcal:0.25,p:0.019,k:0.03,v:0.003},
+ {n:"Prinsessenboontjes",kcal:0.31,p:0.018,k:0.05,v:0.002},
+ {n:"Wortelen",kcal:0.41,p:0.009,k:0.08,v:0.002},
+ {n:"Courgette",kcal:0.17,p:0.012,k:0.02,v:0.003},
+ {n:"Paprika",kcal:0.31,p:0.01,k:0.05,v:0.003},
+ {n:"Spinazie",kcal:0.23,p:0.029,k:0.014,v:0.004},
+ {n:"Prei",kcal:0.31,p:0.015,k:0.05,v:0.002},
+ {n:"Spruitjes",kcal:0.43,p:0.034,k:0.05,v:0.003},
+ {n:"Champignons",kcal:0.22,p:0.031,k:0.01,v:0.003},
+ {n:"Witloof",kcal:0.17,p:0.009,k:0.02,v:0.001},
+ {n:"Erwtjes",kcal:0.81,p:0.054,k:0.11,v:0.004},
+ {n:"Wokgroentenmix",kcal:0.3,p:0.02,k:0.04,v:0.003},
+ {n:"Gemengde (diepvries)groenten",kcal:0.35,p:0.022,k:0.05,v:0.004}
+],
+FRUIT:[
+ {n:"Appel",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,toon:"1 stuk"},
+ {n:"Banaan",kcal:0.89,p:0.011,k:0.2,v:0.003,basis:110,toon:"1 stuk"},
+ {n:"Peer",kcal:0.57,p:0.004,k:0.14,v:0.001,basis:160,toon:"1 stuk"},
+ {n:"Sinaasappel",kcal:0.47,p:0.009,k:0.11,v:0.001,basis:150,toon:"1 stuk"},
+ {n:"Kiwi",kcal:0.61,p:0.011,k:0.13,v:0.005,basis:150,toon:"2 stuks"},
+ {n:"Mandarijnen",kcal:0.53,p:0.008,k:0.12,v:0.003,basis:150,toon:"2-3 stuks"},
+ {n:"Druiven",kcal:0.69,p:0.007,k:0.17,v:0.002,basis:150,toon:"trosje, ±150 g"},
+ {n:"Aardbeien",kcal:0.35,p:0.007,k:0.07,v:0.003,basis:200,toon:"kommetje, ±200 g"},
+ {n:"Blauwe bessen",kcal:0.57,p:0.007,k:0.12,v:0.003,basis:125,toon:"doosje, ±125 g"},
+ {n:"Meloen",kcal:0.34,p:0.008,k:0.08,v:0.002,basis:200,toon:"2 plakken, ±200 g"},
+ {n:"Ananas",kcal:0.5,p:0.005,k:0.12,v:0.001,basis:150,toon:"2 plakken, ±150 g"},
+ {n:"Nectarine of perzik",kcal:0.44,p:0.011,k:0.09,v:0.003,basis:140,toon:"1 stuk"}
+],
+BELEG:[
+ {n:"Kipfilet (beleg)",kcal:1.05,p:0.21,k:0.01,v:0.02,basis:40,toon:"2-3 sneetjes"},
+ {n:"Kalkoenham",kcal:1,p:0.2,k:0.01,v:0.02,basis:40,toon:"2-3 sneetjes"},
+ {n:"Gekookte hesp",kcal:1.15,p:0.2,k:0.01,v:0.035,basis:40,toon:"2 sneden"},
+ {n:"Rosbief (beleg)",kcal:1.2,p:0.22,k:0,v:0.035,basis:40,toon:"2-3 sneetjes"},
+ {n:"Jonge kaas (sneden)",kcal:3.6,p:0.25,k:0,v:0.28,basis:40,toon:"2 sneden",lac:"Lactosevrije kaas",melk:"Plantaardige kaas (let op eiwit)"},
+ {n:"Light smeerkaas",kcal:1.4,p:0.11,k:0.04,v:0.09,basis:40,lac:"Lactosevrije smeerkaas",melk:"Hummus"},
+ {n:"Plattekaas (mager, als beleg)",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:80,lac:"Lactosevrije plattekaas",melk:"Hummus"},
+ {n:"Hüttenkäse",kcal:0.98,p:0.11,k:0.03,v:0.04,basis:80,lac:"Lactosevrije hüttenkäse",melk:"Hummus"},
+ {n:"Gekookt ei (geplet)",kcal:1.55,p:0.126,k:0.01,v:0.11,basis:100,toon:"2 eieren"},
+ {n:"Tonijn in water (uitgelekt)",kcal:1.1,p:0.25,k:0,v:0.008,basis:70,toon:"±1/2 blikje"},
+ {n:"Gehaktbrood (beleg)",kcal:2.3,p:0.14,k:0.03,v:0.18,basis:40,toon:"2 sneden"},
+ {n:"Filet americain (préparé)",kcal:2.2,p:0.15,k:0.02,v:0.17,basis:50},
+ {n:"Hummus",kcal:2.5,p:0.07,k:0.12,v:0.19,basis:40},
+ {n:"Pindakaas 100%",kcal:6.3,p:0.26,k:0.12,v:0.5,basis:25},
+ {n:"Confituur",kcal:2.6,p:0.005,k:0.62,v:0.001,basis:25},
+ {n:"Choco (hazelnootpasta)",kcal:5.4,p:0.06,k:0.57,v:0.31,basis:20}
+]};
+let kiesSel=JSON.parse(localStorage.getItem('vg_kies')||'{}');
+function kiesZet(sleutel,idx){kiesSel[sleutel]=+idx;localStorage.setItem('vg_kies',JSON.stringify(kiesSel));maak()}
+// Bestaande generieke groente- en fruit-items krijgen automatisch een keuzemenu
+MAALTIJDEN.forEach(m=>m.opties.forEach(o=>o.items.forEach(it=>{
+  if(/^(Gemengde groenten|Wokgroenten|Groenten naar keuze)/.test(it.n))it.kies="GROENTEN";
+  if(/^(Aardbeien of ander fruit|Appel of ander fruit|Fruit naar keuze|Vers fruit)/.test(it.n))it.kies="FRUIT";
+})));
+// Nieuwe gerechten met keuzemenu's
+MAALTIJDEN[0].opties.push({label:"Boterhammen met beleg naar keuze",
+ recept:"Kies in het schema hieronder zelf je twee soorten beleg: de calorieën en eiwitten rekenen automatisch mee. Wissel gerust per dag.",
+ items:[
+ {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:90,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+ {n:"Beleg 1",kies:"BELEG",kcal:1.05,p:0.21,k:0.01,v:0.02,basis:40,schaal:"eiwit",stap:10},
+ {n:"Beleg 2",kies:"BELEG",def:6,kcal:0.57,p:0.12,k:0.04,v:0.003,basis:80,schaal:"eiwit",stap:10},
+ {n:"Tomaat of komkommer",kcal:0.18,p:0.009,k:0.03,v:0.002,basis:100,schaal:"vast",stap:50}]});
+MAALTIJDEN[1].opties.push({label:"Boterhammen met beleg naar keuze",
+ recept:"Kies in het schema hieronder zelf je twee soorten beleg en je fruit als dessert: alles rekent automatisch mee in je dagtotaal.",
+ items:[
+ {n:"Bruin brood",kcal:2.5,p:0.117,k:0.45,v:0.025,basis:120,schaal:"kh",per:{"g":30,"label":"sneden"},gv:"Glutenvrij brood (weeg af)"},
+ {n:"Beleg 1",kies:"BELEG",kcal:1.05,p:0.21,k:0.01,v:0.02,basis:40,schaal:"eiwit",stap:10},
+ {n:"Beleg 2",kies:"BELEG",def:4,kcal:3.6,p:0.25,k:0,v:0.28,basis:40,schaal:"vet",stap:10},
+ {n:"Tomaat of komkommer",kcal:0.18,p:0.009,k:0.03,v:0.002,basis:100,schaal:"vast",stap:50},
+ {n:"Fruit als dessert",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"}]});
+MAALTIJDEN[3].opties.push({label:"1 stuk fruit (naar keuze)",
+ recept:"Kies je fruit in het schema. De lichtste snack die er bestaat, met vezels erbij.",
+ items:[
+ {n:"Fruit",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"}]});
+MAALTIJDEN[3].opties.push({label:"2 stukken fruit (naar keuze)",
+ recept:"Kies twee soorten fruit in het schema. Varieer gerust per dag.",
+ items:[
+ {n:"Fruit 1",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"},
+ {n:"Fruit 2",kies:"FRUIT",def:1,kcal:0.89,p:0.011,k:0.2,v:0.003,basis:110,schaal:"vast",toon:"1 stuk"}]});
+// Vijfde maaltijdmoment: tussendoortje (10-uurtje of 4-uurtje), standaard uit
+MAALTIJDEN.push({naam:"Tussendoortje",opties:[
+ {label:"Geen tussendoortje",items:[]},
+ {label:"1 stuk fruit (naar keuze)",
+  recept:"Kies je fruit in het schema. Handig voor op het werk of onderweg.",
+  items:[
+  {n:"Fruit",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"}]},
+ {label:"2 stukken fruit (naar keuze)",
+  recept:"Kies twee soorten fruit in het schema. Varieer gerust per dag.",
+  items:[
+  {n:"Fruit 1",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"},
+  {n:"Fruit 2",kies:"FRUIT",def:1,kcal:0.89,p:0.011,k:0.2,v:0.003,basis:110,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Fruit met een handje noten",
+  recept:"Kies je fruit in het schema, noten afwegen (een handje is sneller een dubbel handje dan je denkt).",
+  items:[
+  {n:"Fruit",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"},
+  {n:"Gemengde noten (ongezouten)",kcal:6.2,p:0.18,k:0.08,v:0.55,basis:20,schaal:"vet",stap:5}]},
+ {label:"Skyr-potje met fruit",
+  recept:"Potje skyr met vers fruit erdoor. Eiwitrijkste tussendoortje uit deze lijst.",
+  items:[
+  {n:"Skyr 0%",kcal:0.78,p:0.105,k:0.04,v:0.002,basis:150,schaal:"eiwit",stap:50,lac:"Lactosevrije skyr of kwark",melk:"Soja-alternatief yoghurt"},
+  {n:"Fruit",kies:"FRUIT",kcal:0.52,p:0.003,k:0.12,v:0.002,basis:160,schaal:"vast",toon:"1 stuk"}]},
+ {label:"Rijstwafels met plattekaas",
+  recept:"Twee rijstwafels besmeren met magere plattekaas. Krokant, licht en verrassend vullend.",
+  items:[
+  {n:"Rijstwafels",kcal:3.9,p:0.08,k:0.8,v:0.03,basis:18,schaal:"kh",per:{"g":9,"label":"wafels"}},
+  {n:"Magere plattekaas",kcal:0.57,p:0.12,k:0.04,v:0.003,basis:80,schaal:"eiwit",stap:20,lac:"Lactosevrije plattekaas",melk:"Hummus"}]},
+ {label:"Groentesticks met hummus",
+  recept:"Wortel en komkommer in reepjes, dippen in hummus. Ideaal om 's namiddags gedachteloos te knabbelen zonder schade.",
+  items:[
+  {n:"Wortel en komkommer (reepjes)",kcal:0.3,p:0.008,k:0.05,v:0.002,basis:150,schaal:"vast",stap:50},
+  {n:"Hummus",kcal:2.5,p:0.07,k:0.12,v:0.19,basis:30,schaal:"vet",stap:10}]},
+ {label:"Eiwitshake",
+  recept:"Whey met water of melk schudden. Voor de dagen waarop eten er even niet van komt.",
+  items:[
+  {n:"Whey-eiwit",kcal:3.7,p:0.8,k:0.05,v:0.05,basis:30,schaal:"eiwit",stap:10,lac:"Whey-isolaat",melk:"Soja- of erwteneiwit"}]},
+ {label:"Handje ongezouten noten",
+  recept:"Afwegen, niet uit de zak eten. Gezond vet, maar calorierijk: 25 g is echt genoeg.",
+  items:[
+  {n:"Gemengde noten (ongezouten)",kcal:6.2,p:0.18,k:0.08,v:0.55,basis:25,schaal:"vet",stap:5}]}
+]});
+
 // eigen ingrediënten (blijven bewaard)
 let eigen=JSON.parse(localStorage.getItem('vg_eigen')||'[]');
 function eigenBewaar(){localStorage.setItem('vg_eigen',JSON.stringify(eigen))}
@@ -1152,18 +1280,18 @@ function eigenToevoegen(){
 }
 function eigenWeg(i){eigen.splice(i,1);eigenBewaar();toonEigen()}
 function toonEigen(){
-  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack'];
+  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack','Tussendoortje'];
   document.getElementById('eigenlijst').innerHTML=eigen.map((e,i)=>
     `<div class="eigenrij"><span>${e.n} — ${e.basis} g bij ${namen[e.maaltijd]} (${Math.round(e.kcal*100)} kcal/100g)</span><button class="verwijder" onclick="eigenWeg(${i})">×</button></div>`
   ).join('')||'';
 }
 toonEigen();
 
-const AANDEEL=[0.25,0.30,0.35,0.15];
+const AANDEEL=[0.25,0.28,0.35,0.14,0.08];
 function aandeelNu(){
   const v=document.getElementById('m0').value;
   const o=MAALTIJDEN[0].opties[v===''?1:+v];
-  return (o&&o.items.length===0)?[0,0.40,0.42,0.18]:AANDEEL;
+  return (o&&o.items.length===0)?[0,0.38,0.42,0.16,0.10]:AANDEEL;
 }
 function labels(){
   const va=document.getElementById('variant').value;
@@ -1226,7 +1354,7 @@ function gerechtToevoegen(){
 }
 function gerechtWeg(i){eigenG.splice(i,1);gBewaar();injecteerGerechten();toonGerechten();labels()}
 function toonGerechten(){
-  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack'];
+  const namen=['Ontbijt','Middagmaal','Avondmaal','Avondsnack','Tussendoortje'];
   document.getElementById('gerechtlijst').innerHTML=eigenG.map((g,i)=>
     `<div class="eigenrij"><span>${g.label} — ${namen[g.maaltijd]} (${g.kcal} kcal · E ${g.p} · K ${g.k} · V ${g.v} per portie)</span><button class="verwijder" onclick="gerechtWeg(${i})">×</button></div>`
   ).join('')||'';
@@ -1248,7 +1376,7 @@ function rondStap(x,i){
   const s=stapVan(i);
   return Math.max(ondergrensVan(i),Math.round(x/s)*s);
 }
-function vulbaar(i){return /roente|soep|sla\b|tomaat|boontjes|komkommer|augurk|rucola/i.test(i.n)}
+function vulbaar(i){return i.vul||/roente|soep|sla\b|tomaat|boontjes|komkommer|augurk|rucola/i.test(i.n)}
 function maak(){
   const dagdoel=+document.getElementById('kcal').value;
   const drank=Math.max(0,+document.getElementById('drank').value||0);
@@ -1260,8 +1388,21 @@ function maak(){
   let items=[];
   MAALTIJDEN.forEach((m,i)=>{
     const keuze=m.opties[+document.getElementById('m'+i).value];
-    keuze.items.forEach(it=>{
+    keuze.items.forEach((it,j)=>{
       let x={...it,m:m.naam};
+      if(x.kies){
+        const db=KEUZEDB[x.kies];
+        x.sleutel='k'+i+'_'+document.getElementById('m'+i).value+'_'+j;
+        let cur=kiesSel[x.sleutel]!==undefined?+kiesSel[x.sleutel]:(x.def||0);
+        cur=Math.min(Math.max(0,cur),db.length-1);
+        const gk=db[cur];
+        delete x.lac;delete x.melk;delete x.gv;delete x.toon;
+        x={...x,n:gk.n,kcal:gk.kcal,p:gk.p,k:gk.k,v:gk.v};
+        if(x.kies!=='GROENTEN'){if(gk.basis)x.basis=gk.basis;if(gk.toon)x.toon=gk.toon}
+        if(gk.lac)x.lac=gk.lac;if(gk.melk)x.melk=gk.melk;
+        if(x.kies==='GROENTEN')x.vul=true;
+        x.kiesDb=x.kies;x.kiesIdx=cur;
+      }
       if(va==='vis'&&x.visAlt){x={...x,...x.visAlt};delete x.gek;}
       if(fase==="cut"&&x.cutAlt){const b=x.basis*4;x={...x,...x.cutAlt};x.basis=b;delete x.gek;}
       items.push(x);
@@ -1297,14 +1438,22 @@ function maak(){
   }
   // renderen met macro's per maaltijd
   let h='<h2 style="margin-top:0">Dagschema — '+dagdoel+' kcal'+(drank?' (waarvan '+drank+' kcal dranken)':'')+(va!=='std'?' · '+document.getElementById('variant').selectedOptions[0].text:'')+'</h2>';
-  MAALTIJDEN.forEach((m,mi)=>{
-    h+='<div class="maaltijd">'+m.naam+'</div>';
+  [0,1,4,2,3].forEach(mi=>{
+    const m=MAALTIJDEN[mi];if(!m)return;
     const mItems=items.filter(i=>i.m===m.naam);
+    const r=(m.opties[+document.getElementById('m'+mi).value]||{}).recept;
+    if(!mItems.length&&!r)return;
+    h+='<div class="maaltijd">'+m.naam+'</div>';
     mItems.forEach(i=>{
       let naam=i.n;
       if(va==='gluten'&&i.gv)naam=i.gv;
       if(va==='lactose'&&i.lac)naam=i.lac;
       if(va==='melk'&&i.melk)naam=i.melk;
+      if(i.kiesDb){
+        const db=KEUZEDB[i.kiesDb];
+        const nota=(naam!==i.n)?' <span style="font-size:11px;color:var(--grijs)">→ '+naam+'</span>':'';
+        naam='<select class="kiesmenu" onchange="kiesZet(\''+i.sleutel+'\',this.value)">'+db.map((d,di)=>'<option value="'+di+'"'+(di===i.kiesIdx?' selected':'')+'>'+d.n+'</option>').join('')+'</select>'+nota;
+      }
       let hoeveel=i.toon?i.toon:(i.gram+' '+(i.eenheid||'g'));
       if(i.per&&!i.toon)hoeveel=Math.round(i.gram/i.per.g)+' '+i.per.label;
       if(i.kwart)hoeveel=({25:'1/4 stuk',50:'1/2 stuk',75:'3/4 stuk',100:'1 stuk'})[i.gram]||i.gram+' g';
@@ -1319,7 +1468,6 @@ function maak(){
       const mv=Math.round(mItems.reduce((a,i)=>a+(i.v||0)*i.gram,0));
       h+='<div class="sub"><span>Deze maaltijd</span><span>± '+mk+' kcal · E '+mp+' · K '+mkh+' · V '+mv+'</span></div>';
     }
-    const r=(m.opties[+document.getElementById('m'+mi).value]||{}).recept;
     if(r)h+='<div class="recept">Bereiding: '+r+'</div>';
   });
   if(drank)h+='<div class="maaltijd">Dranken en extra\'s</div><div class="item"><span>Vaste dranken/extra\'s (afgesproken)</span><span>'+drank+' kcal</span></div>';
