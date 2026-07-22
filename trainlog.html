@@ -1,31 +1,14 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<link rel="icon" type="image/x-icon" href="favicon.ico">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="android-chrome-512x512.png">
-<meta property="og:title" content="Kennisbank — Robin Verdonck Coaching">
-<meta property="og:description" content="Korte, eerlijke antwoorden over voeding, training en hybride sporten. Geen theorie, geen hype.">
-<meta property="og:image" content="https://robinverdonck.be/fotos/hero.jpg">
-<meta property="og:url" content="https://robinverdonck.be//">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YQPNEP9SLS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-YQPNEP9SLS');
-</script>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TrainLog">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="trainlog.webmanifest">
 <meta name="theme-color" content="#0b0e13">
 <title>TrainLog — Robin Verdonck Coaching</title>
 <style>
@@ -80,6 +63,75 @@ canvas{width:100%;height:180px}
 .histset{font-size:13.5px;color:var(--grijs);padding:1px 0}
 .verwijder{background:none;color:var(--rood);font-size:18px;padding:4px;width:auto}
 .terug{background:none;color:var(--grijs);font-size:14px;font-weight:700;padding:4px 0;width:auto;margin-bottom:8px}
+
+/* ===================== PREMIUM APP-LAAG ===================== */
+/* iPhone-inkeping en thuisbalk respecteren */
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
+.wrap{padding-top:max(14px,env(safe-area-inset-top))}
+.tabbar{padding-bottom:env(safe-area-inset-bottom);background:rgba(23,28,36,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)}
+
+/* tabbalk: actieve indicator + reactie op aanraking */
+.tabbar button{position:relative;transition:color .2s ease}
+.tabbar button::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%) scaleX(0);width:26px;height:2px;border-radius:0 0 3px 3px;background:var(--gold);transition:transform .28s cubic-bezier(.22,.61,.36,1)}
+.tabbar button.aan::before{transform:translateX(-50%) scaleX(1)}
+.tabbar button svg{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.tabbar button.aan svg{transform:translateY(-1px) scale(1.08)}
+.tabbar button:active svg{transform:scale(.9)}
+
+/* schermwissel met zachte overgang in plaats van springen */
+.scherm{display:none}
+.scherm.aan{display:block;animation:schermIn .34s cubic-bezier(.22,.61,.36,1)}
+@keyframes schermIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* alles wat aanraakbaar is, reageert */
+button:active,.dagkaart:active,.oefkop:active{transform:scale(.975)}
+button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,background .2s ease}
+.btn:active{filter:brightness(.94)}
+.card{transition:border-color .25s ease}
+
+/* uitklappende panelen vloeiend */
+.paneel{display:block;overflow:hidden;max-height:0;opacity:0;transition:max-height .32s cubic-bezier(.22,.61,.36,1),opacity .22s ease,padding-top .32s ease;padding-top:0}
+.paneel.aan{max-height:1400px;opacity:1;padding-top:6px}
+
+/* ===== TOAST (vervangt alert) ===== */
+#toastlaag{position:fixed;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{background:rgba(30,36,46,.97);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--wit);font-size:14.5px;font-weight:600;padding:13px 18px;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.5);max-width:100%;animation:toastIn .34s cubic-bezier(.22,.61,.36,1);display:flex;align-items:center;gap:10px}
+.toast.uit{animation:toastUit .28s ease forwards}
+.toast .vink{color:var(--groen);font-size:16px;flex-shrink:0}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes toastUit{to{opacity:0;transform:translateY(10px) scale(.98)}}
+
+/* ===== SHEET (vervangt confirm en prompt) ===== */
+.sheetlaag{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:laagIn .25s ease}
+.sheetlaag.uit{animation:laagUit .22s ease forwards}
+.sheet{background:var(--card);border:1px solid var(--line);border-bottom:none;border-radius:22px 22px 0 0;width:100%;max-width:520px;padding:10px 20px calc(24px + env(safe-area-inset-bottom));animation:sheetIn .36s cubic-bezier(.22,.61,.36,1)}
+.sheetlaag.uit .sheet{animation:sheetUit .24s ease forwards}
+.sheet .greep{width:38px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 16px}
+.sheet h3{font-size:17px;font-weight:800;margin-bottom:6px}
+.sheet p{font-size:14px;color:var(--grijs);margin-bottom:16px;line-height:1.55}
+.sheet input{margin-bottom:16px}
+.sheet .knoppen{display:flex;gap:10px}
+.sheet .knoppen button{flex:1;padding:14px}
+.sheet .gevaar{background:var(--rood);color:#0b0e13}
+@keyframes laagIn{from{opacity:0}to{opacity:1}}
+@keyframes laagUit{to{opacity:0}}
+@keyframes sheetIn{from{transform:translateY(100%)}to{transform:none}}
+@keyframes sheetUit{to{transform:translateY(100%)}}
+
+/* ===== BACK-UPHERINNERING ===== */
+#backupbalk{display:none;background:linear-gradient(135deg,rgba(201,169,98,.16),rgba(201,169,98,.06));border:1px solid rgba(201,169,98,.4);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;color:var(--goldsoft);align-items:center;gap:12px}
+#backupbalk.aan{display:flex}
+#backupbalk button{background:var(--gold);color:#0b0e13;padding:8px 14px;font-size:13px;width:auto;flex-shrink:0}
+
+/* ===== INSTALLEER-TIP ===== */
+#installbalk{display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;color:var(--wit);align-items:center;gap:12px}
+#installbalk.aan{display:flex}
+#installbalk button{background:var(--gold);color:#0b0e13;padding:8px 14px;font-size:13px;width:auto;flex-shrink:0}
+#installbalk .sluit{background:none;color:var(--grijs);font-size:18px;padding:2px 6px;width:auto}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
 .groepkop{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin:14px 0 4px}
 .bibitem{padding:10px 0;border-bottom:1px solid var(--line)}
 .bibitem .n{font-weight:600;font-size:14.5px;display:flex;justify-content:space-between;align-items:center}
@@ -96,6 +148,8 @@ canvas{width:100%;height:180px}
   <p>Robin Verdonck Coaching — elke week iets beter</p>
 </header>
 <div class="wrap">
+<div id="installbalk"><span style="flex:1">Zet TrainLog op je beginscherm: dan opent hij als een echte app.</span><button onclick="installeer()">Toevoegen</button><button class="sluit" onclick="this.parentElement.classList.remove('aan');localStorage.setItem('tl_installweg','1')">×</button></div>
+<div id="backupbalk"><span style="flex:1">Je laatste back-up is meer dan twee weken geleden. Even veiligstellen?</span><button onclick="exporteer()">Back-up</button></div>
 
 <div class="scherm aan" id="s-trainen"></div>
 <div class="scherm" id="s-schema"></div>
@@ -121,7 +175,7 @@ canvas{width:100%;height:180px}
   <h2>Mijn voedingsschema</h2>
   <div class="card">
     <textarea id="voedingtxt" rows="9" placeholder="Plak hier het voedingsschema dat je van Robin kreeg, dan heb je het altijd bij."></textarea>
-    <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();alert('Bewaard.')">Bewaren</button>
+    <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();toast('Voedingsschema bewaard')">Bewaren</button>
   </div>
   <h2>Calorieën en macro's</h2>
   <div class="card">
@@ -139,7 +193,7 @@ canvas{width:100%;height:180px}
   <div class="card">
     <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Alles wordt lokaal op dit toestel bewaard. Mail voor je check-in het weekoverzicht naar Robin, en maak regelmatig een back-up.</p>
     <label style="margin-top:0">Jouw naam (voor in de mail)</label>
-    <div class="rij" style="margin-bottom:10px"><input type="text" id="klantnaam" placeholder="Voornaam en naam"><button class="btn-mini" onclick="db.naam=document.getElementById('klantnaam').value.trim();bewaar();alert('Bewaard.')">bewaar</button></div>
+    <div class="rij" style="margin-bottom:10px"><input type="text" id="klantnaam" placeholder="Voornaam en naam"><button class="btn-mini" onclick="db.naam=document.getElementById('klantnaam').value.trim();bewaar();toast('Naam bewaard')">bewaar</button></div>
     <button class="btn" onclick="weekNaarRobin()" style="margin-bottom:8px">Weekoverzicht mailen naar Robin</button>
     <button class="btn-lijn" onclick="maandRapport()" style="margin-bottom:8px">Maandrapport (afdrukken / PDF)</button>
     <button class="btn-lijn" onclick="db.introOk=false;bewaar();toon('trainen')" style="margin-bottom:8px">Uitleg van de app opnieuw tonen</button>
@@ -173,6 +227,140 @@ canvas{width:100%;height:180px}
 </nav>
 
 <script>
+/* ===================== PREMIUM UI-LAAG ===================== */
+/* toast: vervangt alert() */
+function toast(tekst,soort){
+  let laag=document.getElementById('toastlaag');
+  if(!laag){laag=document.createElement('div');laag.id='toastlaag';document.body.appendChild(laag)}
+  const t=document.createElement('div');
+  t.className='toast';
+  t.innerHTML=(soort==='fout'?'':'<span class="vink">✓</span>')+'<span></span>';
+  t.lastChild.textContent=tekst;
+  laag.appendChild(t);
+  if(navigator.vibrate)navigator.vibrate(soort==='fout'?[30,40,30]:12);
+  setTimeout(()=>{t.classList.add('uit');setTimeout(()=>t.remove(),300)},2600);
+}
+/* sheet: vervangt confirm() en prompt() — geeft een belofte terug */
+function sheet({titel,tekst,invoer,waarde,ok,gevaar,extra}){
+  return new Promise(res=>{
+    const laag=document.createElement('div');
+    laag.className='sheetlaag';
+    laag.innerHTML=`<div class="sheet">
+      <div class="greep"></div>
+      <h3></h3>
+      ${tekst?'<p></p>':''}
+      ${invoer?'<input type="text" id="sheetinvoer">':''}
+      ${extra?'<button class="btn-lijn" data-extra style="margin-bottom:10px"></button>':''}
+      <div class="knoppen">
+        <button class="btn-lijn" data-nee>Annuleren</button>
+        <button class="btn ${gevaar?'gevaar':''}" data-ja></button>
+      </div></div>`;
+    laag.querySelector('h3').textContent=titel;
+    if(tekst)laag.querySelector('p').textContent=tekst;
+    laag.querySelector('[data-ja]').textContent=ok||'Bevestigen';
+    if(extra)laag.querySelector('[data-extra]').textContent=extra;
+    document.body.appendChild(laag);
+    const inv=laag.querySelector('#sheetinvoer');
+    if(inv){inv.value=waarde||'';setTimeout(()=>inv.focus(),320)}
+    function sluit(v){
+      laag.classList.add('uit');
+      setTimeout(()=>{laag.remove();res(v)},240);
+    }
+    laag.querySelector('[data-nee]').onclick=()=>sluit(invoer?null:false);
+    laag.querySelector('[data-ja]').onclick=()=>sluit(invoer?(inv.value.trim()||null):true);
+    if(extra)laag.querySelector('[data-extra]').onclick=()=>sluit('extra');
+    laag.onclick=e=>{if(e.target===laag)sluit(invoer?null:false)};
+    if(inv)inv.onkeydown=e=>{if(e.key==='Enter')sluit(inv.value.trim()||null)};
+  });
+}
+const bevestig=(titel,tekst,ok,gevaar)=>sheet({titel,tekst,ok:ok||'Verwijderen',gevaar:gevaar!==false});
+const vraag=(titel,tekst,waarde)=>sheet({titel,tekst,invoer:true,waarde,ok:'Bewaren'});
+
+/* back-upherinnering en installatie */
+function checkBackup(){
+  const l=localStorage.getItem('tl_backup');
+  const oud=!l||(Date.now()-+l)>14*864e5;
+  const heeftData=db&&db.logs&&db.logs.length>4;
+  document.getElementById('backupbalk').classList.toggle('aan',!!(oud&&heeftData));
+}
+let installPrompt=null;
+addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();installPrompt=e;
+  if(!localStorage.getItem('tl_installweg'))document.getElementById('installbalk').classList.add('aan');
+});
+async function installeer(){
+  if(!installPrompt){toast('Gebruik het deelmenu van je browser en kies "Zet op beginscherm"');return}
+  installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;
+  document.getElementById('installbalk').classList.remove('aan');
+}
+
+/* ===================== SCHEMA DELEN EN ONTVANGEN ===================== */
+/* Pakt trainingsdagen, sets en repranges in één link. Logs gaan nooit mee. */
+function pakIn(o){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function pakUit(t){
+  t=t.replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(escape(atob(t))));
+}
+function bouwSchemaCode(){
+  const pakket={
+    v:1,
+    d:db.dagen.map(d=>({n:d.naam,o:d.oefs,s:d.oefs.map(o=>setDoelVan(d.id,o))})),
+    r:db.repranges||{}
+  };
+  return pakIn(pakket);
+}
+async function deelSchema(){
+  if(!db.dagen.length){toast('Je hebt nog geen trainingsdagen','fout');return}
+  const link=location.origin+location.pathname+'#s='+bouwSchemaCode();
+  const tekst='Hier is je trainingsschema. Open de link in TrainLog:\n'+link;
+  if(navigator.share){
+    try{await navigator.share({title:'Trainingsschema',text:tekst});return}catch(e){}
+  }
+  try{await navigator.clipboard.writeText(link);toast('Link gekopieerd — plak hem in WhatsApp')}
+  catch(e){await sheet({titel:'Deel deze link',invoer:true,waarde:link,ok:'Sluiten'})}
+}
+async function ontvangSchema(inv){
+  const ruw=(inv||document.getElementById('schemacode').value||'').trim();
+  if(!ruw){toast('Plak eerst de link of code','fout');return}
+  const code=ruw.includes('#s=')?ruw.split('#s=')[1]:ruw;
+  let p;
+  try{p=pakUit(code)}catch(e){toast('Deze code klopt niet','fout');return}
+  if(!p||!Array.isArray(p.d)){toast('Deze code klopt niet','fout');return}
+  const eigenExtra=db.dagen.filter(d=>!p.d.some(x=>x.n===d.naam));
+  const lijst=p.d.map(x=>'· '+x.n+' ('+x.o.length+' oefeningen)').join('\n');
+  const keuze=await sheet({
+    titel:'Schema van Robin',
+    tekst:lijst+'\n\nJe gelogde trainingen en je geschiedenis blijven altijd bewaard.',
+    ok:eigenExtra.length?'Mijn schema vervangen':'Toevoegen',
+    extra:eigenExtra.length?'Toevoegen aan mijn schema':null
+  });
+  if(!keuze)return;
+  if(keuze===true&&eigenExtra.length){
+    db.dagen=db.dagen.filter(d=>p.d.some(x=>x.n===d.naam));
+  }
+  p.d.forEach(x=>{
+    const bestaandeDag=db.dagen.find(d=>d.naam===x.n);
+    const id=bestaandeDag?bestaandeDag.id:Date.now()+Math.floor(Math.random()*1000);
+    if(bestaandeDag){bestaandeDag.oefs=x.o.slice()}
+    else{db.dagen.push({id:id,naam:x.n,oefs:x.o.slice()})}
+    if(Array.isArray(x.s))x.o.forEach((o,i)=>{if(x.s[i])db.setdoel[id+'|'+o]=x.s[i]});
+  });
+  if(p.r)Object.keys(p.r).forEach(k=>db.repranges[k]=p.r[k]);
+  bewaar();renderSchema();renderTrainen();
+  toast(p.d.length+' trainingsdag'+(p.d.length===1?'':'en')+' geladen');
+}
+/* link met #s= automatisch oppikken */
+function checkSchemaLink(){
+  if(location.hash.startsWith('#s=')){
+    const c=location.hash.slice(3);
+    history.replaceState(null,'',location.pathname);
+    toon('schema');
+    setTimeout(()=>ontvangSchema(c),350);
+  }
+}
+
 const VIDEOS={};
 const TAGS={
 "Bankdrukken":"press · hele borst","Incline bankdrukken":"press · bovenborst","Dumbbell press":"press · veel rek","Incline dumbbell press":"press · bovenborst, veel rek","Chest press machine":"press · stabiel","Converging chest press":"press · rek én samenknijpen","Cable fly":"fly · verlengde positie","Incline fly":"fly · bovenborst","Pec deck":"fly · stabiel","Push-ups":"press · eigen gewicht","Dips (borst)":"press · onderborst, veel rek",
@@ -355,7 +543,7 @@ function bewaarCardio(i){
     else if(type==='hyrox'){const b={station:ins[0].value,info:ins[1].value.trim(),min:+ins[2].value||0};if(b.min)blokken.push(b)}
     else{const b={oms:ins[0].value.trim(),km:+ins[1].value||0,min:+ins[2].value||0};if(b.min)blokken.push(b)}
   });
-  if(!blokken.length){alert('Vul minstens één blok in.');return}
+  if(!blokken.length){toast('Vul minstens één blok in.');return}
   const min=Math.round(blokken.reduce((a,b)=>a+b.min,0)*10)/10;
   const km=Math.round(blokken.reduce((a,b)=>a+(b.km||(b.m?b.m/1000:0)||(b.station&&b.station.includes('Run')?1:0)),0)*10)/10;
   db.logs=db.logs.filter(l=>!(l.oef===oef&&l.datum===vandaag()));
@@ -425,7 +613,7 @@ function renderTrainen(){
     return g.length?`<div class="card"><b style="color:var(--goldsoft);font-size:14px">Sessie vandaag</b>${g.map(l=>`<div class="histset">${l.oef}: ${l.cardio?l.min+' min'+(l.km?' · '+l.km+' km':''):l.sets.map(s=>s.kg+'×'+s.reps).join(', ')}</div>`).join('')}<div style="font-size:12.5px;font-weight:700;margin-top:6px;color:${g.length===dag.oefs.length?'var(--groen)':'var(--grijs)'}">${g.length}/${dag.oefs.length} oefeningen${g.length===dag.oefs.length?' — sessie compleet ✓ Sterk gewerkt.':''}</div></div>`:''})()}
   <div class="card"><label style="margin-top:0">Notitie bij vandaag</label>
   <textarea id="dagnotitie" rows="2" placeholder="bv. schouder voelde stram, weinig geslapen…">${(db.notities[vandaag()]||'').replace(/</g,'&lt;')}</textarea>
-  <button class="btn-mini" style="margin-top:8px" onclick="db.notities[vandaag()]=document.getElementById('dagnotitie').value;bewaar();alert('Bewaard.')">Bewaren</button></div>`;
+  <button class="btn-mini" style="margin-top:8px" onclick="db.notities[vandaag()]=document.getElementById('dagnotitie').value;bewaar();toast('Bewaard.')">Bewaren</button></div>`;
 }
 function openDag(id){huidigeDag=id;renderTrainen()}
 function setDoelVan(dagId,oef){return db.setdoel[dagId+'|'+oef]||2}
@@ -437,7 +625,7 @@ function setsAantal(dagId,i,delta){
 function bewaarInstelling(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
   db.instellingen[dag.oefs[i]]=document.getElementById('inst'+i).value;
-  bewaar();alert('Instelling bewaard.');
+  bewaar();toast('Instelling bewaard.');
 }
 function hernoemDag(id){
   const d=db.dagen.find(x=>x.id===id);
@@ -501,9 +689,11 @@ function standaardRange(oef){
   return iso.some(w=>l.includes(w))?'8-12':'4-8';
 }
 function rangeVan(oef){return db.repranges[oef]||standaardRange(oef)}
-function wijzigRange(oef){
-  const v=prompt('Reprange voor '+oef+' (bv. 8-12):',rangeVan(oef));
-  if(v&&/^\d+-\d+$/.test(v.trim())){db.repranges[oef]=v.trim();bewaar();renderTrainen()}
+async function wijzigRange(oef){
+  const v=await vraag('Reprange aanpassen',oef+' — bijvoorbeeld 8-12',rangeVan(oef));
+  if(!v)return;
+  if(/^\d+-\d+$/.test(v.trim())){db.repranges[oef]=v.trim();bewaar();renderTrainen();toast('Reprange aangepast')}
+  else toast('Gebruik het formaat 8-12','fout');
 }
 function overloadDoel(vorig,range){
   const r=range.split('-').map(Number);
@@ -522,18 +712,18 @@ function bewaarOef(i){
     const ins=r.querySelectorAll('input');
     return{kg:parseFloat(ins[0].value)||0,reps:parseInt(ins[1].value)||0};
   }).filter(s=>s.kg>0&&s.reps>0);
-  if(!sets.length){alert('Vul minstens één set in.');return}
+  if(!sets.length){toast('Vul minstens één set in.');return}
   db.logs=db.logs.filter(l=>!(l.oef===oef&&l.datum===vandaag()));
   db.logs.push({oef,datum:vandaag(),sets});
   bewaar();
   const r=rangeVan(oef).split('-').map(Number);
-  if(r.length===2&&sets.every(s=>s.reps>r[1]))alert('Al je sets zitten boven je reprange ('+rangeVan(oef)+'). Verhoog volgende training het gewicht.');
+  if(r.length===2&&sets.every(s=>s.reps>r[1]))toast('Al je sets zitten boven je reprange ('+rangeVan(oef)+'). Verhoog volgende training het gewicht.');
   renderTrainen();
 }
 
 function bewaarGewicht(){
   const v=parseFloat(document.getElementById('gewichtin').value);
-  if(!v){alert('Vul je gewicht in.');return}
+  if(!v){toast('Vul je gewicht in.');return}
   db.gewicht=db.gewicht.filter(g=>g.datum!==vandaag());
   db.gewicht.push({datum:vandaag(),kg:v});
   bewaar();renderTrainen();
@@ -564,25 +754,32 @@ function renderSchema(){
     <div class="card">
       <label>Nieuwe trainingsdag</label>
       <div class="rij"><input type="text" id="nieuwedag" placeholder="bv. Full body A, Push, Benen…"><button class="btn-klein" onclick="nieuweDag()">+</button></div>
+    </div>
+    <div class="card" style="border-color:rgba(201,169,98,.3)">
+      <h2 style="margin:0 0 6px;font-size:15px">Schema van Robin</h2>
+      <p style="font-size:13px;color:var(--grijs);margin-bottom:12px">Kreeg je een schemalink of code van Robin? Plak ze hier, dan staan je trainingsdagen er meteen in. Je gelogde trainingen blijven bewaard.</p>
+      <div class="rij"><input type="text" id="schemacode" placeholder="Plak de link of code"><button class="btn-klein" onclick="ontvangSchema()">Laden</button></div>
+      <button class="btn-lijn" style="margin-top:10px" onclick="deelSchema()">Mijn schema delen</button>
     </div>`;
 }
 function nieuweDag(){
   const v=document.getElementById('nieuwedag').value.trim();if(!v)return;
   db.dagen.push({id:Date.now(),naam:v,oefs:[]});bewaar();renderSchema();
 }
-function verwijderDag(id){
-  if(!confirm('Deze trainingsdag verwijderen? Je logs blijven bewaard.'))return;
-  db.dagen=db.dagen.filter(d=>d.id!==id);bewaar();renderSchema();
+async function verwijderDag(id){
+  const d=db.dagen.find(x=>x.id===id);
+  if(!await bevestig('Trainingsdag verwijderen?','"'+(d?d.naam:'')+'" wordt uit je schema gehaald. Je gelogde trainingen blijven bewaard.'))return;
+  db.dagen=db.dagen.filter(d=>d.id!==id);bewaar();renderSchema();toast('Trainingsdag verwijderd');
 }
 function voegAanDag(id){
   const sel=document.getElementById('kies'+id);if(!sel.value)return;
   const d=db.dagen.find(x=>x.id===id);
   d.oefs.push(sel.value);bewaar();renderSchema();
 }
-function haalWeg(id,i){
+async function haalWeg(id,i){
   const d=db.dagen.find(x=>x.id===id);
-  if(!confirm(d.oefs[i]+' uit deze trainingsdag halen?'))return;
-  d.oefs.splice(i,1);bewaar();renderSchema();
+  if(!await bevestig('Oefening weghalen?',d.oefs[i]+' wordt uit deze trainingsdag gehaald.'))return;
+  d.oefs.splice(i,1);bewaar();renderSchema();toast('Oefening weggehaald');
 }
 function schuif(id,i,r){
   const d=db.dagen.find(x=>x.id===id);
@@ -697,7 +894,7 @@ function bewaarDoel(){
 }
 function bewaarMacro(){
   const m={datum:vandaag(),kcal:+document.getElementById('mkcal').value||0,e:+document.getElementById('me').value||0,k:+document.getElementById('mk').value||0,v:+document.getElementById('mv').value||0,vrij:document.getElementById('mvrij').checked};
-  if(!m.kcal&&!m.e&&!m.vrij){alert('Vul minstens je kcal of eiwit in, of vink speciale gelegenheid aan.');return}
+  if(!m.kcal&&!m.e&&!m.vrij){toast('Vul minstens je kcal of eiwit in, of vink speciale gelegenheid aan.');return}
   db.macros=db.macros.filter(x=>x.datum!==vandaag());
   db.macros.push(m);bewaar();renderMacros();
 }
@@ -787,9 +984,9 @@ function openCheckin(){
   </div>
   <button class="btn" onclick="verstuurCheckin()">Check-in mailen naar Robin</button>`;
 }
-function verstuurCheckin(){
+async function verstuurCheckin(){
   if(!db.naam){
-    const n=prompt('Je naam (komt in het onderwerp van de mail):');
+    const n=await vraag('Hoe heet je?','Je naam komt in het onderwerp, zodat Robin meteen ziet van wie de check-in is.');
     if(!n)return;db.naam=n.trim();bewaar();
   }
   const v=id=>document.getElementById(id).value.trim();
@@ -844,9 +1041,9 @@ function startTimer(sec){
     upd()},1000);
 }
 function piep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.2;o.start();o.stop(a.currentTime+.35)}catch(e){}}
-function weekNaarRobin(){
+async function weekNaarRobin(){
   if(!db.naam){
-    const n=prompt('Je naam (komt in het onderwerp van de mail):');
+    const n=await vraag('Hoe heet je?','Je naam komt in het onderwerp, zodat Robin meteen ziet van wie het overzicht is.');
     if(!n)return;
     db.naam=n.trim();bewaar();
   }
@@ -896,15 +1093,19 @@ function maandRapport(){
 function exporteer(){
   const blob=new Blob([JSON.stringify(db,null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='trainlog-backup-'+vandaag()+'.json';a.click();
+  a.download='trainlog-backup-'+vandaag()+'.json';a.click();localStorage.setItem('tl_backup',Date.now());document.getElementById('backupbalk').classList.remove('aan');toast('Back-up gedownload');
 }
 function importeer(ev){
   const f=ev.target.files[0];if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.dagen&&d.logs){db=d;db.instellingen=db.instellingen||{};db.eigen=db.eigen||[];db.gewicht=db.gewicht||[];db.voeding=db.voeding||'';db.repranges=db.repranges||{};db.macros=db.macros||[];db.macrodoel=db.macrodoel||null;db.notities=db.notities||{};db.setdoel=db.setdoel||{};db.naam=db.naam||'';db.metingen=db.metingen||[];db.introOk=db.introOk||false;bewaar();renderTrainen();alert('Back-up teruggezet.')}else alert('Ongeldig bestand.')}catch(e){alert('Ongeldig bestand.')}};
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(d.dagen&&d.logs){db=d;db.instellingen=db.instellingen||{};db.eigen=db.eigen||[];db.gewicht=db.gewicht||[];db.voeding=db.voeding||'';db.repranges=db.repranges||{};db.macros=db.macros||[];db.macrodoel=db.macrodoel||null;db.notities=db.notities||{};db.setdoel=db.setdoel||{};db.naam=db.naam||'';db.metingen=db.metingen||[];db.introOk=db.introOk||false;bewaar();renderTrainen();toast('Back-up teruggezet.')}else toast('Ongeldig bestand','fout')}catch(e){toast('Ongeldig bestand','fout')}};
   r.readAsText(f);
 }
 renderTrainen();
+checkBackup();
+checkSchemaLink();
+/* service worker: app werkt offline in de gym */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('trainlog-sw.js').catch(()=>{});
 </script>
 </body>
 </html>
