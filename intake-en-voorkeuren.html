@@ -330,7 +330,7 @@ details[open] summary::after{content:"–"}
 </div>
 
 <button type="button" class="btn" id="verstuurBtn" onclick="verstuur()">Verstuur naar Robin</button>
-<p style="font-size:12.5px;color:var(--grijs);margin-top:10px;text-align:center">Al je antwoorden worden rechtstreeks en veilig naar Robin gemaild. Er wordt niets lokaal opgeslagen.</p>
+<p style="font-size:12.5px;color:var(--grijs);margin-top:10px;text-align:center">Al je antwoorden worden rechtstreeks en veilig naar Robin gemaild. Terwijl je invult wordt alles tijdelijk op je eigen toestel bewaard, zodat je niets kwijtraakt als je later verdergaat..</p>
 <div class="status" id="statusVak"></div>
 
 </form>
@@ -900,6 +900,107 @@ async function verstuur(){
     btn.disabled = false; btn.textContent = 'Verstuur naar Robin';
   }
 }
+</script>
+  <style>
+#ia-balk{position:sticky;top:0;z-index:60;background:rgba(11,14,19,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);margin:0 -16px 12px;padding:11px 16px 9px}
+#ia-spoor{height:4px;background:var(--line);border-radius:99px;overflow:hidden}
+#ia-vul{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold),var(--goldsoft));border-radius:99px;transition:width .45s cubic-bezier(.22,.61,.36,1)}
+#ia-tekst{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:var(--grijs);margin-top:6px;letter-spacing:.04em}
+#ia-tekst b{color:var(--goldsoft);font-weight:700}
+#ia-bewaard{color:var(--groen);opacity:0;transition:opacity .35s}
+#ia-bewaard.aan{opacity:1}
+#ia-herstel{background:rgba(201,169,98,.12);border:1px solid rgba(201,169,98,.45);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13.5px;color:var(--goldsoft);display:none;align-items:center;gap:10px;flex-wrap:wrap}
+#ia-herstel.aan{display:flex}
+#ia-herstel button{background:none;border:1px solid rgba(201,169,98,.5);color:var(--goldsoft);padding:7px 13px;font-size:12.5px;border-radius:8px;cursor:pointer;font-weight:700;font-family:inherit}
+</style>
+<script>
+(function(){
+  const SLEUTEL='intake_concept_v1';
+  const form=document.getElementById('intakeForm');
+  const wrap=document.querySelector('.wrap');
+  if(!form||!wrap)return;
+
+  const balk=document.createElement('div');
+  balk.id='ia-balk';
+  balk.innerHTML='<div id="ia-spoor"><i id="ia-vul"></i></div>'+
+    '<div id="ia-tekst"><span>Voortgang <b id="ia-pct">0%</b></span>'+
+    '<span id="ia-bewaard">Automatisch bewaard</span></div>';
+  wrap.insertBefore(balk,wrap.firstChild);
+
+  const herstel=document.createElement('div');
+  herstel.id='ia-herstel';
+  herstel.innerHTML='<span style="flex:1">Je eerder ingevulde antwoorden zijn hersteld. Je kan gewoon verder waar je gebleven was.</span>'+
+    '<button type="button" id="ia-wis">Opnieuw beginnen</button>';
+  form.parentNode.insertBefore(herstel,form);
+
+  const velden=()=>[...form.querySelectorAll('input,select,textarea')].filter(e=>e.id);
+
+  function bewaar(){
+    const d={};
+    velden().forEach(e=>{
+      if(e.type==='checkbox'||e.type==='radio'){ if(e.checked)d[e.id]=true; }
+      else if(e.value!=='') d[e.id]=e.value;
+    });
+    try{ localStorage.setItem(SLEUTEL,JSON.stringify({t:Date.now(),d:d})); }catch(err){}
+    const b=document.getElementById('ia-bewaard');
+    b.classList.add('aan');
+    clearTimeout(window.__iaTimer);
+    window.__iaTimer=setTimeout(()=>b.classList.remove('aan'),1500);
+  }
+
+  function herstelData(){
+    let opg=null;
+    try{ opg=JSON.parse(localStorage.getItem(SLEUTEL)||'null'); }catch(e){}
+    if(!opg||!opg.d||!Object.keys(opg.d).length)return false;
+    velden().forEach(e=>{
+      if(!(e.id in opg.d))return;
+      if(e.type==='checkbox'||e.type==='radio') e.checked=!!opg.d[e.id];
+      else e.value=opg.d[e.id];
+    });
+    ['toonExtraDoelvelden','toonCutDeficitUitleg','toonAndereAllergieVeld',
+     'verversAllergieWaarschuwingen','berekenDranken','berekenSauzen','berekenTDEE']
+      .forEach(f=>{ try{ if(typeof window[f]==='function')window[f](); }catch(e){} });
+    return true;
+  }
+
+  function voortgang(){
+    const kern=velden().filter(e=>
+      !/^w_(ont|mid|avo|sna|tus)_/.test(e.id) &&
+      !/^(ont|mid|avo|sna|tus)\d+$/.test(e.id) &&
+      e.type!=='checkbox');
+    if(!kern.length)return;
+    const ingevuld=kern.filter(e=>e.value&&e.value.trim()!=='').length;
+    const pct=Math.round(ingevuld/kern.length*100);
+    document.getElementById('ia-vul').style.width=pct+'%';
+    document.getElementById('ia-pct').textContent=pct+'%';
+  }
+
+  let timer;
+  form.addEventListener('input',()=>{clearTimeout(timer);timer=setTimeout(()=>{bewaar();voortgang()},400)});
+  form.addEventListener('change',()=>{bewaar();voortgang()});
+
+  document.getElementById('ia-wis').addEventListener('click',function(){
+    if(this.dataset.zeker!=='1'){
+      this.dataset.zeker='1';
+      this.textContent='Zeker? Alles wissen';
+      setTimeout(()=>{this.dataset.zeker='';this.textContent='Opnieuw beginnen'},4000);
+      return;
+    }
+    localStorage.removeItem(SLEUTEL);
+    location.reload();
+  });
+
+  const oudeStatus=window.toonStatus;
+  if(typeof oudeStatus==='function'){
+    window.toonStatus=function(type,tekst){
+      if(type==='gelukt'){ try{localStorage.removeItem(SLEUTEL)}catch(e){} }
+      return oudeStatus.apply(this,arguments);
+    };
+  }
+
+  if(herstelData()) herstel.classList.add('aan');
+  voortgang();
+})();
 </script>
 </body>
 </html>
