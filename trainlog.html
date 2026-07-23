@@ -64,6 +64,48 @@ canvas{width:100%;height:180px}
 .verwijder{background:none;color:var(--rood);font-size:18px;padding:4px;width:auto}
 .terug{background:none;color:var(--grijs);font-size:14px;font-weight:700;padding:4px 0;width:auto;margin-bottom:8px}
 
+
+/* ===================== PLAN / KALENDER ===================== */
+.planbalk{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.planbalk button{background:var(--card2);color:var(--wit);border:1px solid var(--line);width:42px;height:42px;flex-shrink:0;font-size:18px;padding:0}
+.planbalk .midden{flex:1;text-align:center}
+.planbalk .wk{font-weight:800;font-size:15px}
+.planbalk .dat{font-size:12px;color:var(--grijs)}
+.planfase{display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--grijs);margin-bottom:10px}
+.plandag{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.plandag.vandaag{border-color:var(--gold);background:linear-gradient(135deg,rgba(201,169,98,.10),transparent 60%)}
+.plandag.gedaan{opacity:.55}
+.plandag.rustdag{opacity:.5;padding:10px 14px}
+.plandag .kop{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--grijs);font-weight:700}
+.plandag.vandaag .kop{color:var(--gold)}
+.plandag .t{font-weight:700;font-size:14.5px;margin:2px 0}
+.plandag .d{font-size:13px;color:var(--grijs);line-height:1.5}
+.plandag .k{font-size:12.5px;color:var(--goldsoft);margin-top:4px}
+.plandag .f{font-size:12.5px;color:#8fb4d9;margin-top:4px}
+.plandag .inhoud{flex:1;min-width:0}
+.vinkje{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:none;flex-shrink:0;color:var(--groen);font-size:16px;padding:0;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.vinkje.aan{background:rgba(93,202,133,.15);border-color:var(--groen)}
+.statusknoppen{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.kruisje{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:none;
+  color:var(--rood);font-size:14px;padding:0;display:flex;align-items:center;justify-content:center}
+.kruisje.aan{background:rgba(224,138,109,.15);border-color:var(--rood)}
+.plandag.nietgedaan{opacity:.72;border-color:rgba(224,138,109,.35)}
+.plandag.nietgedaan .t{text-decoration:line-through;text-decoration-color:rgba(224,138,109,.6)}
+.reden{font-size:12px;color:var(--rood);margin-top:5px;font-weight:600}
+.verplaatsknop{background:none;border:1px solid var(--line);color:var(--grijs);font-size:11.5px;
+  font-weight:700;padding:5px 11px;border-radius:8px;margin-top:8px;width:auto}
+.verplaatsknop:hover{border-color:var(--gold);color:var(--goldsoft)}
+.kieslijst{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow-y:auto;margin-bottom:14px;
+  -webkit-overflow-scrolling:touch}
+.kiesknop{background:var(--card2);border:1px solid var(--line);color:var(--wit);padding:13px 15px;
+  border-radius:11px;font-size:14.5px;font-weight:600;text-align:left;width:100%}
+.kiesknop:hover{border-color:var(--gold);color:var(--goldsoft)}
+.planeinde{background:linear-gradient(135deg,rgba(201,169,98,.14),rgba(201,169,98,.04));border:1px solid var(--gold);border-radius:12px;padding:16px;margin-top:14px;font-size:13.5px;color:var(--goldsoft);text-align:center}
+.planleeg{text-align:center;padding:40px 20px;color:var(--grijs);font-size:14px}
+.planvoortgang{height:5px;background:var(--line);border-radius:99px;overflow:hidden;margin:4px 0 14px}
+.planvoortgang i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--goldsoft));border-radius:99px;transition:width .4s}
+@media(max-width:400px){.tabbar button{font-size:9.5px}.tabbar svg{width:19px;height:19px}}
+
 /* ===================== PREMIUM APP-LAAG ===================== */
 /* iPhone-inkeping en thuisbalk respecteren */
 body{padding-bottom:calc(84px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
@@ -152,6 +194,7 @@ button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,ba
 <div id="backupbalk"><span style="flex:1">Je laatste back-up is meer dan twee weken geleden. Even veiligstellen?</span><button onclick="exporteer()">Back-up</button></div>
 
 <div class="scherm aan" id="s-trainen"></div>
+<div class="scherm" id="s-plan"></div>
 <div class="scherm" id="s-schema"></div>
 <div class="scherm" id="s-bib"></div>
 <div class="scherm" id="s-prog">
@@ -220,6 +263,7 @@ button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,ba
 
 <nav class="tabbar">
   <button class="aan" id="t-trainen" onclick="toon('trainen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Trainen</button>
+  <button id="t-plan" onclick="toon('plan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plan</button>
   <button id="t-schema" onclick="toon('schema')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Schema</button>
   <button id="t-bib" onclick="toon('bib')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5a2 2 0 012-2h13v18H6a2 2 0 01-2-2zM9 7h7M9 11h7"/></svg>Oefeningen</button>
   <button id="t-prog" onclick="toon('prog')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17l6-6 4 4 8-8"/></svg>Progressie</button>
@@ -294,6 +338,241 @@ async function installeer(){
   document.getElementById('installbalk').classList.remove('aan');
 }
 
+/* ===================== TRAININGSPLAN (KALENDER) ===================== */
+let planWeek=0;
+const PLANDAGEN=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
+const MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+function dagVan(startISO,weekIdx,dagIdx){
+  const d=new Date(startISO+'T00:00:00');
+  d.setDate(d.getDate()+weekIdx*7+dagIdx);
+  return d;
+}
+const isoVan=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const kortDat=d=>d.getDate()+' '+MAAND[d.getMonth()];
+function huidigePlanWeek(){
+  if(!db.plan)return 0;
+  const start=new Date(db.plan.s+'T00:00:00');
+  const diff=Math.floor((new Date().setHours(0,0,0,0)-start)/864e5);
+  return Math.max(0,Math.min(db.plan.w.length-1,Math.floor(diff/7)));
+}
+function planVerzet(){db.planverzet=db.planverzet||{};return db.planverzet}
+
+/* Alle sessies die op een bepaalde datum vallen, inclusief verplaatste. */
+function sessiesOp(iso){
+  if(!db.plan)return [];
+  const p=db.plan,vz=planVerzet(),uit=[];
+  p.w.forEach((week,wi)=>{
+    (week[1]||[]).forEach((dag,di)=>{
+      if(!dag||dag===0)return;
+      dag.forEach((it,ii)=>{
+        const k=wi+'-'+di+'-'+ii;
+        const originISO=isoVan(dagVan(p.s,wi,di));
+        const doel=vz[k]||originISO;
+        if(doel!==iso)return;
+        uit.push({k,originISO,verzet:!!vz[k],
+          titel:p.D[it[0]],detail:p.D[it[1]],kort:p.D[it[2]],fuel:p.D[it[3]],soort:p.D[it[4]],
+          week:wi});
+      });
+    });
+  });
+  return uit;
+}
+function planStatus(){db.planstatus=db.planstatus||{};return db.planstatus}
+function statusVan(k){
+  const st=planStatus()[k];
+  if(st)return st;
+  if(db.plangedaan&&db.plangedaan[k])return {s:'gedaan'};
+  return null;
+}
+const REDENEN=[
+  {waarde:'Geen tijd',label:'Geen tijd gehad'},
+  {waarde:'Ziek',label:'Ziek'},
+  {waarde:'Pijn of blessure',label:'Pijn of blessure'},
+  {waarde:'Te moe',label:'Te moe of slecht geslapen'},
+  {waarde:'Gezin of werk',label:'Gezin of werk kwam ertussen'},
+  {waarde:'-',label:'Liever geen reden opgeven'}
+];
+async function zetStatus(k,soort){
+  const st=planStatus(),huidig=statusVan(k);
+  if(huidig&&huidig.s===soort){
+    delete st[k];
+    if(db.plangedaan)delete db.plangedaan[k];
+    bewaar();ververs();return;
+  }
+  if(soort==='niet'){
+    const reden=await kiesUit('Niet gedaan','Dit komt in je weekoverzicht bij Robin. Eerlijk mag: hij stuurt bij, niet af.',REDENEN);
+    if(reden===null)return;
+    st[k]={s:'niet',r:reden==='-'?'':reden};
+  }else{
+    st[k]={s:'gedaan'};
+    if(navigator.vibrate)navigator.vibrate(10);
+  }
+  if(db.plangedaan)delete db.plangedaan[k];
+  bewaar();ververs();
+}
+function ververs(){
+  renderPlan();
+  if(document.getElementById('s-trainen').classList.contains('aan'))renderTrainen();
+}
+/* oude naam blijft werken */
+function vinkPlan(k){zetStatus(k,'gedaan')}
+/* Verplaatsen naar een andere dag, binnen dezelfde week of een dag ervoor/erna. */
+async function verplaats(k,huidigISO){
+  const basis=new Date(huidigISO+'T00:00:00');
+  const maandag=new Date(basis);
+  maandag.setDate(maandag.getDate()-((maandag.getDay()+6)%7));
+  const opties=[];
+  for(let i=-2;i<9;i++){
+    const d=new Date(maandag);d.setDate(d.getDate()+i);
+    const iso=isoVan(d);
+    if(iso===huidigISO)continue;
+    opties.push({waarde:iso,label:PLANDAGEN[(d.getDay()+6)%7]+' '+kortDat(d)});
+  }
+  const vz=planVerzet();
+  if(vz[k])opties.unshift({waarde:'terug',label:'Terug naar de oorspronkelijke dag'});
+  const keuze=await kiesUit('Verplaatsen naar','Je plan blijft verder gewoon doorlopen.',opties);
+  if(!keuze)return;
+  if(keuze==='terug')delete vz[k]; else vz[k]=keuze;
+  bewaar();renderPlan();
+  toast(keuze==='terug'?'Teruggezet':'Verplaatst');
+}
+/* Keuzelijst in dezelfde stijl als de andere sheets. */
+function kiesUit(titel,tekst,opties){
+  return new Promise(res=>{
+    const laag=document.createElement('div');
+    laag.className='sheetlaag';
+    laag.innerHTML=`<div class="sheet">
+      <div class="greep"></div><h3></h3>${tekst?'<p></p>':''}
+      <div class="kieslijst">${opties.map(o=>`<button class="kiesknop" data-w="${o.waarde}">${o.label}</button>`).join('')}</div>
+      <div class="knoppen"><button class="btn-lijn" data-nee>Annuleren</button></div></div>`;
+    laag.querySelector('h3').textContent=titel;
+    if(tekst)laag.querySelector('p').textContent=tekst;
+    document.body.appendChild(laag);
+    function sluit(v){laag.classList.add('uit');setTimeout(()=>{laag.remove();res(v)},240)}
+    laag.querySelectorAll('.kiesknop').forEach(b=>b.onclick=()=>sluit(b.dataset.w));
+    laag.querySelector('[data-nee]').onclick=()=>sluit(null);
+    laag.onclick=e=>{if(e.target===laag)sluit(null)};
+  });
+}
+function planNaarWeek(delta){
+  planWeek=Math.max(0,Math.min(db.plan.w.length-1,planWeek+delta));
+  renderPlan();
+}
+function planDagHTML(naam,datum,iso,vandaagISO,eindISO){
+  const items=sessiesOp(iso);
+  db.plangedaan=db.plangedaan||{};
+  const vandaag=iso===vandaagISO;
+  if(!items.length)return{html:`<div class="plandag rustdag${vandaag?' vandaag':''}">
+    <div class="inhoud"><div class="kop">${naam} ${kortDat(datum)}${vandaag?' · vandaag':''}</div>
+    <div class="t">Rust</div></div></div>`,gepland:0,gedaan:0};
+  let gedaan=0,niet=0;
+  const html=items.map(it=>{
+    const st=statusVan(it.k);
+    const af=st&&st.s==='gedaan', ng=st&&st.s==='niet';
+    if(af)gedaan++; if(ng)niet++;
+    return `<div class="plandag${vandaag?' vandaag':''}${af?' gedaan':''}${ng?' nietgedaan':''}">
+      <div class="inhoud">
+        <div class="kop">${naam} ${kortDat(datum)}${vandaag?' · vandaag':''}${it.verzet?' · verplaatst':''}</div>
+        <div class="t">${it.titel}</div>
+        <div class="d">${it.detail}</div>
+        ${it.kort?`<div class="k">${it.kort}</div>`:''}
+        ${it.fuel?`<div class="f">${it.fuel}</div>`:''}
+        ${ng&&st.r?`<div class="reden">Niet gedaan — ${st.r.toLowerCase()}</div>`:ng?`<div class="reden">Niet gedaan</div>`:''}
+        <button class="verplaatsknop" onclick="event.stopPropagation();verplaats('${it.k}','${iso}')">Andere dag</button>
+      </div>
+      <div class="statusknoppen">
+        <button class="vinkje${af?' aan':''}" title="Gedaan" onclick="zetStatus('${it.k}','gedaan')">${af?'✓':''}</button>
+        <button class="kruisje${ng?' aan':''}" title="Niet gedaan" onclick="zetStatus('${it.k}','niet')">${ng?'✕':''}</button>
+      </div>
+    </div>`;
+  }).join('');
+  return {html,gepland:items.length,gedaan,niet};
+}
+function renderPlan(){
+  const el=document.getElementById('s-plan');
+  if(!db.plan){
+    el.innerHTML=`<h2>Trainingsplan</h2>
+      <div class="planleeg">Je hebt nog geen plan ontvangen.<br><br>
+      Krijg je van Robin een link met je schema, open die dan op dit toestel.
+      Je trainingen verschijnen hier automatisch in een kalender.</div>`;
+    return;
+  }
+  const p=db.plan,nu=huidigePlanWeek();
+  if(planWeek===null||planWeek===undefined)planWeek=nu;
+  const w=p.w[planWeek];
+  const start=dagVan(p.s,planWeek,0),eind=dagVan(p.s,planWeek,6);
+  const vandaagISO=isoVan(new Date());
+  let gepland=0,gedaan=0,niet=0,dagenHTML='';
+  PLANDAGEN.forEach((naam,di)=>{
+    const datum=dagVan(p.s,planWeek,di),iso=isoVan(datum);
+    if(p.e&&iso>p.e&&!sessiesOp(iso).length)return;
+    const r=planDagHTML(naam,datum,iso,vandaagISO,p.e);
+    dagenHTML+=r.html;gepland+=r.gepland;gedaan+=r.gedaan;niet+=r.niet||0;
+  });
+  const laatste=planWeek===p.w.length-1;
+  const eindeHTML=laatste&&p.e
+    ? `<div class="planeinde"><b>Je plan loopt tot ${kortDat(new Date(p.e+'T00:00:00'))}.</b><br>
+       Verleng je maand en je krijgt meteen de volgende weken doorgestuurd.
+       <div style="margin-top:10px"><a href="https://wa.me/32472502086?text=${encodeURIComponent('Hey Robin, ik wil graag verder met de coaching. Kan je me het vervolg van mijn schema doorsturen?')}" style="color:#0b0e13;background:var(--gold);padding:10px 18px;border-radius:10px;display:inline-block;font-weight:700;text-decoration:none">Bericht sturen</a></div></div>`
+    : laatste?`<div class="planeinde">Laatste week van je plan. Succes op de dag zelf.</div>`:'';
+  el.innerHTML=`
+    <h2>${p.g||'Trainingsplan'}</h2>
+    <div style="font-size:12.5px;color:var(--grijs);margin-bottom:2px">Week ${planWeek+1} van ${p.w.length}${gepland?` · ${gedaan} van ${gepland} gedaan${niet?` · ${niet} niet gelukt`:''}`:''}</div>
+    <div class="planvoortgang"><i style="width:${gepland?Math.round(gedaan/gepland*100):0}%"></i></div>
+    <div class="planbalk">
+      <button onclick="planNaarWeek(-1)" ${planWeek===0?'disabled style="opacity:.35"':''}>&lsaquo;</button>
+      <div class="midden"><div class="wk">Week ${planWeek+1}</div>
+        <div class="dat">${kortDat(start)} — ${kortDat(eind)}</div></div>
+      <button onclick="planNaarWeek(1)" ${laatste?'disabled style="opacity:.35"':''}>&rsaquo;</button>
+    </div>
+    ${w&&w[0]!==undefined?`<span class="planfase">${p.D[w[0]]}</span>`:''}
+    ${planWeek!==nu?`<div style="margin-bottom:10px"><button class="btn-lijn" onclick="planWeek=huidigePlanWeek();renderPlan()">Naar deze week</button></div>`:''}
+    ${dagenHTML}
+    ${eindeHTML}`;
+}
+function planVandaag(){
+  if(!db.plan)return '';
+  const vandaag=new Date();vandaag.setHours(0,0,0,0);
+  const iso=isoVan(vandaag);
+  const start=new Date(db.plan.s+'T00:00:00');
+  if(vandaag<start)return '';
+  const items=sessiesOp(iso);
+  db.plangedaan=db.plangedaan||{};
+  if(!items.length){
+    const diff=Math.floor((vandaag-start)/864e5);
+    if(Math.floor(diff/7)>=db.plan.w.length)return '';
+    if(db.plan.e&&iso>db.plan.e)return '';
+    return `<div class="card" style="border-color:rgba(93,202,133,.35)">
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--groen);font-weight:700">Volgens je plan</div>
+      <div style="font-weight:700;margin-top:3px">Vandaag rust</div></div>`;
+  }
+  return `<div class="card" style="border-color:rgba(201,169,98,.4)">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--gold);font-weight:700">Vandaag volgens je plan</div>
+    ${items.map(it=>{
+      const st=statusVan(it.k);
+      const af=st&&st.s==='gedaan', ng=st&&st.s==='niet';
+      return `<div style="display:flex;gap:10px;align-items:flex-start;margin-top:10px${af||ng?';opacity:.55':''}">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14.5px">${it.titel}</div>
+          <div style="font-size:13px;color:var(--grijs);line-height:1.5">${it.detail}</div>
+          ${ng?`<div class="reden">Niet gedaan${st.r?' — '+st.r.toLowerCase():''}</div>`:''}
+          <button class="verplaatsknop" onclick="verplaats('${it.k}','${iso}')">Past niet vandaag?</button>
+        </div>
+        <div class="statusknoppen">
+          <button class="vinkje${af?' aan':''}" onclick="zetStatus('${it.k}','gedaan')">${af?'✓':''}</button>
+          <button class="kruisje${ng?' aan':''}" onclick="zetStatus('${it.k}','niet')">${ng?'✕':''}</button>
+        </div>
+      </div>`}).join('')}
+    <button class="btn-lijn" style="margin-top:10px" onclick="toon('plan')">Hele week bekijken</button></div>`;
+}
+function laadPlan(p){
+  db.plan={n:p.n,g:p.g,s:p.s,e:p.e||null,D:p.D,w:p.w};
+  db.planverzet={};
+  planWeek=huidigePlanWeek();
+  bewaar();renderPlan();toon('plan');
+  toast('Trainingsplan geladen: '+p.w.length+' weken');
+}
+
 /* ===================== SCHEMA DELEN EN ONTVANGEN ===================== */
 /* Pakt trainingsdagen, sets en repranges in één link. Logs gaan nooit mee. */
 function pakIn(o){
@@ -327,6 +606,13 @@ async function ontvangSchema(inv){
   const code=ruw.includes('#s=')?ruw.split('#s=')[1]:ruw;
   let p;
   try{p=pakUit(code)}catch(e){toast('Deze code klopt niet','fout');return}
+  if(p&&p.t==='p'&&Array.isArray(p.w)){
+    const ok=await sheet({titel:'Trainingsplan van Robin',
+      tekst:`${p.g||'Plan'} · ${p.w.length} weken, start ${p.s}.` + (p.e?` Loopt tot ${p.e}.`:'') + ' Je bestaande logs en schema blijven bewaard.',
+      ok:'Plan laden'});
+    if(ok)laadPlan(p);
+    return;
+  }
   if(!p||!Array.isArray(p.d)){toast('Deze code klopt niet','fout');return}
   const eigenExtra=db.dagen.filter(d=>!p.d.some(x=>x.n===d.naam));
   const lijst=p.d.map(x=>'· '+x.n+' ('+x.o.length+' oefeningen)').join('\n');
@@ -553,6 +839,7 @@ function bewaarCardio(i){
 let huidigeDag=null,openOef=null;
 
 function toon(naam){
+  if(naam==='plan')setTimeout(renderPlan,0);
   document.querySelectorAll('.scherm').forEach(s=>s.classList.remove('aan'));
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.remove('aan'));
   document.getElementById('s-'+naam).classList.add('aan');
@@ -567,6 +854,7 @@ function toon(naam){
 function renderTrainen(){
   const el=document.getElementById('s-trainen');
   if(huidigeDag===null){
+    const planKaart=planVandaag();
     const vandaagG=db.gewicht.find(g=>g.datum===vandaag());
     const gewichtKaart=`<div class="card"><label style="margin-top:0">Gewicht vanochtend</label>
       <div class="rij"><input type="number" inputmode="decimal" step="0.1" id="gewichtin" placeholder="kg" value="${vandaagG?vandaagG.kg:''}">
@@ -581,7 +869,7 @@ function renderTrainen(){
       <b style="color:var(--wit)">Voeding.</b> Onder Meer plak je je voedingsschema en log je per dag je calorieën en macro's. Feestje of vakantie? Vink "speciale gelegenheid" aan, die dag telt niet mee.<br><br>
       <b style="color:var(--wit)">Check-in.</b> Om de twee weken vul je onder Meer de check-in in. Alles gaat met één tik als mail naar Robin. Zit je tussendoor ergens mee: WhatsApp staat altijd open.</div>
       <button class="btn-mini" onclick="db.introOk=true;bewaar();renderTrainen()">Begrepen, verberg dit</button></div>`;
-    el.innerHTML=intro+gewichtKaart+'<h2>Kies je trainingsdag <button class="btn-mini" style="float:right" onclick="db.introOk=false;bewaar();renderTrainen()">? uitleg</button></h2>'+(db.dagen.length?db.dagen.map(d=>{
+    el.innerHTML=intro+planKaart+gewichtKaart+'<h2>Kies je trainingsdag <button class="btn-mini" style="float:right" onclick="db.introOk=false;bewaar();renderTrainen()">? uitleg</button></h2>'+(db.dagen.length?db.dagen.map(d=>{
       const klaarVandaag=d.oefs.filter(o=>db.logs.some(l=>l.oef===o&&l.datum===vandaag())).length;
       return `<div class="dagkaart" onclick="openDag(${d.id})"><div><div class="n">${d.naam}</div><div class="s">${d.oefs.length} oefeningen${klaarVandaag?` · ${klaarVandaag} gelogd vandaag`:''}</div></div><div style="color:var(--gold);font-size:20px">›</div></div>`;
     }).join(''):'<div class="leeg">Nog geen trainingsdagen. Maak ze aan onder Schema.</div>');
@@ -1058,6 +1346,28 @@ async function weekNaarRobin(){
   const m=db.macros.filter(x=>x.datum>=sinds&&!x.vrij);
   const vrijdagen=db.macros.filter(x=>x.datum>=sinds&&x.vrij).length;
   if(m.length)txt+='\nGemiddeld '+Math.round(m.reduce((a,x)=>a+x.kcal,0)/m.length)+' kcal over '+m.length+' dagen'+(vrijdagen?' (+'+vrijdagen+' speciale gelegenheid)':'');
+  /* planvoortgang: wat stond er gepland en wat is er van gekomen */
+  if(db.plan){
+    db.plangedaan=db.plangedaan||{};
+    let gepland=0,af=0,gemist=[],verzet=0;
+    for(let i=0;i<7;i++){
+      const dag=new Date(Date.now()-(6-i)*864e5);dag.setHours(0,0,0,0);
+      const iso=isoVan(dag);
+      sessiesOp(iso).forEach(it=>{
+        gepland++;
+        if(it.verzet)verzet++;
+        const st=statusVan(it.k);
+        if(st&&st.s==='gedaan')af++;
+        else if(st&&st.s==='niet')gemist.push(iso.slice(5)+' '+it.titel+(st.r?' ('+st.r.toLowerCase()+')':''));
+        else gemist.push(iso.slice(5)+' '+it.titel+' (niet afgevinkt)');
+      });
+    }
+    if(gepland){
+      txt+='\n\nPlan: '+af+' van '+gepland+' geplande sessies gedaan';
+      if(verzet)txt+=' ('+verzet+' zelf verplaatst)';
+      if(gemist.length)txt+='\nNiet gedaan: '+gemist.join(' | ');
+    }
+  }
   const noten=Object.entries(db.notities).filter(([d,n])=>d>=sinds&&n);
   if(noten.length)txt+='\nNotities: '+noten.map(([d,n])=>d+': '+n).join(' | ');
   const onderwerp='TrainLog weekoverzicht - '+db.naam+' - '+sinds+' tot '+vandaag();
