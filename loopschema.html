@@ -55,6 +55,7 @@ button:active{transform:scale(.98)}
 .fase.opbouw{color:var(--goldsoft);border-color:rgba(201,169,98,.45)}
 .fase.piek{color:var(--rood);border-color:rgba(224,138,109,.45)}
 .fase.taper{color:var(--groen);border-color:rgba(93,202,133,.4)}
+.fase.test{color:#8fb4d9;border-color:rgba(143,180,217,.45)}
 .fase.deload{color:var(--grijs)}
 .weekkop .km{font-size:13px;color:var(--goldsoft);font-weight:700;margin-left:auto;white-space:nowrap}
 .weekinhoud{display:none;border-top:1px solid var(--line);padding:4px 0}
@@ -72,6 +73,31 @@ button:active{transform:scale(.98)}
 #uitvoer{display:none;background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:11.5px;color:var(--grijs);white-space:pre-wrap;max-height:280px;overflow:auto;margin-top:10px;font-family:ui-monospace,monospace}
 #uitvoer.aan{display:block}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:rgba(30,36,46,.97);border:1px solid var(--line);padding:13px 18px;border-radius:14px;font-size:14.5px;font-weight:600;box-shadow:0 12px 34px rgba(0,0,0,.5);z-index:100}
+#printvel{display:none}
+@media print{
+  html,body{background:#fff!important;height:auto!important;overflow:visible!important}
+  body>*{display:none!important}
+  body>#printvel{display:block!important}
+  #printvel{color:#111;font-family:system-ui,-apple-system,sans-serif;font-size:10.5pt;line-height:1.45}
+  @page{size:A4;margin:15mm}
+  .pv-kop{border-bottom:2.5px solid #c9a962;padding-bottom:8px;margin-bottom:14px}
+  .pv-titel{font-size:19pt;font-weight:800;letter-spacing:-.01em}
+  .pv-sub{font-size:10pt;color:#555;margin-top:3px}
+  .pv-info{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10pt}
+  .pv-info td{border-bottom:1px solid #e0e0e0;padding:5px 2px}
+  .pv-info td:nth-child(2){font-weight:800;text-align:right;white-space:nowrap;width:110px}
+  .pv-info td:last-child{color:#666;text-align:right;font-size:9pt}
+  .pv-week{page-break-inside:avoid;break-inside:avoid;margin-bottom:11px}
+  .pv-weekkop{background:#f4efe3;border-left:3px solid #c9a962;padding:5px 9px;font-weight:800;font-size:11pt;margin-bottom:4px}
+  .pv-dag{padding:4px 0 4px 9px;border-bottom:1px solid #eee}
+  .pv-dag:last-child{border-bottom:none}
+  .pv-det{color:#333;font-size:9.5pt;margin-top:1px}
+  .pv-kort{color:#8a6d2f;font-size:9pt;margin-top:1px}
+  .pv-fuel{color:#3d5a75;font-size:9pt;margin-top:1px}
+  .pv-slot{margin-top:12px;padding:8px 10px;background:#f4efe3;border-left:3px solid #c9a962;font-size:9.5pt}
+  .pv-voet{margin-top:14px;padding-top:8px;border-top:1px solid #ddd;font-size:8.5pt;color:#666;text-align:center}
+}
+
 </style>
 </head>
 <body>
@@ -85,8 +111,15 @@ button:active{transform:scale(.98)}
 <h2>1 · De klant</h2>
 <div class="card">
   <label>Voornaam</label><input type="text" id="klant" placeholder="bv. Jan">
+  <label>Waar werken we naartoe?</label>
+  <select id="doeltype" onchange="wisselDoeltype()">
+    <option value="wedstrijd" selected>Een wedstrijd op een vaste datum</option>
+    <option value="blok">Geen wedstrijd — een trainingsblok tot een datum</option>
+    <option value="algemeen">Geen doel — gewoon zo goed mogelijk worden</option>
+  </select>
+  <p class="uitleg" id="doeluitleg">Het schema bouwt op naar de wedstrijddag, met een taper op het einde.</p>
   <div class="rij">
-    <div><label>Doelwedstrijd</label>
+    <div><label id="doellabel">Doelwedstrijd</label>
       <select id="doel" onchange="wisselDoel()">
         <option value="2400">2,4 km (Defensietest)</option>
         <option value="5000">5 km</option>
@@ -98,12 +131,29 @@ button:active{transform:scale(.98)}
         <option value="50000">Trail 50 km</option>
         <option value="100000">Trail 100 km</option>
       </select></div>
-    <div><label>Datum wedstrijd</label><input type="date" id="datum"></div>
+    <div><label id="datumlabel">Datum wedstrijd</label><input type="date" id="datum"></div>
   </div>
 </div>
 
 <h2>2 · Huidig niveau</h2>
 <div class="card">
+  <label>Hoe kennen we het huidige niveau?</label>
+  <select id="niveautype" onchange="wisselNiveau()">
+    <option value="tijd" selected>Via een recente wedstrijd of testloop</option>
+    <option value="ervaring">Geen tijd bekend — inschatten op ervaring</option>
+  </select>
+  <div id="blokErvaring" style="display:none">
+    <label>Hoelang kan hij of zij nu aan één stuk door lopen?</label>
+    <select id="ervaring">
+      <option value="0">Nog nooit gelopen, of minder dan 5 minuten</option>
+      <option value="1">5 tot 15 minuten</option>
+      <option value="2" selected>15 tot 30 minuten</option>
+      <option value="3">30 tot 45 minuten</option>
+      <option value="4">45 tot 60 minuten</option>
+    </select>
+    <p class="uitleg">Bij de eerste twee bouwt het schema op met afwisselend lopen en wandelen. Tempo’s worden dan niet in minuten per kilometer gegeven, maar op gevoel: praten moet lukken.</p>
+  </div>
+  <div id="blokTijd">
   <label>Recente wedstrijd of testloop</label>
   <div class="rij">
     <div><select id="testafstand">
@@ -118,8 +168,9 @@ button:active{transform:scale(.98)}
     <div><input type="text" id="testtijd" placeholder="uu:mm:ss of mm:ss"></div>
   </div>
   <p class="uitleg">Neem de meest recente prestatie. Geen wedstrijd gedaan? Laat een testloop doen: 5 km zo hard als mogelijk, na een goede opwarming.</p>
+  </div>
   <div class="rij">
-    <div><label>Huidige weekafstand (km)</label><input type="number" id="huidigkm" placeholder="bv. 25"></div>
+    <div><label>Huidige weekafstand (km)</label><input type="number" id="huidigkm" placeholder="bv. 25 — leeg bij beginner"></div>
     <div><label>Langste recente duurloop (km)</label><input type="number" id="langstelang" placeholder="bv. 12"></div>
   </div>
   <div class="rij" id="terreinrij" style="display:none">
@@ -151,8 +202,14 @@ button:active{transform:scale(.98)}
     <div><label>Minuten voor de lange duurloop</label><input type="number" id="minlang" value="120"></div>
   </div>
   <div class="rij">
-    <div><label>Lange duurloop op</label>
-      <select id="langedag"><option value="5">Zaterdag</option><option value="6" selected>Zondag</option></select></div>
+    <div><label>Langste sessie op</label>
+      <select id="langedag">
+        <option value="0">Maandag</option><option value="1">Dinsdag</option>
+        <option value="2">Woensdag</option><option value="3">Donderdag</option>
+        <option value="4">Vrijdag</option><option value="5">Zaterdag</option>
+        <option value="6" selected>Zondag</option>
+        <option value="-1">Maakt niet uit — hij schuift zelf</option>
+      </select></div>
     <div><label>Wat weegt het zwaarst?</label>
       <select id="prioriteit">
         <option value="wedstrijd" selected>De wedstrijd</option>
@@ -193,6 +250,51 @@ function voorspel(vdot,m){
   let lo=m/8,hi=m/1.2;
   for(let i=0;i<60;i++){const mid=(lo+hi)/2; if(vdotVan(m,mid)>vdot)lo=mid;else hi=mid}
   return (lo+hi)/2;
+}
+function wisselDoeltype(){
+  const t=document.getElementById('doeltype').value;
+  const dl=document.getElementById('doellabel'),tl=document.getElementById('datumlabel');
+  const dat=document.getElementById('datum');
+  if(t==='algemeen'){
+    dl.textContent='Waar leg je de nadruk';
+    tl.textContent='Einddatum (mag leeg — dan 12 weken)';
+    dat.removeAttribute('required');
+  }else if(t==='blok'){
+    dl.textContent='Waar bouwen we naartoe';
+    tl.textContent='Einde van het blok';
+  }else{
+    dl.textContent='Doelwedstrijd';
+    tl.textContent='Datum wedstrijd';
+  }
+  const u=document.getElementById('doeluitleg');
+  if(u)u.textContent = t==='algemeen'
+    ? 'Zonder wedstrijd bouwen we een doorlopend blok: opbouw, om de vier weken een rustweek, en een testloop op het einde om opnieuw te kunnen inschatten. De nadruk bepaalt welke soort sessies zwaarder wegen.'
+    : t==='blok'
+    ? 'Een blok met een duidelijk einde, zonder wedstrijd. Het blok sluit af met een testloop in plaats van een taper.'
+    : 'Het schema bouwt op naar de wedstrijddag, met een taper op het einde.';
+}
+function wisselNiveau(){
+  const opErvaring=document.getElementById('niveautype').value==='ervaring';
+  document.getElementById('blokTijd').style.display=opErvaring?'none':'block';
+  document.getElementById('blokErvaring').style.display=opErvaring?'block':'none';
+}
+/* Ruwe inschatting wanneer er geen tijd bekend is. Bewust voorzichtig:
+   te laag starten kost niets, te hoog starten kost blessures. */
+const ERVARING_VDOT=[24,27,32,36,40];
+/* Start-to-run: afwisselend lopen en wandelen, per week iets meer lopen. */
+const LOOPWANDEL=[
+  {n:8,l:1,w:2},{n:8,l:1.5,w:1.5},{n:7,l:2,w:1.5},{n:6,l:2,w:2},
+  {n:6,l:3,w:1.5},{n:5,l:4,w:1.5},{n:5,l:5,w:1},{n:4,l:6,w:1},
+  {n:3,l:9,w:1},{n:2,l:13,w:1},{n:2,l:16,w:1},{n:1,l:25,w:0}
+];
+function loopWandel(voortgang){
+  const i=Math.max(0,Math.min(LOOPWANDEL.length-1,Math.round(voortgang*(LOOPWANDEL.length-1))));
+  return LOOPWANDEL[i];
+}
+function beginnerTekst(v,extra){
+  const b=loopWandel(v);
+  if(b.w===0)return `${b.l} minuten aaneengesloten rustig lopen${extra||''}`;
+  return `${b.n}× ${b.l} min rustig lopen met ${b.w} min wandelen ertussen${extra||''}`;
 }
 function wisselDoel(){
   const d=+document.getElementById('doel').value;
@@ -288,7 +390,16 @@ function weekIndeling(loopdagen,krachtdagen,langeDag,vermijd){
 /* ============================================================
    SESSIES PER FASE
    ============================================================ */
-function kwaliteitSessie(fase,vdot,doel,minuten,index,terrein){
+function kwaliteitSessie(fase,vdot,doel,minuten,index,terrein,beginner,voortgang){
+  /* --- beginner: afwisselend lopen en wandelen, geen tempo's --- */
+  if(beginner){
+    if(index===0)return{titel:'Lopen en wandelen',
+      detail:'5 min stevig inwandelen · '+beginnerTekst(voortgang)+' · 5 min uitwandelen',
+      kort:'Korter: de helft van de herhalingen. Dat telt volwaardig mee.'};
+    return{titel:'Rustige loop- en wandelsessie',
+      detail:'5 min inwandelen · '+beginnerTekst(voortgang*0.85)+' · 5 min uitwandelen. Rustiger dan de andere sessie: praten moet vlot lukken.',
+      kort:'Korter: 20 minuten afwisselend lopen en wandelen.'};
+  }
   const T=mmss(secKm(vdot,PCT.T)), I=mmss(secKm(vdot,PCT.I)),
         R=mmss(secKm(vdot,PCT.R)), M=mmss(secKm(vdot,PCT.M)), E=mmss(secKm(vdot,PCT.E));
   const opw=`10 min inlopen op ${E}/km`, uit=`10 min uitlopen`;
@@ -357,7 +468,7 @@ function kwaliteitSessie(fase,vdot,doel,minuten,index,terrein){
 function bouwSchema(g){
   const {vdot,doel,weken,loopdagen,krachtdagen,minweek,minlang,langeDag,huidigkm,langstelang,prioriteit}=g;
   const tempoE=secKm(vdot,PCT.E)/60;
-  const taper=Math.min(TAPERWEKEN[doel],Math.max(1,Math.floor(weken/4)));
+  const taper=g.blokDoel?1:Math.min(TAPERWEKEN[doel],Math.max(1,Math.floor(weken/4)));
   const opbouwweken=weken-taper;
   const maxUitTijd=Math.round(((loopdagen-1)*minweek+minlang)/tempoE);
   const piekVolume=Math.min(maxUitTijd,Math.max(huidigkm*1.5,MINVOLUME[doel]));
@@ -423,6 +534,9 @@ function bouwSchema(g){
           const min=Math.round(langKm*tempoE);
           const kortKm=Math.max(6,Math.round(langKm*0.6));
           let detail=`${langKm} km op ${mmss(secKm(vdot,PCT.E))}/km (±${min} min)`;
+          if(g.beginner){
+            detail='5 min inwandelen · '+beginnerTekst((w-1)/Math.max(1,weken-1),' — dit is je langste sessie van de week')+' · 5 min uitwandelen';
+          }else
           if(ULTRA(doel)){
             detail=`${Math.round(min/60*10)/10} uur op de benen (±${langKm} km) op ${mmss(secKm(vdot,PCT.E))}/km of trager`;
             if(g.terrein>=1.20)detail+=`. Zoek het terrein van de wedstrijd op en wandel de steile stukken bewust — dat doe je op de dag zelf ook`;
@@ -435,7 +549,7 @@ function bouwSchema(g){
             fuel:fuel(min,'loop')};
         }
         if(it.type==='kwaliteit'){
-          const s2=kwaliteitSessie(fase,vdot,doel,minweek,kwalIdx++,g.terrein||1);
+          const s2=kwaliteitSessie(fase,vdot,doel,minweek,kwalIdx++,g.terrein||1,g.beginner,(w-1)/Math.max(1,weken-1));
           return{soort:'hard',titel:s2.titel,detail:s2.detail,kort:s2.kort,fuel:null};
         }
         if(it.type==='rustig'){
@@ -448,6 +562,9 @@ function bouwSchema(g){
               kort:`Korter: ${Math.max(6,Math.round(bbKm*0.6))} km.`,fuel:fuel(bbMin,'loop')};
           }
           const min=Math.round(rustigKm*tempoE);
+          if(g.beginner)return{soort:'rustig',titel:'Wandelen of heel rustig lopen',
+            detail:'30 tot 40 minuten stevig wandelen, of afwisselend 1 min lopen en 2 min wandelen. Dit is herstel, geen training.',
+            kort:'Korter: 20 minuten wandelen.',fuel:null};
           return{soort:'rustig',titel:'Rustige duurloop',
             detail:`${rustigKm} km op ${mmss(secKm(vdot,PCT.E))}/km (±${min} min) — je moet kunnen praten`,
             kort:'Korter: 25 min. Rustig blijft rustig.',fuel:fuel(min,'loop')};
@@ -468,6 +585,21 @@ function bouwSchema(g){
     });
     weekplannen.push({nr:w,fase,deload,volume,langKm,dagen});
   }
+  if(g.blokDoel&&weekplannen.length){
+    const laatste=weekplannen[weekplannen.length-1];
+    laatste.fase='test';
+    laatste.dagen.forEach(d=>{
+      if(d.rust||!d.items.length)return;
+      const q=d.items.find(x=>x.soort==='hard'&&!/Lange/.test(x.titel));
+      if(q){
+        q.titel='Testloop';
+        q.detail=g.beginner
+          ? 'Kijk hoelang je aaneengesloten rustig kan lopen. Noteer de tijd — dat is je nieuwe startpunt.'
+          : `10 min inlopen · ${doel<=10000?'2 km':'5 km'} zo vlot als je kan volhouden, tijd noteren · 10 min uitlopen. Hiermee berekenen we je nieuwe tempo's.`;
+        q.kort='Voel je je niet fris? Verplaats de test een paar dagen.';
+      }
+    });
+  }
   return {weken:weekplannen,piekVolume,maxUitTijd,taper,maxLangKm};
 }
 
@@ -477,7 +609,10 @@ function bouwSchema(g){
 let laatsteTekst='';
 function genereer(){
   const doel=+document.getElementById('doel').value;
-  const tijd=leesTijd(document.getElementById('testtijd').value||'');
+  const opErvaring=document.getElementById('niveautype').value==='ervaring';
+  const ervaring=+document.getElementById('ervaring').value;
+  const beginner=opErvaring&&ervaring<=1;
+  const tijd=opErvaring?1:leesTijd(document.getElementById('testtijd').value||'');
   const testafstand=+document.getElementById('testafstand').value;
   const datum=document.getElementById('datum').value;
   const huidigkm=+document.getElementById('huidigkm').value||0;
@@ -485,21 +620,26 @@ function genereer(){
   const uit=document.getElementById('resultaat');
 
   if(!tijd){uit.innerHTML='<div class="waarschuwing">Vul een geldige testtijd in, bijvoorbeeld <b>24:30</b> of <b>1:52:14</b>.</div>';return}
-  if(!datum){uit.innerHTML='<div class="waarschuwing">Vul de datum van de wedstrijd in.</div>';return}
-  if(!huidigkm){uit.innerHTML='<div class="waarschuwing">Vul de huidige weekafstand in — zonder startpunt kan ik geen veilige opbouw maken.</div>';return}
+  const doelsoort=document.getElementById('doeltype').value;
+  if(!datum&&doelsoort!=='algemeen'){uit.innerHTML='<div class="waarschuwing">Vul de datum in.</div>';return}
+  if(!huidigkm&&!opErvaring){uit.innerHTML='<div class="waarschuwing">Vul de huidige weekafstand in — zonder startpunt kan ik geen veilige opbouw maken.</div>';return}
 
-  const weken=Math.floor((new Date(datum)-new Date())/(7*864e5));
+  const weken=datum?Math.floor((new Date(datum)-new Date())/(7*864e5)):12;
   if(weken<4){uit.innerHTML='<div class="waarschuwing">Er zijn minder dan 4 weken tot de wedstrijd. Te kort voor een zinvolle opbouw — kies een latere datum of een tussenwedstrijd.</div>';return}
   if(weken>26){uit.innerHTML='<div class="waarschuwing">Meer dan 26 weken vooruit plannen heeft weinig zin. Maak eerst een blok van 12 weken naar een tussendoel.</div>';return}
 
-  const vdot=vdotVan(testafstand,tijd);
+  const vdot=opErvaring?ERVARING_VDOT[ervaring]:vdotVan(testafstand,tijd);
+  const blokDoel=doelsoort==='blok'||doelsoort==='algemeen';
+  const algemeen=doelsoort==='algemeen';
+  const langeKeuze=+document.getElementById('langedag').value;
+  const vrijeDagen=langeKeuze===-1;
   const g={vdot,doel,weken:Math.min(weken,24),
     loopdagen:+document.getElementById('loopdagen').value,
     krachtdagen:+document.getElementById('krachtdagen').value,
     minweek:+document.getElementById('minweek').value||60,
     minlang:+document.getElementById('minlang').value||120,
-    langeDag:+document.getElementById('langedag').value,
-    huidigkm,langstelang:langstelang||Math.round(huidigkm*0.35),
+    langeDag:vrijeDagen?6:langeKeuze,beginner,blokDoel,algemeen,vrijeDagen,
+    huidigkm:huidigkm||(beginner?8:12),langstelang:langstelang||Math.round((huidigkm||10)*0.35),
     terrein:ULTRA(doel)?+document.getElementById('terrein').value:1,
     prioriteit:document.getElementById('prioriteit').value};
 
@@ -508,7 +648,13 @@ function genereer(){
 
   /* haalbaarheid */
   let check='';
-  if(s.maxUitTijd<MINVOLUME[doel]){
+  if(g.beginner){
+    const zwaar=doel>=21097;
+    check=zwaar
+      ? `<div class="waarschuwing"><b>Eerlijk gesprek nodig.</b> Voor iemand die net begint met lopen is een ${AFSTANDNAAM[doel]} binnen ${g.weken} weken niet realistisch en bovendien blessuregevoelig. Bouw eerst een blok van twaalf weken naar 5 of 10 km. Daarna is dit een prima volgend doel.</div>`
+      : `<div class="oké">Opbouw voor een beginner: het schema start met afwisselend lopen en wandelen en gaat pas over op aaneengesloten lopen wanneer dat vlot gaat. Vooruitgang meet je hier in minuten, niet in kilometers.</div>`;
+  }
+  else if(s.maxUitTijd<MINVOLUME[doel]){
     check=`<div class="waarschuwing"><b>Eerlijk gesprek nodig.</b> Met ${g.loopdagen} loopdagen van ${g.minweek} min en een lange duurloop van ${g.minlang} min kom je aan ongeveer ${s.maxUitTijd} km per week. Voor een ${AFSTANDNAAM[doel]} is minstens ${MINVOLUME[doel]} km per week nodig. Opties: een extra loopdag, een langere weekendsessie, of een realistischer doel (bijvoorbeeld ${doel===42195?'halve marathon':doel===21097?'15 km':'10 km'}).</div>`;
   }else if(s.piekVolume<MINVOLUME[doel]*1.15){
     check=`<div class="oké">Haalbaar, maar krap: je piekt rond ${Math.round(s.piekVolume)} km per week. Er is weinig ruimte om een week over te slaan.</div>`;
@@ -523,11 +669,23 @@ function genereer(){
     ['Interval (I)',PCT.I,'3-5 min blokken, zwaar'],
     ['Herhaling (R)',PCT.R,'korte snelle stukken, techniek en snelheid']];
   const tempotabel=rijen.map(([n,p,u])=>`<tr><td>${n}</td><td>${mmss(secKm(vdot,p))}/km</td><td>${u}</td></tr>`).join('');
+  const tempoBlok=g.beginner
+    ? `<div class="vak">
+        <div class="klein">Tempo</div>
+        <div style="font-size:15px;line-height:1.7;margin-top:6px">Nog geen tempo’s in minuten per kilometer. Op dit punt draait alles om <b>gevoel</b>: tijdens het lopen moet je volledige zinnen kunnen zeggen. Lukt dat niet, dan loop je te snel.</div>
+        <p class="uitleg" style="margin-top:8px">Na het eerste blok doe je een testloop. Daarmee berekenen we wél exacte tempo’s.</p>
+      </div>`
+    : `<div class="vak">
+        <div class="klein">Huidig niveau (VDOT)</div>
+        <div class="groot">${vdot.toFixed(1)}</div>
+        <div class="klein" style="margin-top:10px">Trainingstempo’s</div>
+        <table class="tempotabel">${tempotabel}</table>
+      </div>`;
   const vd=voorspelDoel(vdot,doel,g.terrein);
   const onder=vd.tijd*(1-vd.marge), boven=vd.tijd*(1+vd.marge);
   const doeltijd=leesTijd(document.getElementById(ULTRA(doel)?'doeltijd':'doeltijd2').value||'');
-  let doelHTML=`<div class="vak" style="margin-top:0">
-      <div class="klein">Wat vandaag haalbaar lijkt op de ${AFSTANDNAAM[doel]}</div>
+  let doelHTML=g.beginner?'':`<div class="vak" style="margin-top:0">
+      <div class="klein">${g.algemeen?'Wat er nu in zit op de':g.blokDoel?'Richttijd die er nu in zit op de':'Wat vandaag haalbaar lijkt op de'} ${AFSTANDNAAM[doel]}</div>
       <div class="groot">${uumm(vd.tijd)}</div>
       <p class="uitleg" style="margin-top:4px">Realistische marge: ${uumm(onder)} tot ${uumm(boven)}.${ULTRA(doel)?' Bij ultra\u2019s is de spreiding groot: weer, hoogtemeters, maag en slaap wegen zwaarder dan de motor.':' Dit is het niveau van vandaag, niet na de voorbereiding.'}</p>
     </div>`;
@@ -543,6 +701,12 @@ function genereer(){
   }
   const voorspellingen=[5000,10000,21097,42195].map(m=>
     `<tr><td>${AFSTANDNAAM[m]}</td><td>${uumm(voorspel(vdot,m))}</td><td></td></tr>`).join('');
+  const voorspelKaart=g.beginner?'':`<div class="card">
+      <div class="klein" style="font-size:11.5px;color:var(--grijs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Wat dit niveau vandaag waard is</div>
+      <table class="tempotabel">${voorspellingen}</table>
+      <p class="uitleg">Voorspellingen op basis van de huidige testtijd, niet van het doel. Hertest om de 5 à 6 weken en maak het schema opnieuw.</p>
+    </div>`;
+
 
   const weekHTML=s.weken.map(w=>{
     const fk=w.deload?'deload':w.fase;
@@ -570,22 +734,15 @@ function genereer(){
     <h2>Resultaat${klant?' — '+klant:''}</h2>
     ${doelHTML}
     ${check}
-    <div class="vak">
-      <div class="klein">Huidig niveau (VDOT)</div>
-      <div class="groot">${vdot.toFixed(1)}</div>
-      <div class="klein" style="margin-top:10px">Trainingstempo's</div>
-      <table class="tempotabel">${tempotabel}</table>
-    </div>
-    <div class="card">
-      <div class="klein" style="font-size:11.5px;color:var(--grijs);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Wat dit niveau vandaag waard is</div>
-      <table class="tempotabel">${voorspellingen}</table>
-      <p class="uitleg">Dit zijn voorspellingen op basis van de huidige testtijd, niet het doel. Hertest om de 5 à 6 weken en genereer het schema opnieuw.</p>
-    </div>
+    ${tempoBlok}
+    ${voorspelKaart}
+
+    ${g.algemeen?`<div class="oké">Doorlopend blok van ${s.weken.length} weken zonder wedstrijd. Om de vier weken een rustweek, en op het einde een testloop. Daarna maak je gewoon een nieuw blok met de nieuwe testtijd.</div>`:''}
     <h2>Schema · ${s.weken.length} weken</h2>
-    <p class="uitleg" style="margin-bottom:10px">Tik een week aan om ze te openen. Goud = harde loopsessie, blauw = kracht.</p>
+    <p class="uitleg" style="margin-bottom:10px">Tik een week aan om ze te openen. Goud = harde loopsessie, blauw = kracht.${g.vrijeDagen?' De dagen liggen niet vast: in de TrainLog kan hij elke sessie met één tik naar een andere dag schuiven.':''}</p>
     ${weekHTML}
 
-    <div class="card" style="border-color:rgba(201,169,98,.35)">
+    <div class="card geenprint" style="border-color:rgba(201,169,98,.35)">
       <h2 style="margin:0 0 4px;font-size:15px">Naar de TrainLog van je klant</h2>
       <p class="uitleg" style="margin-bottom:10px">De trainingen komen dan in zijn kalender te staan, met een vinkje per sessie. Laat "doorsturen tot en met" leeg om alles te sturen.</p>
       <div class="rij">
@@ -594,12 +751,24 @@ function genereer(){
       </div>
       <p class="uitleg" id="planinfo" style="margin:8px 0 10px"></p>
       <button class="btn" onclick="naarTrainlog()">Plan naar TrainLog sturen</button>
+      <button class="btn-lijn" onclick="naarPDF()">Afdrukken of opslaan als PDF</button>
     </div>
-    <button class="btn" style="margin-top:14px" onclick="deel()">Schema delen via WhatsApp</button>
-    <button class="btn-lijn" onclick="kopieer()">Kopiëren als tekst</button>
+    <button class="btn geenprint" style="margin-top:14px" onclick="deel()">Schema delen via WhatsApp</button>
+    <button class="btn-lijn geenprint" onclick="kopieer()">Kopiëren als tekst</button>
+
     <div id="uitvoer"></div>`;
 
-  laatstePlan={naam:klant,doel:AFSTANDNAAM[doel],weken:s.weken};
+  laatstePlan={naam:klant,doel:AFSTANDNAAM[doel],weken:s.weken,
+    titel:'Trainingsschema '+AFSTANDNAAM[doel],
+    info:g.beginner
+      ? [['Tempo','op gevoel','praten moet lukken tijdens het lopen'],
+         ['Opbouw','lopen en wandelen','elke week iets meer lopen']]
+      : [['Rustig tempo',mmss(secKm(vdot,PCT.E))+'/km','basisvolume'],
+         ['Wedstrijdtempo',mmss(secKm(vdot,PCT.M))+'/km',''],
+         ['Drempeltempo',mmss(secKm(vdot,PCT.T))+'/km','±1 uur vol te houden'],
+         ['Intervaltempo',mmss(secKm(vdot,PCT.I))+'/km','blokken van 3-5 min'],
+         ['Herhalingstempo',mmss(secKm(vdot,PCT.R))+'/km','korte snelle stukken'],
+         [g.blokDoel?'Richttijd nu':'Haalbaar vandaag',uumm(vd.tijd),AFSTANDNAAM[doel]]]};
   vulPlanDatums();
   laatsteTekst=alsTekst(klant,doel,vdot,s,g);
   uit.scrollIntoView({behavior:'smooth',block:'start'});
@@ -697,6 +866,46 @@ async function naarTrainlog(){
   try{await navigator.clipboard.writeText(tekst);toast(`Link gekopieerd — ${r.weken.length} weken`)}
   catch(e){const u=document.getElementById('uitvoer');u.textContent=link;u.classList.add('aan')}
 }
+
+
+/* ===================== AFDRUKKEN / PDF ===================== */
+function printVel(titel,subtitel,infoRijen,weken,slotTekst){
+  let h=`<div class="pv-kop"><div class="pv-titel">${titel}</div><div class="pv-sub">${subtitel}</div></div>`;
+  if(infoRijen&&infoRijen.length){
+    h+='<table class="pv-info">'+infoRijen.map(r=>
+      `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]||''}</td></tr>`).join('')+'</table>';
+  }
+  (weken||[]).forEach(w=>{
+    const omvang=w.volume!==undefined?w.volume+' km':(w.uren!==undefined?(w.uren/60).toFixed(1)+' u':'');
+    h+=`<div class="pv-week"><div class="pv-weekkop">Week ${w.nr} · ${w.deload?'rustweek':w.fase}${omvang?' · '+omvang:''}</div>`;
+    (w.dagen||[]).forEach(d=>{
+      if(d.rust){h+=`<div class="pv-dag"><b>${d.dag}</b> — rust</div>`;return}
+      d.items.forEach(it=>{
+        h+=`<div class="pv-dag"><b>${d.dag}</b> — ${it.titel}${it.min?' ('+it.min+' min)':''}`+
+           `<div class="pv-det">${it.detail}</div>`+
+           (it.kort?`<div class="pv-kort">${it.kort}</div>`:'')+
+           (it.fuel?`<div class="pv-fuel">${it.fuel}</div>`:'')+`</div>`;
+      });
+    });
+    h+='</div>';
+  });
+  if(slotTekst)h+=`<div class="pv-slot">${slotTekst}</div>`;
+  h+=`<div class="pv-voet">Robin Verdonck Coaching · robinverdonck.be · +32 472 50 20 86</div>`;
+  let vel=document.getElementById('printvel');
+  if(!vel){vel=document.createElement('div');vel.id='printvel';document.body.appendChild(vel)}
+  vel.innerHTML=h;
+  setTimeout(()=>window.print(),60);
+}
+function naarPDF(){
+  if(!laatstePlan){toast('Genereer eerst een schema');return}
+  const r=planWeken();
+  printVel(laatstePlan.titel||'Trainingsschema',
+    (laatstePlan.naam?laatstePlan.naam+' · ':'')+laatstePlan.doel+' · '+r.weken.length+' weken'+
+      (r.eind?' · tot en met '+r.eind:''),
+    laatstePlan.info||[], r.weken,
+    'Loopt een week anders dan gepland? Stuur me een bericht, dan sturen we bij. Het plan moet meebewegen, niet breken.');
+}
+
 
 </script>
 </body>
