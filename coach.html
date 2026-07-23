@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
+<meta name="robots" content="noindex,nofollow">
+<title>Schemabouwer — Robin Verdonck Coaching</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<style>
+:root{--bg:#0b0e13;--card:#171c24;--card2:#1e242e;--line:#232a35;--gold:#c9a962;--goldsoft:#e0c98f;--wit:#f5f4f1;--grijs:#9aa1ab;--rood:#e08a6d}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--wit);font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column}
+
+.kop{flex-shrink:0;padding:max(10px,env(safe-area-inset-top)) 14px 0;background:rgba(11,14,19,.96);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.titelrij{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.titel{font-size:16px;font-weight:800;white-space:nowrap}
+.titel span{color:var(--gold)}
+.prive{font-size:10.5px;font-weight:700;color:var(--rood);border:1px solid rgba(224,138,109,.4);background:rgba(224,138,109,.1);padding:4px 9px;border-radius:99px;white-space:nowrap}
+
+.tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:9px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:1;min-width:82px;background:var(--card);border:1px solid var(--line);color:var(--grijs);
+  border-radius:11px;padding:9px 6px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;transition:.2s}
+.tabs button svg{width:19px;height:19px}
+.tabs button:hover{border-color:rgba(201,169,98,.45);color:var(--wit)}
+.tabs button.aan{background:linear-gradient(135deg,rgba(201,169,98,.18),rgba(201,169,98,.05));border-color:var(--gold);color:var(--goldsoft)}
+.tabs button:active{transform:scale(.97)}
+
+.venster{flex:1;position:relative;min-height:0}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:none;background:var(--bg)}
+.laden{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--grijs);font-size:14px;pointer-events:none;opacity:0;transition:opacity .2s}
+.laden.aan{opacity:1}
+
+.voet{flex-shrink:0;padding:8px 14px calc(8px + env(safe-area-inset-bottom));border-top:1px solid var(--line);
+  display:flex;gap:8px;align-items:center;justify-content:space-between;background:var(--card)}
+.voet a{color:var(--grijs);font-size:12px;text-decoration:none;padding:5px 9px;border-radius:8px;border:1px solid var(--line)}
+.voet a:hover{color:var(--goldsoft);border-color:rgba(201,169,98,.4)}
+.voet .hint{font-size:11.5px;color:var(--grijs);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:520px){.voet .hint{display:none}}
+</style>
+</head>
+<body>
+
+<div class="kop">
+  <div class="titelrij">
+    <div class="titel">Schema<span>bouwer</span></div>
+    <div class="prive">Niet delen met klanten</div>
+  </div>
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="venster">
+  <div class="laden" id="laden">Laden…</div>
+  <iframe id="venster" allow="web-share; clipboard-write" title="Schemabouwer"></iframe>
+</div>
+
+<div class="voet">
+  <span class="hint" id="hint"></span>
+  <a href="trainlog.html" target="_blank">TrainLog openen</a>
+</div>
+
+<script>
+const TOOLS=[
+  {id:'kracht', naam:'Kracht', bestand:'schemabouwer.html',
+   hint:'Trainingsdagen en oefeningen samenstellen en als link doorsturen.',
+   svg:'<path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/>'},
+  {id:'lopen', naam:'Lopen', bestand:'loopschema.html',
+   hint:'Van 2,4 km tot trail 100 km — tempo\u2019s, weekschema en fuelstrategie.',
+   svg:'<path d="M13 4a1 1 0 100-.01M9 20l2-5 3 2 1 3M6 12l3-4 3 1 2 3 3 1"/>'},
+  {id:'triatlon', naam:'Triatlon', bestand:'triatlon.html',
+   hint:'Voorspelde eindtijd per onderdeel, zwakke schakel en weekschema.',
+   svg:'<path d="M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0M5 8h4l2 3M15 6a1 1 0 100-.01M14 9l4 2"/>'},
+  {id:'hyrox', naam:'Hyrox', bestand:'hyrox.html',
+   hint:'Tijd per station, roxzone en waar de meeste winst zit.',
+   svg:'<path d="M4 6v12M20 6v12M4 12h16M8 9v6M16 9v6"/>'}
+];
+
+const tabsEl=document.getElementById('tabs');
+const venster=document.getElementById('venster');
+const laden=document.getElementById('laden');
+const hint=document.getElementById('hint');
+
+tabsEl.innerHTML=TOOLS.map(t=>
+  `<button data-id="${t.id}" onclick="kies('${t.id}')">
+     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${t.svg}</svg>
+     ${t.naam}
+   </button>`).join('');
+
+function kies(id){
+  const t=TOOLS.find(x=>x.id===id)||TOOLS[0];
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('aan',b.dataset.id===t.id));
+  hint.textContent=t.hint;
+  if(venster.dataset.nu!==t.bestand){
+    laden.classList.add('aan');
+    venster.src=t.bestand;
+    venster.dataset.nu=t.bestand;
+  }
+  try{localStorage.setItem('sb_tab',t.id)}catch(e){}
+  if(location.hash.slice(1)!==t.id)history.replaceState(null,'','#'+t.id);
+}
+venster.addEventListener('load',()=>laden.classList.remove('aan'));
+
+/* startkeuze: uit de link, anders de laatst gebruikte, anders kracht */
+let start=location.hash.slice(1);
+if(!TOOLS.some(t=>t.id===start)){
+  try{start=localStorage.getItem('sb_tab')||''}catch(e){start=''}
+}
+kies(TOOLS.some(t=>t.id===start)?start:'kracht');
+
+/* met de cijfertoetsen snel wisselen */
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  const n=+e.key;
+  if(n>=1&&n<=TOOLS.length)kies(TOOLS[n-1].id);
+});
+</script>
+</body>
+</html>
