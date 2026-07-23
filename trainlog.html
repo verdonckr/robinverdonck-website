@@ -15,154 +15,142 @@
 <style>
 :root{--bg:#0b0e13;--card:#171c24;--card2:#1e242e;--line:#232a35;--gold:#c9a962;--goldsoft:#e0c98f;--wit:#f5f4f1;--grijs:#9aa1ab;--groen:#5dca85;--rood:#e08a6d}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--wit);font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;padding-bottom:84px}
-.wrap{max-width:520px;margin:0 auto;padding:14px}
-header{text-align:center;padding:16px 0 4px}
+body{background:var(--bg);color:var(--wit);font-family:system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.5;padding-bottom:calc(84px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
+.wrap{max-width:520px;margin:0 auto;padding:14px;padding-top:max(14px,env(safe-area-inset-top))}
+header{text-align:center;padding:12px 0 6px}
 header h1{font-size:19px;font-weight:800;letter-spacing:.02em}
 header h1 span{color:var(--gold)}
 header p{font-size:12px;color:var(--grijs)}
 h2{font-size:17px;font-weight:800;margin:16px 0 10px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
-button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-weight:700;font-size:15px}
+button{font-family:inherit;border:none;cursor:pointer;border-radius:10px;font-weight:700;font-size:15px;transition:transform .12s,background .2s}
+button:active{transform:scale(.98)}
 .btn{background:var(--gold);color:#0b0e13;padding:13px 20px;width:100%}
 .btn-lijn{background:transparent;border:1px solid var(--line);color:var(--wit);padding:11px 18px;width:100%}
 .btn-klein{background:var(--line);color:var(--wit);padding:8px 14px;font-size:13px;width:auto}
-.btn-mini{background:var(--line);color:var(--wit);padding:5px 10px;font-size:13px;width:auto;border-radius:8px}
 .btn-rood{background:rgba(224,138,109,.15);border:1px solid var(--rood);color:var(--rood);padding:13px 20px;width:100%}
-input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--wit);font-family:inherit;font-size:16px;outline:none}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 13px;color:var(--wit);font-family:inherit;font-size:15px;outline:none}
 input:focus,select:focus,textarea:focus{border-color:var(--gold)}
-label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grijs);margin:12px 0 6px}
-.rij{display:flex;gap:8px;align-items:center}
-.rij>input,.rij>select{min-width:0}
-.tabbar{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;z-index:10}
-.tabbar button{flex:1;background:none;color:var(--grijs);padding:11px 0 15px;font-size:10.5px;font-weight:700;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:3px}
+label{display:block;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--grijs);margin:10px 0 4px}
+
+.tabbar{position:fixed;bottom:0;left:0;right:0;background:rgba(23,28,36,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--line);display:flex;z-index:10;padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1;background:none;color:var(--grijs);padding:10px 0 12px;font-size:10.5px;font-weight:700;border-radius:0;display:flex;flex-direction:column;align-items:center;gap:3px;position:relative}
 .tabbar button.aan{color:var(--gold)}
-.tabbar svg{width:21px;height:21px}
-.scherm{display:none}
-.scherm.aan{display:block}
-.planbalk{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.planbalk button{background:var(--card2);color:var(--wit);border:1px solid var(--line);width:42px;height:42px;flex-shrink:0;font-size:18px;padding:0}
-.planbalk .midden{flex:1;text-align:center}
-.planbalk .wk{font-weight:800;font-size:15px}
-.planbalk .dat{font-size:12px;color:var(--grijs)}
-.plandag{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
-.plandag.vandaag{border-color:var(--gold);background:linear-gradient(135deg,rgba(201,169,98,.10),transparent 60%)}
-.plandag.gedaan{opacity:.55}
-.plandag.rustdag{opacity:.5;padding:10px 14px}
-.plandag .kop{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--grijs);font-weight:700}
-.plandag.vandaag .kop{color:var(--gold)}
-.plandag .t{font-weight:700;font-size:14.5px;margin:2px 0}
-.plandag .d{font-size:13px;color:var(--grijs);line-height:1.5}
-.plandag .inhoud{flex:1;min-width:0}
-.vinkje{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:none;flex-shrink:0;color:var(--groen);font-size:16px;padding:0;display:flex;align-items:center;justify-content:center;margin-top:2px}
-.vinkje.aan{background:rgba(93,202,133,.15);border-color:var(--groen)}
-.statusknoppen{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
-.kruisje{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line);background:none;color:var(--rood);font-size:14px;padding:0;display:flex;align-items:center;justify-content:center}
-.kruisje.aan{background:rgba(224,138,109,.15);border-color:var(--rood)}
-.plandag.nietgedaan{opacity:.72;border-color:rgba(224,138,109,.35)}
-.plandag.nietgedaan .t{text-decoration:line-through;text-decoration-color:rgba(224,138,109,.6)}
-.verplaatsknop{background:none;border:1px solid var(--line);color:var(--grijs);font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:8px;margin-top:8px;width:auto}
-.verplaatsknop:hover{border-color:var(--gold);color:var(--goldsoft)}
-.kieslijst{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow-y:auto;margin-bottom:14px;-webkit-overflow-scrolling:touch}
-.kiesknop{background:var(--card2);border:1px solid var(--line);color:var(--wit);padding:13px 15px;border-radius:11px;font-size:14.5px;font-weight:600;text-align:left;width:100%}
-.planleeg{text-align:center;padding:40px 20px;color:var(--grijs);font-size:14px}
-
-body{padding-bottom:calc(84px + env(safe-area-inset-bottom));overscroll-behavior-y:none}
-.wrap{padding-top:max(14px,env(safe-area-inset-top))}
-.tabbar{padding-bottom:env(safe-area-inset-bottom);background:rgba(23,28,36,.86);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)}
-.tabbar button{position:relative;transition:color .2s ease}
-.tabbar button::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%) scaleX(0);width:26px;height:2px;border-radius:0 0 3px 3px;background:var(--gold);transition:transform .28s cubic-bezier(.22,.61,.36,1)}
+.tabbar button::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%) scaleX(0);width:24px;height:2px;background:var(--gold);transition:transform .25s}
 .tabbar button.aan::before{transform:translateX(-50%) scaleX(1)}
-.tabbar button svg{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
-.tabbar button.aan svg{transform:translateY(-1px) scale(1.08)}
+.tabbar svg{width:20px;height:20px}
+
 .scherm{display:none}
-.scherm.aan{display:block;animation:schermIn .34s cubic-bezier(.22,.61,.36,1)}
-@keyframes schermIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,background .2s ease}
+.scherm.aan{display:block;animation:schermIn .3s cubic-bezier(.22,.61,.36,1)}
+@keyframes schermIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-#toastlaag{position:fixed;left:0;right:0;bottom:calc(96px + env(safe-area-inset-bottom));z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
-.toast{background:rgba(30,36,46,.97);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--wit);font-size:14.5px;font-weight:600;padding:13px 18px;border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.5);max-width:100%;animation:toastIn .34s cubic-bezier(.22,.61,.36,1);display:flex;align-items:center;gap:10px}
-.toast.uit{animation:toastUit .28s ease forwards}
-.toast .vink{color:var(--groen);font-size:16px;flex-shrink:0}
-@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
-@keyframes toastUit{to{opacity:0;transform:translateY(10px) scale(.98)}}
+/* Plan & Kalender Styles */
+.planbalk{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.planbalk button{background:var(--card2);color:var(--wit);border:1px solid var(--line);width:38px;height:38px;font-size:16px}
+.planbalk .midden{flex:1;text-align:center}
+.plandag{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:center}
+.plandag.vandaag{border-color:var(--gold);background:linear-gradient(135deg,rgba(201,169,98,.12),transparent 60%)}
+.plandag.gedaan{opacity:.6}
+.vinkje{width:32px;height:32px;border-radius:9px;border:1.5px solid var(--line);background:none;color:var(--groen);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.vinkje.aan{background:rgba(93,202,133,.18);border-color:var(--groen)}
 
-.sheetlaag{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;animation:laagIn .25s ease}
-.sheetlaag.uit{animation:laagUit .22s ease forwards}
-.sheet{background:var(--card);border:1px solid var(--line);border-bottom:none;border-radius:22px 22px 0 0;width:100%;max-width:520px;padding:10px 20px calc(24px + env(safe-area-inset-bottom));animation:sheetIn .36s cubic-bezier(.22,.61,.36,1)}
-.sheetlaag.uit .sheet{animation:sheetUit .24s ease forwards}
-.sheet .greep{width:38px;height:4px;border-radius:99px;background:var(--line);margin:0 auto 16px}
-.sheet h3{font-size:17px;font-weight:800;margin-bottom:6px}
-.sheet p{font-size:14px;color:var(--grijs);margin-bottom:16px;line-height:1.55}
-.sheet .knoppen{display:flex;gap:10px}
-.sheet .knoppen button{flex:1;padding:14px}
+/* Oefening & Set Card Styles */
+.oef-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.oef-titel{font-size:16px;font-weight:800;color:var(--goldsoft);margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.oef-sub{font-size:12px;color:var(--grijs);margin-bottom:10px}
+.set-rij{display:grid;grid-template-columns:40px 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.set-num{font-size:12px;font-weight:800;color:var(--grijs);text-align:center}
 
-#backupbalk,#installbalk{display:none;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13.5px;color:var(--wit);align-items:center;gap:12px}
-#backupbalk.aan,#installbalk.aan{display:flex}
-#installbalk button,#backupbalk button{background:var(--gold);color:#0b0e13;padding:8px 14px;font-size:13px;width:auto;flex-shrink:0}
-#installbalk .sluit{background:none;color:var(--grijs);font-size:18px;padding:2px 6px;width:auto}
+/* Toast */
+#toastlaag{position:fixed;left:0;right:0;bottom:calc(92px + env(safe-area-inset-bottom));z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+.toast{background:rgba(30,36,46,.96);backdrop-filter:blur(16px);border:1px solid var(--line);color:var(--wit);font-size:14px;font-weight:600;padding:12px 18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:flex;align-items:center;gap:10px;animation:toastIn .3s ease}
+.toast.uit{animation:toastUit .25s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes toastUit{to{opacity:0;transform:translateY(8px);opacity:0}}
 </style>
 </head>
 <body>
+
 <header>
   <h1>TRAIN<span>LOG</span></h1>
-  <p id="klantkop">Robin Verdonck Coaching — elke week iets beter</p>
+  <p id="klantkop">Robin Verdonck Coaching — Elke week progressie</p>
 </header>
 
 <div class="wrap">
-<div id="installbalk"><span style="flex:1">Zet TrainLog op je beginscherm: dan opent hij als een echte app.</span><button onclick="installeer()">Toevoegen</button><button class="sluit" onclick="this.parentElement.classList.remove('aan');localStorage.setItem('tl_installweg','1')">×</button></div>
-<div id="backupbalk"><span style="flex:1">Je laatste back-up is meer dan twee weken geleden. Even veiligstellen?</span><button onclick="exporteer()">Back-up</button></div>
 
+<!-- SCHERM: TRAINEN (ACTIEVE WORKOUT) -->
 <div class="scherm aan" id="s-trainen">
   <h2>Training van Vandaag</h2>
-  <div class="card">
-    <p style="font-size:14px;color:var(--grijs)" id="vandaagstatus">Selecteer een schema of bekijk je weekplan hieronder.</p>
+  <div class="card" id="workout-selector">
+    <label>Kies een schema om te starten</label>
+    <select id="schema-select" onchange="laadActiveWorkout()">
+      <option value="">-- Selecteer Schema --</option>
+    </select>
   </div>
+  <div id="workout-container"></div>
 </div>
 
-<div class="scherm" id="s-plan"></div>
+<!-- SCHERM: PLAN (WEEK KALENDER) -->
+<div class="scherm" id="s-plan">
+  <div class="planbalk">
+    <button onclick="veranderWeek(-1)">❮</button>
+    <div class="midden">
+      <div class="wk" id="week-titel">Week 1</div>
+      <div class="dat" id="week-datum">-</div>
+    </div>
+    <button onclick="veranderWeek(1)">❯</button>
+  </div>
+  <div id="plan-dagen"></div>
+</div>
 
+<!-- SCHERM: SCHEMA'S -->
 <div class="scherm" id="s-schema">
-  <h2>Trainingsschema's</h2>
-  <div class="card"><p style="font-size:13.5px;color:var(--grijs)">Aangepaste schema's worden hier automatisch geladen.</p></div>
+  <h2>Mijn Trainingsschema's</h2>
+  <div id="schema-lijst"></div>
 </div>
 
+<!-- SCHERM: BIBLIOTHEEK -->
 <div class="scherm" id="s-bib">
   <h2>Oefeningen Bibliotheek</h2>
-  <div class="card"><p style="font-size:13.5px;color:var(--grijs)">Overzicht van alle oefeningen met uitvoering en video's.</p></div>
+  <input type="text" id="bib-zoek" placeholder="🔍 Zoek oefening of spiergroep..." oninput="renderBib()" style="margin-bottom:12px">
+  <div id="bib-container"></div>
 </div>
 
+<!-- SCHERM: PROGRESSIE -->
 <div class="scherm" id="s-prog">
-  <h2>Progressie</h2>
+  <h2>Progressie & PR's</h2>
   <div class="card">
-    <label>Oefening</label>
-    <select id="progkeuze" onchange="tekenGrafiek()"></select>
-    <div class="prtekst" id="prtekst"></div>
-    <canvas id="grafiek" width="480" height="180"></canvas>
+    <label>Selecteer Oefening</label>
+    <select id="prog-oefening" onchange="tekenGrafiek()"></select>
+    <div id="pr-stats" style="margin:12px 0;font-size:14px;color:var(--goldsoft);font-weight:700"></div>
+    <canvas id="grafiek" width="480" height="200" style="width:100%;height:180px;background:var(--bg);border-radius:10px;border:1px solid var(--line)"></canvas>
   </div>
 </div>
 
+<!-- SCHERM: MEER & INSTELLINGEN -->
 <div class="scherm" id="s-meer">
   <h2>Drukke dag of chaos thuis?</h2>
   <div class="card" style="border-color:var(--rood)">
-    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Loop je vast door gezinsomstandigheden of tijdsgebrek? Druk op de knop om Robin een melding te sturen.</p>
+    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Loop je vast door tijdsgebrek of gezin omstandigheden? Druk op de knop om Robin een melding te sturen.</p>
     <button class="btn-rood" onclick="drukNoodknop()">🚨 Noodknop Inschakelen</button>
   </div>
 
-  <h2>Mijn voedingsschema</h2>
+  <h2>Mijn Voedingsschema</h2>
   <div class="card">
-    <textarea id="voedingtxt" rows="6" placeholder="Plak hier het voedingsschema dat je van Robin kreeg, dan heb je het altijd bij."></textarea>
-    <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();toast('Voedingsschema bewaard')">Bewaren</button>
+    <textarea id="voedingtxt" rows="6" placeholder="Plak hier je voedingsrichtlijnen of macro's..."></textarea>
+    <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();toast('Voeding opgeslagen')">Bewaren</button>
   </div>
 
   <h2>Gegevens & Back-up</h2>
   <div class="card">
-    <button class="btn-lijn" onclick="exporteer()" style="margin-bottom:8px">Back-up downloaden</button>
+    <button class="btn-lijn" onclick="exporteer()" style="margin-bottom:8px">Back-up Downloaden</button>
     <input type="file" accept=".json" onchange="importeer(event)">
   </div>
 </div>
+
 </div>
 
+<!-- NAVIGATIEBALK -->
 <nav class="tabbar">
   <button class="aan" id="t-trainen" onclick="toon('trainen')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Trainen</button>
   <button id="t-plan" onclick="toon('plan')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Plan</button>
@@ -173,130 +161,329 @@ button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,ba
 </nav>
 
 <script>
+/* ===================== DATABASE & STANDAARD DATA ===================== */
+const DEFAULT_BIB = [
+  { id: 'squat', naam: 'Barbell Back Squat', cat: 'Benen', info: 'Focus op diepte en borst op. Knieën volgen de tenen.' },
+  { id: 'bench', naam: 'Barbell Bench Press', cat: 'Borst', info: 'Schouderbladen intrekken, voeten stevig op de grond.' },
+  { id: 'rdl', naam: 'Romanian Deadlift', cat: 'Hamstrings / Billen', info: 'Heupen naar achteren duwen, rug neutraal houden.' },
+  { id: 'latpull', naam: 'Lat Pulldown', cat: 'Rug', info: 'Trek de stang naar de bovenkant borst, ellebogen naar beneden.' },
+  { id: 'dbpress', naam: 'Dumbbell Shoulder Press', cat: 'Schouders', info: 'Druk gewichten gecontroleerd boven het hoofd.' },
+  { id: 'incdb', naam: 'Incline Dumbbell Press', cat: 'Borst', info: 'Bankje op 30 graden. Ellebogen licht naar binnen.' },
+  { id: 'cablefly', naam: 'Cable Chest Fly', cat: 'Borst', info: 'Constante spanning op de borstspier, lichte buiging in ellebogen.' },
+  { id: 'curl', naam: 'Dumbbell Bicep Curl', cat: 'Armen', info: 'Bovenarmen stilhouden, strak aanspannen bovenin.' }
+];
+
+const DEFAULT_SCHEMAS = [
+  {
+    id: 'push1',
+    naam: 'Push A (Borst, Schouders, Triceps)',
+    oefeningen: [
+      { id: 'bench', sets: 3, reps: '8-10', rust: '120s' },
+      { id: 'incdb', sets: 3, reps: '10-12', rust: '90s' },
+      { id: 'dbpress', sets: 3, reps: '8-10', rust: '90s' }
+    ]
+  },
+  {
+    id: 'pull1',
+    naam: 'Pull A (Rug, Biceps)',
+    oefeningen: [
+      { id: 'rdl', sets: 3, reps: '8-10', rust: '120s' },
+      { id: 'latpull', sets: 3, reps: '10-12', rust: '90s' },
+      { id: 'curl', sets: 3, reps: '10-12', rust: '60s' }
+    ]
+  }
+];
+
+let db = JSON.parse(localStorage.getItem('tl_db')) || {
+  bib: DEFAULT_BIB,
+  schemas: DEFAULT_SCHEMAS,
+  logs: [],
+  voeding: '',
+  planstatus: {},
+  planStart: new Date().toISOString().split('T')[0]
+};
+
+function bewaar(){ localStorage.setItem('tl_db', JSON.stringify(db)); }
+
 /* ===================== SUPABASE SYNCHRONISATIE ===================== */
 const SUPABASE_URL     = 'https://ozxteftzeeqstuxaihnr.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96eHRlZnR6ZWVxc3R1eGFpaG5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ4MTAwNDUsImV4cCI6MjEwMDM4NjA0NX0.Uwq0SunLT_59EyUPixpadm1cg5INzr-uUSR67klCQ4o';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
 const params = new URLSearchParams(window.location.search);
 const clientId = params.get('client_id');
 
-/* LocalStorage Datastructuur */
-let db = JSON.parse(localStorage.getItem('tl_db')) || { logs:[], voeding:'', planstatus:{}, planverzet:{} };
-function bewaar(){ localStorage.setItem('tl_db', JSON.stringify(db)); }
-
-/* Synchroniseer met Supabase Dashboard */
 async function syncSupabase(isWorkout, isHabit){
   if(!sb || !clientId) return;
   const vandaag = new Date().toISOString().split('T')[0];
-  
   await sb.from('daily_logs').upsert({
-    client_id: clientId,
-    log_date: vandaag,
-    workout_done: isWorkout,
-    habits_done: isHabit
+    client_id: clientId, log_date: vandaag, workout_done: isWorkout, habits_done: isHabit
   }, { onConflict: 'client_id,log_date' });
-
   await sb.from('clients').update({ last_log_at: new Date().toISOString() }).eq('id', clientId);
 }
 
 async function drukNoodknop(){
-  if(!confirm('Wil je de noodknop inschakelen? Robin ontvangt direct een melding op zijn dashboard.')) return;
+  if(!confirm('Noodknop activeren? Robin ontvangt direct een melding op zijn dashboard.')) return;
   if(sb && clientId){
     await sb.from('clients').update({ chaos_flag: true, chaos_at: new Date().toISOString() }).eq('id', clientId);
   }
   toast('Noodknop geactiveerd! Robin neemt contact op.');
 }
 
-/* ===================== UI & SCHERMEN ===================== */
+/* ===================== UI NAVIGATION ===================== */
 function toon(schermId){
   document.querySelectorAll('.scherm').forEach(s => s.classList.remove('aan'));
   document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('aan'));
   document.getElementById('s-' + schermId).classList.add('aan');
   document.getElementById('t-' + schermId).classList.add('aan');
+  
   if(schermId === 'plan') renderPlan();
+  if(schermId === 'schema') renderSchemas();
+  if(schermId === 'bib') renderBib();
+  if(schermId === 'prog') laadProgOpties();
 }
 
-function toast(tekst,soort){
-  let laag=document.getElementById('toastlaag');
-  if(!laag){laag=document.createElement('div');laag.id='toastlaag';document.body.appendChild(laag)}
-  const t=document.createElement('div');
-  t.className='toast';
-  t.innerHTML=(soort==='fout'?'':'<span class="vink">✓</span>')+'<span></span>';
-  t.lastChild.textContent=tekst;
+function toast(tekst){
+  let laag = document.getElementById('toastlaag');
+  if(!laag){ laag = document.createElement('div'); laag.id = 'toastlaag'; document.body.appendChild(laag); }
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<span style="color:var(--groen)">✓</span> <span>${tekst}</span>`;
   laag.appendChild(t);
-  setTimeout(()=>{t.classList.add('uit');setTimeout(()=>t.remove(),300)},2600);
+  setTimeout(() => { t.classList.add('uit'); setTimeout(() => t.remove(), 300); }, 2500);
 }
 
-/* ===================== KALENDER LOGICA ===================== */
-let planWeek=0;
-const PLANDAGEN=['Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag','Zondag'];
-const MAAND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
-function dagVan(startISO,weekIdx,dagIdx){ const d=new Date(startISO+'T00:00:00'); d.setDate(d.getDate()+weekIdx*7+dagIdx); return d; }
-const isoVan=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-const kortDat=d=>d.getDate()+' '+MAAND[d.getMonth()];
+/* ===================== TRAINEN / WORKOUT LOGGER ===================== */
+function vulSchemaSelect(){
+  const sel = document.getElementById('schema-select');
+  sel.innerHTML = '<option value="">-- Kies een schema --</option>';
+  db.schemas.forEach(s => {
+    sel.innerHTML += `<option value="${s.id}">${s.naam}</option>`;
+  });
+}
 
-function planStatus(){ db.planstatus=db.planstatus||{}; return db.planstatus; }
-function statusVan(k){ return planStatus()[k] || null; }
+function laadActiveWorkout(){
+  const id = document.getElementById('schema-select').value;
+  const cont = document.getElementById('workout-container');
+  if(!id){ cont.innerHTML = ''; return; }
+  
+  const schema = db.schemas.find(s => s.id === id);
+  let html = '';
 
-async function zetStatus(k,soort){
-  const st=planStatus();
-  if(st[k] && st[k].s===soort){ delete st[k]; }
-  else { 
-    st[k]={s:soort}; 
-    if(soort==='gedaan'){
-      syncSupabase(true, true);
-      toast('Training opgeslagen & gesynchroniseerd!');
+  schema.oefeningen.forEach(oef => {
+    const info = db.bib.find(b => b.id === oef.id) || { naam: oef.id };
+    
+    // Haal vorige prestatie op
+    const vLog = db.logs.filter(l => l.oefId === oef.id).pop();
+    const vText = vLog ? `Vorige keer: ${vLog.sets.map(s => s.kg+'kg x '+s.reps).join(' | ')}` : 'Eerste keer voor deze oefening';
+
+    html += `
+      <div class="oef-card" data-oefid="${oef.id}">
+        <div class="oef-titel">
+          <span>${info.naam}</span>
+          <span style="font-size:12px;color:var(--grijs)">Target: ${oef.sets}x ${oef.reps}</span>
+        </div>
+        <div class="oef-sub">${vText}</div>
+    `;
+
+    for(let i=1; i<=oef.sets; i++){
+      html += `
+        <div class="set-rij">
+          <div class="set-num">SET ${i}</div>
+          <input type="number" placeholder="Kg" class="inp-kg" step="0.5">
+          <input type="number" placeholder="Reps" class="inp-reps">
+        </div>
+      `;
     }
-  }
+    html += `</div>`;
+  });
+
+  html += `<button class="btn" onclick="opslaanWorkout('${schema.naam}')">Training Opslaan & Voltooien</button>`;
+  cont.innerHTML = html;
+}
+
+function opslaanWorkout(schemaNaam){
+  const cards = document.querySelectorAll('#workout-container .oef-card');
+  const datum = new Date().toISOString().split('T')[0];
+
+  cards.forEach(card => {
+    const oefId = card.dataset.oefid;
+    const kgInputs = card.querySelectorAll('.inp-kg');
+    const repsInputs = card.querySelectorAll('.inp-reps');
+    let setResults = [];
+
+    kgInputs.forEach((inp, idx) => {
+      const kg = parseFloat(inp.value) || 0;
+      const reps = parseInt(repsInputs[idx].value) || 0;
+      if(kg > 0 || reps > 0){
+        setResults.push({ set: idx+1, kg: kg, reps: reps });
+      }
+    });
+
+    if(setResults.length > 0){
+      db.logs.push({ datum: datum, oefId: oefId, sets: setResults });
+    }
+  });
+
+  bewaar();
+  syncSupabase(true, true);
+  toast(`${schemaNaam} opgeslagen!`);
+  document.getElementById('workout-container').innerHTML = `<div class="card" style="text-align:center;color:var(--groen);font-weight:700"> Lekker bezig! Training is succesvol opgeslagen.</div>`;
+}
+
+/* ===================== KALENDER / PLAN ===================== */
+let huidigeWeekOffset = 0;
+const DAGEN = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+
+function veranderWeek(richting){ huidigeWeekOffset += richting; renderPlan(); }
+
+function renderPlan(){
+  document.getElementById('week-titel').textContent = `Week ${huidigeWeekOffset >= 0 ? '+' : ''}${huidigeWeekOffset}`;
+  const cont = document.getElementById('plan-dagen');
+  const vandaagISO = new Date().toISOString().split('T')[0];
+  let html = '';
+
+  DAGEN.forEach((dag, idx) => {
+    const key = `w${huidigeWeekOffset}_d${idx}`;
+    const isGedaan = db.planstatus[key];
+    const geplandSchema = db.schemas[idx % db.schemas.length]?.naam || 'Rustdag / Cardio';
+
+    html += `
+      <div class="plandag ${isGedaan ? 'gedaan' : ''}">
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--grijs);font-weight:700">${dag.toUpperCase()}</div>
+          <div style="font-weight:700;font-size:14px;margin-top:2px">${geplandSchema}</div>
+        </div>
+        <button class="vinkje ${isGedaan ? 'aan' : ''}" onclick="togglePlanStatus('${key}')">${isGedaan ? '✓' : ''}</button>
+      </div>
+    `;
+  });
+
+  cont.innerHTML = html;
+}
+
+function togglePlanStatus(key){
+  if(db.planstatus[key]){ delete db.planstatus[key]; }
+  else { db.planstatus[key] = true; syncSupabase(true, true); toast('Dagsessie gevinkt!'); }
   bewaar();
   renderPlan();
 }
 
-function renderPlan(){
-  const el=document.getElementById('s-plan');
-  if(!db.plan){
-    el.innerHTML=`<h2>Trainingsplan</h2><div class="planleeg">Je hebt nog geen actief weekplan geladen.<br>Vraag Robin om je persoonlijke link als dit leeg blijft.</div>`;
+/* ===================== SCHEMA'S & BIBLIOTHEEK ===================== */
+function renderSchemas(){
+  const cont = document.getElementById('schema-lijst');
+  let html = '';
+  db.schemas.forEach(s => {
+    html += `<div class="card"><h3 style="color:var(--gold);margin-bottom:8px">${s.naam}</h3>`;
+    s.oefeningen.forEach(o => {
+      const info = db.bib.find(b => b.id === o.id) || { naam: o.id };
+      html += `<div style="font-size:13.5px;padding:4px 0;border-bottom:1px solid var(--line)">• <strong>${info.naam}</strong> — ${o.sets} sets x ${o.reps} (Rust: ${o.rust})</div>`;
+    });
+    html += `</div>`;
+  });
+  cont.innerHTML = html;
+}
+
+function renderBib(){
+  const zoek = (document.getElementById('bib-zoek')?.value || '').toLowerCase();
+  const cont = document.getElementById('bib-container');
+  let html = '';
+
+  db.bib.filter(b => b.naam.toLowerCase().includes(zoek) || b.cat.toLowerCase().includes(zoek)).forEach(b => {
+    html += `
+      <div class="card">
+        <div style="font-weight:800;color:var(--goldsoft);font-size:15px">${b.naam}</div>
+        <div style="font-size:11px;color:var(--gold);margin-bottom:6px;text-transform:uppercase;font-weight:700">${b.cat}</div>
+        <div style="font-size:13px;color:var(--grijs)">${b.info}</div>
+      </div>
+    `;
+  });
+  cont.innerHTML = html;
+}
+
+/* ===================== PROGRESSIE & GRAFIEK ===================== */
+function laadProgOpties(){
+  const sel = document.getElementById('prog-oefening');
+  sel.innerHTML = '';
+  db.bib.forEach(b => {
+    sel.innerHTML += `<option value="${b.id}">${b.naam}</option>`;
+  });
+  tekenGrafiek();
+}
+
+function tekenGrafiek(){
+  const oefId = document.getElementById('prog-oefening').value;
+  const logs = db.logs.filter(l => l.oefId === oefId);
+  const canvas = document.getElementById('grafiek');
+  const ctx = canvas.getContext('2d');
+  const stats = document.getElementById('pr-stats');
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if(logs.length === 0){
+    stats.textContent = 'Nog geen gegevens vastgelegd voor deze oefening.';
     return;
   }
-  
-  const p=db.plan;
-  const vandaagISO=isoVan(new Date());
-  let dagenHTML='';
 
-  PLANDAGEN.forEach((naam, di)=>{
-    const d=dagVan(p.s, planWeek, di);
-    const iso=isoVan(d);
-    const k=planWeek+'-'+di;
-    const st=statusVan(k);
-    const af=st&&st.s==='gedaan';
-
-    dagenHTML += `<div class="plandag${iso===vandaagISO?' vandaag':''}${af?' gedaan':''}">
-      <div class="inhoud">
-        <div class="kop">${naam} ${kortDat(d)}${iso===vandaagISO?' · vandaag':''}</div>
-        <div class="t">${p.D[di] || 'Training / Rust'}</div>
-      </div>
-      <div class="statusknoppen">
-        <button class="vinkje${af?' aan':''}" onclick="zetStatus('${k}','gedaan')">${af?'✓':''}</button>
-      </div>
-    </div>`;
+  // Bepaal max gewicht per datum
+  const punten = logs.map(l => {
+    const maxKg = Math.max(...l.sets.map(s => s.kg));
+    return { datum: l.datum, kg: maxKg };
   });
 
-  el.innerHTML = `<h2>Mijn Trainingsschema</h2>` + dagenHTML;
+  const maxPR = Math.max(...punten.map(p => p.kg));
+  stats.textContent = `🏆 Persoonlijk Record: ${maxPR} kg`;
+
+  // Teken simpele lijn
+  ctx.strokeStyle = '#c9a962';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+
+  const margin = 30;
+  const w = canvas.width - margin * 2;
+  const h = canvas.height - margin * 2;
+  const minKg = Math.min(...punten.map(p => p.kg)) * 0.9;
+  const maxKgVal = maxPR * 1.1 || 10;
+
+  punten.forEach((p, idx) => {
+    const x = margin + (idx / Math.max(punten.length - 1, 1)) * w;
+    const y = canvas.height - margin - ((p.kg - minKg) / (maxKgVal - minKg)) * h;
+
+    if(idx === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+
+    // Punten tekenen
+    ctx.fillStyle = '#f5f4f1';
+    ctx.fillRect(x - 3, y - 3, 6, 6);
+  });
+  ctx.stroke();
 }
 
-/* Client ophalen bij opstarten */
-async function initClient(){
-  if(sb && clientId){
-    const { data } = await sb.from('clients').select('name, nutrition_pdf_url').eq('id', clientId).single();
-    if(data){
-      document.getElementById('klantkop').textContent = 'Welkom terug, ' + data.name;
-      if(data.nutrition_pdf_url) db.voeding = data.nutrition_pdf_url;
-    }
-  }
+/* ===================== BACK-UP & INIT ===================== */
+function exporteer(){
+  const blob = new Blob([JSON.stringify(db)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `trainlog_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
 }
 
-initClient();
+function importeer(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const r = new FileReader();
+  r.onload = function(evt){
+    try {
+      db = JSON.parse(evt.target.result);
+      bewaar();
+      location.reload();
+    } catch(err){ alert('Ongeldig back-up bestand.'); }
+  };
+  r.readAsText(file);
+}
+
+// Opstarten
+vulSchemaSelect();
+if(db.voeding) document.getElementById('voedingtxt').value = db.voeding;
 </script>
 </body>
 </html>
