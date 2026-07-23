@@ -70,6 +70,31 @@ button:active{transform:scale(.98)}
 #uitvoer{display:none;background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px;font-size:11.5px;color:var(--grijs);white-space:pre-wrap;max-height:280px;overflow:auto;margin-top:10px;font-family:ui-monospace,monospace}
 #uitvoer.aan{display:block}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:24px;background:rgba(30,36,46,.97);border:1px solid var(--line);padding:13px 18px;border-radius:14px;font-size:14.5px;font-weight:600;z-index:100}
+#printvel{display:none}
+@media print{
+  html,body{background:#fff!important;height:auto!important;overflow:visible!important}
+  body>*{display:none!important}
+  body>#printvel{display:block!important}
+  #printvel{color:#111;font-family:system-ui,-apple-system,sans-serif;font-size:10.5pt;line-height:1.45}
+  @page{size:A4;margin:15mm}
+  .pv-kop{border-bottom:2.5px solid #c9a962;padding-bottom:8px;margin-bottom:14px}
+  .pv-titel{font-size:19pt;font-weight:800;letter-spacing:-.01em}
+  .pv-sub{font-size:10pt;color:#555;margin-top:3px}
+  .pv-info{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10pt}
+  .pv-info td{border-bottom:1px solid #e0e0e0;padding:5px 2px}
+  .pv-info td:nth-child(2){font-weight:800;text-align:right;white-space:nowrap;width:110px}
+  .pv-info td:last-child{color:#666;text-align:right;font-size:9pt}
+  .pv-week{page-break-inside:avoid;break-inside:avoid;margin-bottom:11px}
+  .pv-weekkop{background:#f4efe3;border-left:3px solid #c9a962;padding:5px 9px;font-weight:800;font-size:11pt;margin-bottom:4px}
+  .pv-dag{padding:4px 0 4px 9px;border-bottom:1px solid #eee}
+  .pv-dag:last-child{border-bottom:none}
+  .pv-det{color:#333;font-size:9.5pt;margin-top:1px}
+  .pv-kort{color:#8a6d2f;font-size:9pt;margin-top:1px}
+  .pv-fuel{color:#3d5a75;font-size:9pt;margin-top:1px}
+  .pv-slot{margin-top:12px;padding:8px 10px;background:#f4efe3;border-left:3px solid #c9a962;font-size:9.5pt}
+  .pv-voet{margin-top:14px;padding-top:8px;border-top:1px solid #ddd;font-size:8.5pt;color:#666;text-align:center}
+}
+
 </style>
 </head>
 <body>
@@ -482,7 +507,7 @@ function genereer(){
     <p class="uitleg" style="margin-bottom:10px">Tik een week aan om ze te openen.</p>
     ${weekHTML}
 
-    <div class="card" style="border-color:rgba(201,169,98,.35)">
+    <div class="card geenprint" style="border-color:rgba(201,169,98,.35)">
       <h2 style="margin:0 0 4px;font-size:15px">Naar de TrainLog van je klant</h2>
       <p class="uitleg" style="margin-bottom:10px">De trainingen komen dan in zijn kalender te staan, met een vinkje per sessie. Laat "doorsturen tot en met" leeg om alles te sturen.</p>
       <div class="rij">
@@ -491,12 +516,20 @@ function genereer(){
       </div>
       <p class="uitleg" id="planinfo" style="margin:8px 0 10px"></p>
       <button class="btn" onclick="naarTrainlog()">Plan naar TrainLog sturen</button>
+      <button class="btn-lijn" onclick="naarPDF()">Afdrukken of opslaan als PDF</button>
     </div>
-    <button class="btn" style="margin-top:14px" onclick="deel()">Delen via WhatsApp</button>
-    <button class="btn-lijn" onclick="kopieer()">Kopiëren als tekst</button>
+    <button class="btn geenprint" style="margin-top:14px" onclick="deel()">Delen via WhatsApp</button>
+    <button class="btn-lijn geenprint" onclick="kopieer()">Kopiëren als tekst</button>
+
     <div id="uitvoer"></div>`;
 
-  laatstePlan={naam:klant,doel:p.naam,weken:s.weken};
+  laatstePlan={naam:klant,doel:p.naam,weken:s.weken,
+    titel:'Triatlonschema '+p.naam,
+    info:[['Voorspelde eindtijd',uumm(v.totaal),''],
+      ['Zwemmen '+p.zwem+' m',uumm(v.zwemTijd),mmss(v.zwemTempo)+'/100 m'],
+      ['Fietsen '+(p.fiets/1000)+' km',uumm(v.fietsTijd),v.kmu.toFixed(1)+' km/u · '+Math.round(ftp*p.ftpPct)+' W'],
+      ['Lopen '+(p.loop/1000).toFixed(p.loop===21097?1:0)+' km',uumm(v.loopTijd),mmss(v.loopTijd/(p.loop/1000))+'/km'],
+      ['Wissels',uumm(v.t1+v.t2),'']]};
   vulPlanDatums();
   laatsteTekst=alsTekst(klant,p,v,s,doel);
   uit.scrollIntoView({behavior:'smooth',block:'start'});
@@ -581,6 +614,46 @@ async function naarTrainlog(){
   try{await navigator.clipboard.writeText(tekst);toast(`Link gekopieerd — ${r.weken.length} weken`)}
   catch(e){const u=document.getElementById('uitvoer');u.textContent=link;u.classList.add('aan')}
 }
+
+
+/* ===================== AFDRUKKEN / PDF ===================== */
+function printVel(titel,subtitel,infoRijen,weken,slotTekst){
+  let h=`<div class="pv-kop"><div class="pv-titel">${titel}</div><div class="pv-sub">${subtitel}</div></div>`;
+  if(infoRijen&&infoRijen.length){
+    h+='<table class="pv-info">'+infoRijen.map(r=>
+      `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]||''}</td></tr>`).join('')+'</table>';
+  }
+  (weken||[]).forEach(w=>{
+    const omvang=w.volume!==undefined?w.volume+' km':(w.uren!==undefined?(w.uren/60).toFixed(1)+' u':'');
+    h+=`<div class="pv-week"><div class="pv-weekkop">Week ${w.nr} · ${w.deload?'rustweek':w.fase}${omvang?' · '+omvang:''}</div>`;
+    (w.dagen||[]).forEach(d=>{
+      if(d.rust){h+=`<div class="pv-dag"><b>${d.dag}</b> — rust</div>`;return}
+      d.items.forEach(it=>{
+        h+=`<div class="pv-dag"><b>${d.dag}</b> — ${it.titel}${it.min?' ('+it.min+' min)':''}`+
+           `<div class="pv-det">${it.detail}</div>`+
+           (it.kort?`<div class="pv-kort">${it.kort}</div>`:'')+
+           (it.fuel?`<div class="pv-fuel">${it.fuel}</div>`:'')+`</div>`;
+      });
+    });
+    h+='</div>';
+  });
+  if(slotTekst)h+=`<div class="pv-slot">${slotTekst}</div>`;
+  h+=`<div class="pv-voet">Robin Verdonck Coaching · robinverdonck.be · +32 472 50 20 86</div>`;
+  let vel=document.getElementById('printvel');
+  if(!vel){vel=document.createElement('div');vel.id='printvel';document.body.appendChild(vel)}
+  vel.innerHTML=h;
+  setTimeout(()=>window.print(),60);
+}
+function naarPDF(){
+  if(!laatstePlan){toast('Genereer eerst een schema');return}
+  const r=planWeken();
+  printVel(laatstePlan.titel||'Trainingsschema',
+    (laatstePlan.naam?laatstePlan.naam+' · ':'')+laatstePlan.doel+' · '+r.weken.length+' weken'+
+      (r.eind?' · tot en met '+r.eind:''),
+    laatstePlan.info||[], r.weken,
+    'Loopt een week anders dan gepland? Stuur me een bericht, dan sturen we bij. Het plan moet meebewegen, niet breken.');
+}
+
 
 </script>
 </body>
