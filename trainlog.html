@@ -183,6 +183,30 @@ button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,ba
 .schemarij .n{font-size:14.5px;font-weight:600;flex:1}
 .pr{color:var(--groen);font-weight:700}
 .prtekst{margin:10px 0 4px;font-size:13.5px;color:var(--grijs)}
+.setrij{display:block;margin-bottom:10px}
+.setmain{display:flex;align-items:center;gap:5px}
+.setmain .setnr{width:20px;flex-shrink:0}
+.stap{background:var(--card2);border:1px solid var(--line);color:var(--wit);width:36px;height:44px;flex-shrink:0;font-size:19px;border-radius:8px;padding:0}
+.setmain input{flex:1;min-width:0;text-align:center;padding:12px 3px}
+.setsub{display:flex;align-items:center;gap:8px;margin-top:5px;padding-left:20px}
+.warmtoggle{width:36px;height:32px;border:1px solid var(--line);background:none;color:var(--grijs);border-radius:8px;font-weight:800;font-size:12px;padding:0;flex-shrink:0}
+.setrij.warm .warmtoggle{background:rgba(201,169,98,.15);border-color:var(--gold);color:var(--goldsoft)}
+.setrij.warm .setmain input{opacity:.65}
+.setsub .v-rpe{width:66px;flex:none;text-align:center;padding:7px}
+.subhint{font-size:10.5px;color:var(--grijs);flex:1;line-height:1.3}
+.mrow{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.mhead{display:flex;justify-content:space-between;align-items:center;padding:15px 16px;cursor:pointer;font-weight:700;font-size:15px;gap:10px}
+.mhead .ic{display:flex;align-items:center;gap:11px}
+.mhead .chev{color:var(--grijs);font-size:20px;transition:transform .25s;flex-shrink:0}
+.mrow.open{border-color:rgba(201,169,98,.4)}
+.mrow.open .chev{transform:rotate(90deg);color:var(--goldsoft)}
+.mbody{max-height:0;overflow:hidden;transition:max-height .34s cubic-bezier(.22,.61,.36,1);padding:0 16px}
+.mrow.open .mbody{max-height:2600px;padding:0 16px 16px}
+.mrow.nood{border-color:var(--rood)}
+.msub{font-size:12px;color:var(--grijs);font-weight:400;margin-top:2px}
+.subnav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.subnav a{font-size:12.5px;font-weight:700;color:var(--goldsoft);background:var(--card2);border:1px solid var(--line);padding:6px 11px;border-radius:99px;text-decoration:none}
+.labtag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0b0e13;background:var(--goldsoft);padding:2px 8px;border-radius:99px;margin-left:6px}
 </style>
 </head>
 <body>
@@ -207,62 +231,77 @@ button,.dagkaart,.oefkop{transition:transform .12s ease,border-color .2s ease,ba
     <canvas id="grafiek" width="480" height="180"></canvas>
   </div>
   <div class="card"><h2 style="margin-top:0;font-size:15px">Ochtendgewicht</h2><div class="prtekst" id="gtekst"></div><canvas id="ggrafiek" width="480" height="150"></canvas><div id="glijst" style="margin-top:10px"></div></div>
+  <div class="card"><h2 style="margin-top:0;font-size:15px">Weekbelasting</h2><div id="belastingblok"></div></div>
+  <div class="card"><h2 style="margin-top:0;font-size:15px">Lichaamsmetingen</h2><div class="prtekst" id="mtekst"></div><canvas id="mgrafiek" width="480" height="150"></canvas></div>
   <div class="card" id="histblok"></div>
 </div>
 <div class="scherm" id="s-checkin"></div>
 <div class="scherm" id="s-meer">
-  <h2>Check-in</h2>
-  <div class="card">
-    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Vul om de twee weken je check-in in. Je gewichten van de voorbije twee weken gaan automatisch mee.</p>
-    <button class="btn" onclick="openCheckin()">Check-in invullen</button>
+  <h2>Meer</h2>
+  <p style="font-size:12.5px;color:var(--grijs);margin:-4px 0 12px">Tik een onderdeel aan om het te openen.</p>
+  <div class="mrow open"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">📋 <span>Check-in<div class="msub">Om de twee weken invullen</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <p style="font-size:13.5px;color:var(--grijs);margin:12px 0">Vul om de twee weken je check-in in. Je gewichten van de voorbije twee weken gaan automatisch mee.</p>
+      <button class="btn" onclick="openCheckin()">Check-in invullen</button>
+    </div>
   </div>
-  <h2>Mijn voedingsschema</h2>
-  <div class="card">
-    <a id="voedingpdf" href="#" target="_blank" rel="noopener" style="display:none;text-align:center;background:rgba(201,169,98,.12);border:1px solid var(--gold);color:var(--goldsoft);padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-bottom:10px">Voedingsplan van Robin openen (PDF)</a>
-    <textarea id="voedingtxt" rows="9" placeholder="Plak hier het voedingsschema dat je van Robin kreeg, dan heb je het altijd bij."></textarea>
-    <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();toast('Voedingsschema bewaard')">Bewaren</button>
+  <div class="mrow"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">🍽️ <span>Voeding<div class="msub">Je schema, calorieën en macro's</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <a id="voedingpdf" href="#" target="_blank" rel="noopener" style="display:none;text-align:center;background:rgba(201,169,98,.12);border:1px solid var(--gold);color:var(--goldsoft);padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin:12px 0 10px">Voedingsplan van Robin openen (PDF)</a>
+      <label>Mijn voedingsschema</label>
+      <textarea id="voedingtxt" rows="7" placeholder="Plak hier het voedingsschema dat je van Robin kreeg."></textarea>
+      <button class="btn-lijn" style="margin-top:10px" onclick="db.voeding=document.getElementById('voedingtxt').value;bewaar();toast('Voedingsschema bewaard')">Bewaren</button>
+      <label>Dagelijkse doelen (samen met Robin invullen)</label>
+      <div class="rij"><input id="dkcal" type="number" placeholder="kcal"><input id="de" type="number" placeholder="eiwit g"><input id="dk" type="number" placeholder="kh g"><input id="dv" type="number" placeholder="vet g"></div>
+      <button class="btn-mini" style="margin-top:8px" onclick="bewaarDoel()">Doelen bewaren</button>
+      <label>Vandaag gegeten</label>
+      <div style="font-size:12.5px;color:var(--grijs);margin-bottom:8px">Track met bv. MyFitnessPal en zet hier je totalen. Binnen 100 kcal en 10 g eiwit is prima.</div>
+      <div class="rij"><input id="mkcal" type="number" placeholder="kcal"><input id="me" type="number" placeholder="eiwit"><input id="mk" type="number" placeholder="kh"><input id="mv" type="number" placeholder="vet"></div>
+      <div class="rij" style="margin-top:10px"><input type="checkbox" id="mvrij" style="width:auto"><span style="font-size:13px;color:var(--grijs)">Speciale gelegenheid — telt niet mee</span></div>
+      <button class="btn" style="margin-top:10px" onclick="bewaarMacro()">Dag opslaan</button>
+      <div id="macrolijst" style="margin-top:12px"></div>
+    </div>
   </div>
-  <h2>Calorieën en macro's</h2>
-  <div class="card">
-    <label style="margin-top:0">Dagelijkse doelen (vul samen met Robin in)</label>
-    <div class="rij"><input id="dkcal" type="number" placeholder="kcal"><input id="de" type="number" placeholder="eiwit g"><input id="dk" type="number" placeholder="kh g"><input id="dv" type="number" placeholder="vet g"></div>
-    <button class="btn-mini" style="margin-top:8px" onclick="bewaarDoel()">Doelen bewaren</button>
-    <label>Vandaag gegeten</label>
-    <div style="font-size:12.5px;color:var(--grijs);margin-bottom:8px">Track je dag met een app zoals MyFitnessPal en zet hier op het einde van de dag je totalen. Probeer je doelen hierboven zo dicht mogelijk te benaderen; binnen 100 kcal en 10 g eiwit is prima.</div>
-    <div class="rij"><input id="mkcal" type="number" placeholder="kcal"><input id="me" type="number" placeholder="eiwit"><input id="mk" type="number" placeholder="kh"><input id="mv" type="number" placeholder="vet"></div>
-    <div class="rij" style="margin-top:10px"><input type="checkbox" id="mvrij" style="width:auto"><span style="font-size:13px;color:var(--grijs)">Speciale gelegenheid (feest, vakantie, verjaardag) — deze dag telt niet mee</span></div>
-    <button class="btn" style="margin-top:10px" onclick="bewaarMacro()">Dag opslaan</button>
-    <div id="macrolijst" style="margin-top:12px"></div>
+  <div class="mrow"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">📤 <span>Naar Robin sturen<div class="msub">Weekoverzicht en maandrapport</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <div style="height:12px"></div>
+      <button class="btn" onclick="weekNaarRobin()" style="margin-bottom:8px">Weekoverzicht mailen naar Robin</button>
+      <button class="btn-lijn" onclick="maandRapport()">Maandrapport (afdrukken / PDF)</button>
+    </div>
   </div>
-  <h2>Gegevens</h2>
-  <div class="card">
-    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Alles wordt lokaal op dit toestel bewaard. Mail voor je check-in het weekoverzicht naar Robin, en maak regelmatig een back-up.</p>
-    <label style="margin-top:0">Jouw naam (voor in de mail)</label>
-    <div class="rij" style="margin-bottom:10px"><input type="text" id="klantnaam" placeholder="Voornaam en naam"><button class="btn-mini" onclick="db.naam=document.getElementById('klantnaam').value.trim();bewaar();toast('Naam bewaard')">bewaar</button></div>
-    <button class="btn" onclick="weekNaarRobin()" style="margin-bottom:8px">Weekoverzicht mailen naar Robin</button>
-    <button class="btn-lijn" onclick="maandRapport()" style="margin-bottom:8px">Maandrapport (afdrukken / PDF)</button>
-    <button class="btn-lijn" onclick="db.introOk=false;bewaar();toon('trainen')" style="margin-bottom:8px">Uitleg van de app opnieuw tonen</button>
-    <button class="btn-lijn" onclick="exporteer()" style="margin-bottom:8px">Back-up downloaden</button>
-    <label>Back-up terugzetten</label>
-    <input type="file" accept=".json" onchange="importeer(event)">
+  <div class="mrow"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">💾 <span>Gegevens & back-up<div class="msub">Naam, back-up, export, wissen</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <p style="font-size:13px;color:var(--grijs);margin:12px 0 8px">Alles staat lokaal op dit toestel. Maak regelmatig een back-up.</p>
+      <label style="margin-top:0">Jouw naam (voor in de mail)</label>
+      <div class="rij" style="margin-bottom:10px"><input type="text" id="klantnaam" placeholder="Voornaam en naam"><button class="btn-mini" onclick="db.naam=document.getElementById('klantnaam').value.trim();bewaar();toast('Naam bewaard')">bewaar</button></div>
+      <button class="btn-lijn" onclick="exporteer()" style="margin-bottom:8px">Back-up downloaden (.json)</button>
+      <button class="btn-lijn" onclick="exporteerCSV()" style="margin-bottom:8px">Exporteer als CSV (Excel)</button>
+      <label>Back-up terugzetten</label>
+      <input type="file" accept=".json" onchange="importeer(event)">
+      <button class="btn-lijn" style="margin-top:12px;border-color:rgba(224,138,109,.5);color:var(--rood)" onclick="wisAlles()">Alle gegevens wissen</button>
+    </div>
   </div>
-  <h2>Hoe werkt progressie?</h2>
-  <div class="card">
-    <p style="font-size:13.5px;color:var(--grijs);line-height:1.65">Je traint met <b style="color:var(--wit)">double progression</b>. Elke oefening heeft een reprange, bijvoorbeeld 4-8. Je kiest een gewicht waarmee je onderaan die range zit en probeert elke training één herhaling meer, tot je bovenaan zit. Dan verhoog je het gewicht met de kleinste stap (meestal 2,5 kg) en zak je terug naar de onderkant. Zo bouw je week na week op zonder te gokken.<br><br>
-    Stop je sets ongeveer <b style="color:var(--wit)">1 herhaling voor spierfalen</b>: hard genoeg voor maximale prikkel, licht genoeg om te herstellen.<br><br>
-    <b style="color:var(--wit)">Tip:</b> zijn de stappen van een toestel te groot (bv. 7 kg per plaat), leg dan een klein schijfje van 1,25 of 2,5 kg bovenop de gewichtstapel op de pin. Zo maak je elke sprong haalbaar. De app zegt bij elke oefening wat je doel van vandaag is.</p>
+  <div class="mrow"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">📖 <span>Uitleg & hulp<div class="msub">Hoe progressie werkt, app installeren</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <div style="height:12px"></div>
+      <button class="btn-lijn" onclick="installHelp()" style="margin-bottom:8px">Zet TrainLog op je beginscherm</button>
+      <button class="btn-lijn" onclick="db.introOk=false;bewaar();toon('trainen')" style="margin-bottom:12px">Uitleg van de app opnieuw tonen</button>
+      <p style="font-size:13px;color:var(--grijs);line-height:1.65"><b style="color:var(--wit)">Double progression.</b> Elke oefening heeft een reprange, bv. 4-8. Start onderaan en probeer elke training één herhaling meer, tot je bovenaan zit. Dan +2,5 kg en terug naar onderen. Stop je sets ± 1 herhaling voor spierfalen.</p>
+    </div>
   </div>
-  <h2>Drukke dag of chaos thuis?</h2>
-  <div class="card" style="border:1px solid var(--rood)">
-    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Loop je vast door tijdsgebrek, werk of gezin? Druk op de knop en Robin krijgt meteen een melding, zodat hij je plan kan bijsturen in plaats van dat je afhaakt.</p>
-    <button onclick="drukNoodknop()" style="background:rgba(224,138,109,.15);border:1px solid var(--rood);color:var(--rood);padding:12px;width:100%;border-radius:10px;font-weight:700">🚨 Noodknop — stuur Robin een melding</button>
+  <div class="mrow nood"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">🚨 <span>Noodknop<div class="msub">Drukke dag of chaos thuis?</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <p style="font-size:13.5px;color:var(--grijs);margin:12px 0">Loop je vast door tijdsgebrek, werk of gezin? Druk op de knop en Robin krijgt meteen een melding, zodat hij je plan kan bijsturen in plaats van dat je afhaakt.</p>
+      <button onclick="drukNoodknop()" style="background:rgba(224,138,109,.15);border:1px solid var(--rood);color:var(--rood);padding:12px;width:100%;border-radius:10px;font-weight:700">🚨 Noodknop — stuur Robin een melding</button>
+    </div>
   </div>
-  <h2>Contact met Robin</h2>
-  <div class="card">
-    <p style="font-size:13.5px;color:var(--grijs);margin-bottom:12px">Zit je ergens mee tussen twee check-ins? Stuur gerust iets, daar dient je begeleiding voor.</p>
-    <a href="https://wa.me/32472502086" style="display:block;text-align:center;background:var(--gold);color:#0b0e13;padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-bottom:8px">WhatsApp</a>
-    <a href="mailto:verdonckrobin@hotmail.com" style="display:block;text-align:center;border:1px solid var(--line);color:var(--wit);padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-bottom:8px">E-mail</a>
-    <a href="https://robinverdonck.be" style="display:block;text-align:center;border:1px solid var(--line);color:var(--wit);padding:12px;border-radius:10px;font-weight:700;text-decoration:none">Website</a>
+  <div class="mrow"><div class="mhead" onclick="toggleMeer(this)"><span class="ic">💬 <span>Contact met Robin<div class="msub">WhatsApp, e-mail, website</div></span></span><span class="chev">›</span></div>
+    <div class="mbody">
+      <div style="height:12px"></div>
+      <a href="https://wa.me/32472502086" style="display:block;text-align:center;background:var(--gold);color:#0b0e13;padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-bottom:8px">WhatsApp</a>
+      <a href="mailto:verdonckrobin@hotmail.com" style="display:block;text-align:center;border:1px solid var(--line);color:var(--wit);padding:12px;border-radius:10px;font-weight:700;text-decoration:none;margin-bottom:8px">E-mail</a>
+      <a href="https://robinverdonck.be" style="display:block;text-align:center;border:1px solid var(--line);color:var(--wit);padding:12px;border-radius:10px;font-weight:700;text-decoration:none">Website</a>
+    </div>
   </div>
 </div>
 
@@ -856,7 +895,7 @@ if(!db){
   db={dagen:VOORBEELD.map((d,i)=>({id:i+1,naam:d.naam,oefs:[...d.oefs]})),logs:oud?oud.logs||[]:[],instellingen:{},eigen:[]};
 }
 db.instellingen=db.instellingen||{};db.eigen=db.eigen||[];db.gewicht=db.gewicht||[];db.voeding=db.voeding||'';db.repranges=db.repranges||{};db.macros=db.macros||[];db.macrodoel=db.macrodoel||null;db.notities=db.notities||{};db.setdoel=db.setdoel||{};db.naam=db.naam||'';db.metingen=db.metingen||[];db.introOk=db.introOk||false;
-function bewaar(){localStorage.setItem('trainlog2',JSON.stringify(db))}
+function bewaar(){try{localStorage.setItem('trainlog2',JSON.stringify(db))}catch(e){toast('Opslag zit vol — maak een back-up en ruim wat ruimte vrij.','fout')}}
 function vandaag(){return new Date().toISOString().slice(0,10)}
 function alleGroepen(){
   const g={};for(const k in BIB)g[k]=BIB[k].map(x=>x[0]).sort((a,b)=>(TOP.includes(b)?1:0)-(TOP.includes(a)?1:0));
@@ -894,7 +933,7 @@ function voegBlok(i,type){
 }
 function bewaarCardio(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
-  const oef=dag.oefs[i];
+  const oef=altOef[i]||dag.oefs[i];
   const type=cardioType(oef);
   const blokken=[];
   document.querySelectorAll('#blokken'+i+' .blokrij').forEach(r=>{
@@ -922,12 +961,13 @@ function toon(naam){
   if(naam==='trainen')renderTrainen();
   if(naam==='schema')renderSchema();
   if(naam==='bib')renderBib();
-  if(naam==='prog'){vulProgKeuze();tekenGrafiek();tekenGewicht()}
+  if(naam==='prog'){vulProgKeuze();tekenGrafiek();tekenGewicht();tekenBelasting();tekenMetingen()}
   if(naam==='meer'){document.getElementById('voedingtxt').value=db.voeding||'';document.getElementById('klantnaam').value=db.naam||'';renderMacros()}
 }
 
 function renderTrainen(){
   const el=document.getElementById('s-trainen');
+  houdWakker(huidigeDag!==null);
   if(huidigeDag===null){
     const planKaart=planVandaag();
     const vandaagG=db.gewicht.find(g=>g.datum===vandaag());
@@ -944,7 +984,10 @@ function renderTrainen(){
       <b style="color:var(--wit)">Voeding.</b> Onder Meer plak je je voedingsschema en log je per dag je calorieën en macro's. Feestje of vakantie? Vink "speciale gelegenheid" aan, die dag telt niet mee.<br><br>
       <b style="color:var(--wit)">Check-in.</b> Om de twee weken vul je onder Meer de check-in in. Alles gaat met één tik als mail naar Robin. Zit je tussendoor ergens mee: WhatsApp staat altijd open.</div>
       <button class="btn-mini" onclick="db.introOk=true;bewaar();renderTrainen()">Begrepen, verberg dit</button></div>`;
-    el.innerHTML=intro+planKaart+gewichtKaart+'<h2>Kies je trainingsdag <button class="btn-mini" style="float:right" onclick="db.introOk=false;bewaar();renderTrainen()">? uitleg</button></h2>'+(db.dagen.length?db.dagen.map(d=>{
+    const wkStart=new Date();wkStart.setHours(0,0,0,0);wkStart.setDate(wkStart.getDate()-((wkStart.getDay()+6)%7));
+    const sesWk=new Set(db.logs.filter(l=>l.datum>=isoVan(wkStart)).map(l=>l.datum)).size;
+    const consistentie=sesWk?'<div style="font-size:12.5px;color:var(--grijs);margin:-2px 0 10px">Deze week: <b style="color:var(--goldsoft)">'+sesWk+(sesWk===1?' sessie':' sessies')+'</b> gelogd 💪</div>':'';
+    el.innerHTML=intro+planKaart+gewichtKaart+'<h2>Kies je trainingsdag <button class="btn-mini" style="float:right" onclick="db.introOk=false;bewaar();renderTrainen()">? uitleg</button></h2>'+consistentie+(db.dagen.length?db.dagen.map(d=>{
       const klaarVandaag=d.oefs.filter(o=>db.logs.some(l=>l.oef===o&&l.datum===vandaag())).length;
       return `<div class="dagkaart" onclick="openDag(${d.id})"><div><div class="n">${d.naam}</div><div class="s">${d.oefs.length} oefeningen${klaarVandaag?` · ${klaarVandaag} gelogd vandaag`:''}</div></div><div style="color:var(--gold);font-size:20px">›</div></div>`;
     }).join(''):'<div class="leeg">Nog geen trainingsdagen. Maak ze aan onder Schema.</div>');
@@ -978,7 +1021,7 @@ function renderTrainen(){
   <textarea id="dagnotitie" rows="2" placeholder="bv. schouder voelde stram, weinig geslapen…">${(db.notities[vandaag()]||'').replace(/</g,'&lt;')}</textarea>
   <button class="btn-mini" style="margin-top:8px" onclick="db.notities[vandaag()]=document.getElementById('dagnotitie').value;bewaar();toast('Bewaard.')">Bewaren</button></div>`;
 }
-function openDag(id){huidigeDag=id;renderTrainen()}
+function openDag(id){huidigeDag=id;altOef={};renderTrainen()}
 function setDoelVan(dagId,oef){return db.setdoel[dagId+'|'+oef]||2}
 function setsAantal(dagId,i,delta){
   const d=db.dagen.find(x=>x.id===dagId);
@@ -987,7 +1030,7 @@ function setsAantal(dagId,i,delta){
 }
 function bewaarInstelling(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
-  db.instellingen[dag.oefs[i]]=document.getElementById('inst'+i).value;
+  db.instellingen[altOef[i]||dag.oefs[i]]=document.getElementById('inst'+i).value;
   bewaar();toast('Instelling bewaard.');
 }
 function hernoemDag(id){
@@ -1001,7 +1044,7 @@ function laatsteLog(oef){
 }
 function klapOpen(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
-  const oef=dag.oefs[i];
+  const oef=altOef[i]||dag.oefs[i];
   const p=document.getElementById('paneel'+i);
   if(p.classList.contains('aan')){p.classList.remove('aan');p.innerHTML='';return}
   document.querySelectorAll('.paneel').forEach(x=>{x.classList.remove('aan');x.innerHTML=''});
@@ -1016,6 +1059,8 @@ function klapOpen(i){
     p.innerHTML=`
     ${cue?`<div class="cue">${cue}</div>`:''}
     ${vp?`<div class="vorige">Vorige keer (${vorig.datum}):<br><b>${vp}</b></div>`:'<div class="vorige">Eerste keer. Log per blok: opwarming, intervallen, uitloop. Eén blok voor een gewone duurtraining is ook prima.</div>'}
+    ${altOef[i]?`<div class="cue" style="border-left-color:var(--rood);color:var(--rood)">Alternatief voor <b>${dag.oefs[i]}</b>.</div>`:''}
+    <button class="btn-mini" style="margin:0 0 10px" onclick="kiesAlternatief(${i})">${altOef[i]?'Ander alternatief of terug':'Iets anders? Kies alternatief'}</button>
     <label>Blokken (${kolom})</label>
     <div id="blokken${i}">${blokRij(type)}</div>
     <button class="btn-lijn" style="margin:4px 0 10px" onclick="voegBlok(${i},'${type}')">+ blok toevoegen</button>
@@ -1031,21 +1076,42 @@ function klapOpen(i){
   }
   p.innerHTML=`
     ${cue?`<div class="cue">${cue} <a href="${videoUrl(oef)}" target="_blank" style="color:var(--gold);font-weight:700;text-decoration:none">video ▸</a></div>`:''}
+    ${altOef[i]?`<div class="cue" style="border-left-color:var(--rood);color:var(--rood)">Alternatief voor <b>${dag.oefs[i]}</b> \u2014 toestel bezet.</div>`:''}
+    <button class="btn-mini" style="margin:0 0 10px" onclick="kiesAlternatief(${i})">${altOef[i]?'Ander alternatief of terug':'Toestel bezet? Kies alternatief'}</button>
     <label>Jouw apparaatinstelling (zetel, stand…)</label>
     <div class="rij"><input type="text" id="inst${i}" value="${inst.replace(/"/g,'&quot;')}" placeholder="bv. zetel op 4, rugkussen stand 2"><button class="btn-mini" onclick="bewaarInstelling(${i})">bewaar</button></div>
     <div style="font-size:12.5px;color:var(--grijs);margin-top:10px">Ideale reprange: <b style="color:var(--goldsoft)">${rangeVan(oef)}</b> <button class="btn-mini" onclick="wijzigRange('${oef}')">wijzig</button>${TAGS[oef]?` &nbsp;·&nbsp; <span style="color:var(--goldsoft);text-transform:uppercase;letter-spacing:.05em;font-size:11px">${TAGS[oef]}</span>`:''}</div>
     ${vorig?`<div class="vorige">Vorige keer (${vorig.datum}): <b>${vorig.sets.map(s=>s.kg+'kg × '+s.reps).join(' · ')}</b><br>De grijze waarden in de velden zijn je vorige training.<br>Doel vandaag: <b>${overloadDoel(vorig,rangeVan(oef))}</b></div>`:'<div class="vorige">Eerste keer. Zet een startgewicht neer.</div>'}
     <label>Sets vandaag</label>
     <div id="sets${i}">${setsHtml}</div>
-    <button class="btn-lijn" style="margin:4px 0 10px" onclick="voegSet(${i})">+ set toevoegen</button>
+    ${vorig?`<button class="btn-mini" style="margin:2px 0 8px" onclick="vulVorige(${i},'${oef.replace(/'/g,"\\'")}')">Zelfde als vorige keer</button> `:''}<button class="btn-lijn" style="margin:4px 0 10px" onclick="voegSet(${i})">+ set toevoegen</button>
     <label>Rusttimer</label>
     <div class="rij" style="margin-bottom:12px"><button class="btn-mini" onclick="startTimer(90)">1:30</button><button class="btn-mini" onclick="startTimer(120)">2:00</button><button class="btn-mini" onclick="startTimer(180)">3:00</button><span id="timer" style="font-weight:800;font-size:18px;color:var(--goldsoft);margin-left:6px"></span></div>
     <button class="btn" onclick="bewaarOef(${i})">Opslaan</button>`;
   p.classList.add('aan');
 }
 function setHtml(nr,phKg,phReps){
-  return `<div class="setrij"><span class="setnr">${nr}</span><input type="number" inputmode="decimal" step="0.5" placeholder="${phKg!==''?phKg+' kg':'kg'}"><input type="number" inputmode="numeric" placeholder="${phReps!==''?phReps+' reps':'reps'}"><button class="verwijder" onclick="this.parentElement.remove()">×</button></div>`;
+  return `<div class="setrij">
+    <div class="setmain">
+      <span class="setnr">${nr}</span>
+      <button type="button" class="stap" onclick="stap(this,-1)">−</button>
+      <input type="number" inputmode="decimal" step="0.5" class="v-kg" placeholder="${phKg!==''?phKg+' kg':'kg'}">
+      <button type="button" class="stap" onclick="stap(this,1)">+</button>
+      <button type="button" class="stap" onclick="stapR(this,-1)">−</button>
+      <input type="number" inputmode="numeric" class="v-reps" placeholder="${phReps!==''?phReps+' reps':'reps'}">
+      <button type="button" class="stap" onclick="stapR(this,1)">+</button>
+      <button class="verwijder" onclick="wisSet(this)">×</button>
+    </div>
+    <div class="setsub">
+      <button type="button" class="warmtoggle" title="Opwarmset" onclick="this.closest('.setrij').classList.toggle('warm')">W</button>
+      <input type="number" inputmode="numeric" class="v-rpe" placeholder="RPE" min="1" max="10">
+      <span class="subhint">W = opwarmset (telt niet mee) · RPE = zwaarte 1-10</span>
+    </div>
+  </div>`;
 }
+function stap(b,d){const i=b.parentElement.querySelector('.v-kg');let v=parseFloat(i.value);if(isNaN(v))v=parseFloat((i.placeholder||'').replace(',','.'))||0;i.value=Math.max(0,Math.round((v+d*2.5)*2)/2);}
+function stapR(b,d){const i=b.parentElement.querySelector('.v-reps');let v=parseInt(i.value);if(isNaN(v))v=parseInt(i.placeholder)||0;i.value=Math.max(0,v+d);}
+function wisSet(b){b.closest('.setrij').remove();}
 function standaardRange(oef){
   const iso=['raise','curl','fly','pushdown','extension','pec deck','calf','crunch','abdominal','kickback','abductor','pallof','lateral','pullover','face pull'];
   const l=oef.toLowerCase();
@@ -1070,17 +1136,23 @@ function voegSet(i){
 }
 function bewaarOef(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
-  const oef=dag.oefs[i];
-  const sets=[...document.querySelectorAll('#sets'+i+' .setrij')].map(r=>{
-    const ins=r.querySelectorAll('input');
-    return{kg:parseFloat(ins[0].value)||0,reps:parseInt(ins[1].value)||0};
-  }).filter(s=>s.kg>0&&s.reps>0);
+  const oef=altOef[i]||dag.oefs[i];
+  const sets=[...document.querySelectorAll('#sets'+i+' .setrij')].map(r=>({
+    kg:parseFloat(r.querySelector('.v-kg').value)||0,
+    reps:parseInt(r.querySelector('.v-reps').value)||0,
+    rpe:parseInt(r.querySelector('.v-rpe').value)||0,
+    warm:r.classList.contains('warm')
+  })).filter(s=>s.kg>0&&s.kg<=1000&&s.reps>0&&s.reps<=200);
   if(!sets.length){toast('Vul minstens één set in.');return}
   db.logs=db.logs.filter(l=>!(l.oef===oef&&l.datum===vandaag()));
   db.logs.push({oef,datum:vandaag(),sets});
   bewaar();syncSupabase();
+  const _vorige=db.logs.filter(l=>l.oef===oef&&!l.cardio&&l.datum!==vandaag()&&l.sets&&l.sets.length);
+  const _werk=sets.filter(s=>!s.warm);
+  if(_vorige.length&&_werk.length){const _oud=Math.max(..._vorige.map(besteSet)),_nu=Math.max(..._werk.map(e1rm));if(_nu>_oud+0.05)toast('🎉 Nieuw record! '+_nu.toFixed(1)+' kg geschat 1RM');}
   const r=rangeVan(oef).split('-').map(Number);
-  if(r.length===2&&sets.every(s=>s.reps>r[1]))toast('Al je sets zitten boven je reprange ('+rangeVan(oef)+'). Verhoog volgende training het gewicht.');
+  const _wk=sets.filter(s=>!s.warm);
+  if(r.length===2&&_wk.length&&_wk.every(s=>s.reps>r[1]))toast('Al je werksets zitten boven je reprange ('+rangeVan(oef)+'). Verhoog volgende training het gewicht.');
   renderTrainen();
 }
 
@@ -1090,6 +1162,66 @@ function bewaarGewicht(){
   db.gewicht=db.gewicht.filter(g=>g.datum!==vandaag());
   db.gewicht.push({datum:vandaag(),kg:v});
   bewaar();renderTrainen();syncSupabase();
+}
+function houdWakker(aan){
+  try{
+    if(aan){ if('wakeLock' in navigator && !wakeLock){ navigator.wakeLock.request('screen').then(w=>{wakeLock=w;wakeLock.addEventListener('release',()=>{wakeLock=null})}).catch(()=>{}); } }
+    else { if(wakeLock){ wakeLock.release(); wakeLock=null; } }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'&&typeof huidigeDag!=='undefined'&&huidigeDag!==null) houdWakker(true); });
+function vulVorige(i,oef){
+  const vorig=laatsteLog(oef); if(!vorig||!vorig.sets)return;
+  document.querySelectorAll('#sets'+i+' .setrij').forEach((r,n)=>{
+    const s=vorig.sets[n]; if(!s)return;
+    r.querySelector('.v-kg').value=s.kg; r.querySelector('.v-reps').value=s.reps;
+    if(s.rpe)r.querySelector('.v-rpe').value=s.rpe;
+    if(s.warm)r.classList.add('warm');
+  });
+  toast('Vorige waarden ingevuld');
+}
+function exporteerCSV(){
+  const rows=[['datum','oefening','type','set','kg','reps','min','km']];
+  [...db.logs].sort((a,b)=>a.datum.localeCompare(b.datum)).forEach(l=>{
+    if(l.cardio){ rows.push([l.datum,l.oef,'cardio','','','',l.min||'',l.km||'']); }
+    else{ (l.sets||[]).forEach((st,i)=>rows.push([l.datum,l.oef,'kracht',i+1,st.kg,st.reps,'',''])); }
+  });
+  const csv=rows.map(r=>r.map(c=>{c=String(c);return /[";\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(';')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='trainlog-'+vandaag()+'.csv'; a.click();
+  toast('CSV gedownload');
+}
+let wakeLock=null;
+let altOef={};
+function alternatieven(oef){
+  const g=groepVan(oef); if(!g)return [];
+  const lijst=(BIB[g]||[]).map(x=>x[0]);
+  const eigen=db.eigen.filter(e=>e.groep===g).map(e=>e.n);
+  return [...new Set([...lijst,...eigen])].filter(n=>n!==oef);
+}
+async function kiesAlternatief(i){
+  const dag=db.dagen.find(d=>d.id===huidigeDag); if(!dag)return;
+  const orig=dag.oefs[i], huidig=altOef[i]||orig;
+  const alts=alternatieven(orig);
+  if(!alts.length){toast('Geen alternatief bekend voor deze spiergroep','fout');return;}
+  const opties=alts.map(n=>({waarde:n,label:n+(n===huidig?' (nu gekozen)':'')}));
+  if(altOef[i])opties.unshift({waarde:'__terug',label:'\u21a9 Terug naar '+orig});
+  const keuze=await kiesUit('Toestel bezet?','Kies een volwaardig alternatief voor dezelfde spiergroep. Je logt het onder die oefening; je plan blijft hetzelfde.',opties);
+  if(!keuze)return;
+  if(keuze==='__terug')delete altOef[i]; else altOef[i]=keuze;
+  const pn=document.getElementById('paneel'+i); if(pn){pn.classList.remove('aan');pn.innerHTML='';}
+  klapOpen(i);
+}
+function toggleMeer(h){h.parentElement.classList.toggle('open');}
+async function wisAlles(){
+  if(!await bevestig('Alle gegevens wissen?','Al je trainingen, gewichten, schema en instellingen op dit toestel worden gewist. Maak eerst een back-up. Dit kan niet ongedaan gemaakt worden.','Alles wissen'))return;
+  try{localStorage.removeItem('trainlog2')}catch(e){}
+  location.reload();
+}
+async function installHelp(){
+  await sheet({titel:'Op je beginscherm zetten',
+    tekst:'iPhone (Safari): tik op het deel-icoon onderaan en kies "Zet op beginscherm".\n\nAndroid (Chrome): tik op de drie puntjes rechtsboven en kies "App installeren" of "Toevoegen aan startscherm".\n\nDaarna opent TrainLog als een echte app, zonder browserbalk.',
+    ok:'Begrepen'});
 }
 function renderSchema(){
   const el=document.getElementById('s-schema');
@@ -1186,7 +1318,7 @@ function eigenToevoegen(){
 }
 
 function e1rm(s){return s.kg*(1+s.reps/30)}
-function besteSet(log){return Math.max(...log.sets.map(e1rm))}
+function besteSet(log){const s=(log.sets||[]).filter(x=>!x.warm);return s.length?Math.max(...s.map(e1rm)):0}
 function vulProgKeuze(){
   const geoefend=[...new Set(db.logs.map(l=>l.oef))];
   const sel=document.getElementById('progkeuze');
@@ -1250,6 +1382,41 @@ function tekenGewicht(){
     const vor=desc[i+1];const d=vor?x.kg-vor.kg:null;
     return `<div class="histset" style="display:flex;justify-content:space-between"><span>${x.datum}</span><span><b style="color:var(--wit)">${x.kg.toFixed(1)} kg</b>${d===null?'':` <span style="color:${d<0?'var(--groen)':'var(--goldsoft)'};font-weight:700">${d>0?'+':''}${d.toFixed(1)}</span>`}</span></div>`;
   }).join('');
+}
+function groepVan(oef){ for(const k in BIB){ if(BIB[k].some(x=>x[0]===oef))return k; } const e=db.eigen.find(x=>x.n===oef); return e?e.groep:null; }
+function tekenBelasting(){
+  const el=document.getElementById('belastingblok'); if(!el)return;
+  const sinds=new Date(Date.now()-6*864e5).toISOString().slice(0,10);
+  const logs=db.logs.filter(l=>l.datum>=sinds);
+  let werksets=0,tonnage=0,cardioMin=0,cardioKm=0; const perGroep={};
+  logs.forEach(l=>{
+    if(l.cardio){cardioMin+=l.min||0;cardioKm+=l.km||0;return;}
+    const wk=(l.sets||[]).filter(x=>!x.warm);
+    wk.forEach(x=>{werksets++;tonnage+=(x.kg||0)*(x.reps||0);});
+    const g=groepVan(l.oef); if(g)perGroep[g]=(perGroep[g]||0)+wk.length;
+  });
+  let h='<div class="prtekst">Laatste 7 dagen: <b style="color:var(--goldsoft)">'+werksets+' werksets</b> ('+Math.round(tonnage).toLocaleString('nl-BE')+' kg getild)';
+  if(cardioMin)h+=' \u00b7 <b style="color:#8fb4d9">'+cardioMin+' min cardio</b>'+(cardioKm?' / '+cardioKm+' km':'');
+  h+='</div>';
+  const groepen=Object.keys(perGroep).sort((a,b)=>perGroep[b]-perGroep[a]);
+  if(groepen.length){
+    const mx=Math.max(...groepen.map(g=>perGroep[g]));
+    h+='<div style="margin-top:10px">'+groepen.map(g=>'<div style="display:flex;align-items:center;gap:8px;margin:4px 0"><span style="font-size:11.5px;color:var(--grijs);width:118px;flex-shrink:0">'+g+'</span><span style="height:8px;border-radius:4px;background:linear-gradient(90deg,var(--gold),var(--goldsoft));width:'+Math.round(perGroep[g]/mx*100)+'%;min-width:6px"></span><span style="font-size:12px;color:var(--goldsoft);font-weight:700">'+perGroep[g]+'</span></div>').join('')+'</div>';
+  } else h+='<div class="leeg" style="padding:8px 0">Nog geen krachttraining deze week.</div>';
+  el.innerHTML=h;
+}
+function tekenMetingen(){
+  const c=document.getElementById('mgrafiek'); if(!c)return; const ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+  const t=document.getElementById('mtekst');
+  const m=[...db.metingen].filter(x=>x.taille).map(x=>({d:x.datum,v:parseFloat(String(x.taille).replace(',','.'))})).filter(x=>!isNaN(x.v)).sort((a,b)=>a.d.localeCompare(b.d));
+  if(m.length<2){t.textContent=m.length?('Eén taillemeting ('+m[0].v+' cm). Vul er meer in via de check-in voor een trend.'):'Nog geen taillemetingen. Vul ze in via de check-in.';return;}
+  const w8=m.map(x=>x.v),max=Math.max(...w8),min=Math.min(...w8),span=(max-min)||1;
+  t.innerHTML='Taille: <b style="color:var(--goldsoft)">'+w8[w8.length-1]+' cm</b> ('+((w8[w8.length-1]-w8[0])>=0?'+':'')+(w8[w8.length-1]-w8[0]).toFixed(1)+' cm sinds start)';
+  const pad=30,w=c.width-pad*2,h=c.height-pad*2;
+  ctx.strokeStyle='#232a35';ctx.beginPath();ctx.moveTo(pad,pad);ctx.lineTo(pad,c.height-pad);ctx.lineTo(c.width-pad,c.height-pad);ctx.stroke();
+  const px=i=>pad+(m.length>1?i/(m.length-1)*w:w/2),py=v=>c.height-pad-((v-min)/span)*h;
+  ctx.strokeStyle='#c9a962';ctx.lineWidth=2.5;ctx.beginPath();w8.forEach((v,i)=>{i?ctx.lineTo(px(i),py(v)):ctx.moveTo(px(i),py(v))});ctx.stroke();
+  ctx.fillStyle='#e0c98f';w8.forEach((v,i)=>{ctx.beginPath();ctx.arc(px(i),py(v),3.5,0,7);ctx.fill()});
 }
 function bewaarDoel(){
   db.macrodoel={kcal:+document.getElementById('dkcal').value||0,e:+document.getElementById('de').value||0,k:+document.getElementById('dk').value||0,v:+document.getElementById('dv').value||0};
