@@ -354,17 +354,7 @@ footer a:hover{color:var(--gold-soft)}
     <p class="honest reveal">Voor alle duidelijkheid: ik deel dit niet om te tonen hoe goed ik ben. Ik deel het omdat ik een paar jaar geleden exact stond waar jij nu misschien staat. Alles hierboven is geleerd, niet aangeboren. Wat je hier vindt: iemand die weet wat het is om dit naast een druk leven te doen.</p>
   </div>
 </section>
-<!-- ================================================================
-     ZO ZIET JOUW WEEK ERUIT
-     Plaats: NA de sectie #verhaal ("Wie ik ben")
-             VOOR de sectie #investering ("Prijzen")
-
-     Plak ALLES tussen deze twee commentaarregels — niet meer.
-     Dus GEEN <!DOCTYPE>, GEEN <html>, GEEN <head>, GEEN <body>.
-     ================================================================ -->
-
 <style>
-/* Zo ziet jouw week eruit — kleuren blijven binnen deze sectie */
 #hoehetwerkt{
   /* neemt de kleuren van de site over; valt terug op vaste waarden als die ontbreken */
   --x-bg:var(--obsidian,#0b0e13);
@@ -375,7 +365,7 @@ footer a:hover{color:var(--gold-soft)}
   --x-goldsoft:var(--gold-soft,#e0c98f);
   --x-white:var(--white,#f5f4f1);
   --x-muted:var(--muted,#9aa1ab);
-  --x-groen:#5dca85;--x-rood:#e08a6d;--x-blauw:#8fb4d9;
+  --x-groen:#5dca85;--x-blauw:#8fb4d9;
   background:var(--x-bg);
   color:var(--x-white);
   font-family:'Manrope',system-ui,-apple-system,sans-serif;
@@ -385,13 +375,17 @@ footer a:hover{color:var(--gold-soft)}
 #hoehetwerkt .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 #hoehetwerkt h2{font-family:'Fraunces',Georgia,serif;font-weight:600;line-height:1.1;
   letter-spacing:-.01em;font-size:clamp(30px,4vw,46px);margin-bottom:22px;color:var(--x-white)}
+#hoehetwerkt h3{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:22px;
+  line-height:1.2;color:var(--x-white);margin-bottom:10px}
 #hoehetwerkt .kicker{display:inline-flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;
   text-transform:uppercase;letter-spacing:.18em;color:var(--x-gold);margin-bottom:20px}
 #hoehetwerkt .kicker::before{content:"";width:28px;height:1px;background:var(--x-gold)}
-#hoehetwerkt .app-intro{color:var(--x-muted);font-size:16px;max-width:620px;margin-bottom:44px}
+#hoehetwerkt .app-intro{color:var(--x-muted);font-size:16px;max-width:640px;margin:0 0 44px}
+#hoehetwerkt .app-intro b{color:var(--x-white)}
+#hoehetwerkt p{margin:0}
 @media(max-width:880px){#hoehetwerkt{padding:72px 0}}
 
-/* rij met de drie weergaven */
+/* rij met de drie telefoons */
 #hoehetwerkt .app-rij{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 @media(max-width:880px){
   #hoehetwerkt .app-rij{grid-template-columns:1fr;gap:44px;max-width:340px;margin:0 auto}
@@ -401,7 +395,7 @@ footer a:hover{color:var(--gold-soft)}
 /* telefoon */
 #hoehetwerkt .tel{width:100%;max-width:300px;background:#000;border:7px solid #1a1f27;border-radius:32px;
   overflow:hidden;box-shadow:0 22px 50px rgba(0,0,0,.55);position:relative}
-#hoehetwerkt .tel-inner{background:var(--x-bg);padding:12px 11px 14px;min-height:430px;line-height:1.6}
+#hoehetwerkt .tel-inner{background:var(--x-bg);padding:12px 11px 14px;min-height:436px;line-height:1.6}
 #hoehetwerkt .tel-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:92px;height:19px;
   background:#1a1f27;border-radius:0 0 12px 12px;z-index:3}
 #hoehetwerkt .tel-status{display:flex;justify-content:space-between;align-items:center;font-size:10px;
@@ -412,7 +406,7 @@ footer a:hover{color:var(--gold-soft)}
 #hoehetwerkt .app-bijschrift span{font-size:14px;color:var(--x-muted);line-height:1.55}
 
 /* app-onderdelen */
-#hoehetwerkt .a-kop{font-size:15px;font-weight:800;margin-bottom:2px;font-family:'Manrope',sans-serif}
+#hoehetwerkt .a-kop{font-size:15px;font-weight:800;margin-bottom:2px;color:var(--x-white)}
 #hoehetwerkt .a-sub{font-size:10.5px;color:var(--x-muted);margin-bottom:5px}
 #hoehetwerkt .a-balk{height:4px;background:var(--x-line);border-radius:99px;overflow:hidden;margin-bottom:11px}
 #hoehetwerkt .a-balk i{display:block;height:100%;background:linear-gradient(90deg,var(--x-gold),var(--x-goldsoft));border-radius:99px}
@@ -420,10 +414,8 @@ footer a:hover{color:var(--gold-soft)}
 #hoehetwerkt .a-weekbalk .pijl{width:27px;height:27px;flex-shrink:0;background:var(--x-card2);border:1px solid var(--x-line);
   border-radius:8px;color:var(--x-muted);font-size:13px;display:flex;align-items:center;justify-content:center}
 #hoehetwerkt .a-weekbalk .mid{flex:1;text-align:center}
-#hoehetwerkt .a-weekbalk .wk{font-size:12.5px;font-weight:800}
+#hoehetwerkt .a-weekbalk .wk{font-size:12.5px;font-weight:800;color:var(--x-white)}
 #hoehetwerkt .a-weekbalk .dat{font-size:10px;color:var(--x-muted)}
-#hoehetwerkt .a-fase{display:inline-block;font-size:8.5px;text-transform:uppercase;letter-spacing:.08em;
-  padding:2px 8px;border-radius:99px;border:1px solid rgba(201,169,98,.45);color:var(--x-goldsoft);margin-bottom:9px}
 
 #hoehetwerkt .a-dag{background:var(--x-card);border:1px solid var(--x-line);border-radius:10px;padding:9px 10px;
   margin-bottom:6px;display:flex;gap:8px;align-items:flex-start}
@@ -431,73 +423,103 @@ footer a:hover{color:var(--gold-soft)}
 #hoehetwerkt .a-dag.gedaan{opacity:.5}
 #hoehetwerkt .a-dag.rust{opacity:.45;padding:7px 10px}
 #hoehetwerkt .a-dag .inh{flex:1;min-width:0}
-#hoehetwerkt .a-dag .d-kop{font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--x-muted);font-weight:700}
+#hoehetwerkt .a-dag .d-kop{font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--x-muted);font-weight:700}
 #hoehetwerkt .a-dag.vandaag .d-kop{color:var(--x-gold)}
-#hoehetwerkt .a-dag .d-t{font-weight:700;font-size:12px;margin:1px 0}
+#hoehetwerkt .a-dag .d-t{font-weight:700;font-size:12px;margin:1px 0;color:var(--x-white)}
 #hoehetwerkt .a-dag .d-d{font-size:10.5px;color:var(--x-muted);line-height:1.45}
 #hoehetwerkt .a-dag .d-k{font-size:10px;color:var(--x-goldsoft);margin-top:3px;line-height:1.4}
-#hoehetwerkt .a-dag .d-f{font-size:10px;color:var(--x-blauw);margin-top:3px;line-height:1.4}
 #hoehetwerkt .a-vink{width:22px;height:22px;flex-shrink:0;border-radius:7px;border:1.5px solid var(--x-line);
   display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--x-groen)}
 #hoehetwerkt .a-vink.aan{background:rgba(93,202,133,.15);border-color:var(--x-groen)}
+#hoehetwerkt .a-kruis{width:22px;height:22px;flex-shrink:0;border-radius:7px;border:1.5px solid var(--x-line);
+  display:flex;align-items:center;justify-content:center;font-size:10px;color:#e08a6d}
+#hoehetwerkt .statusknoppen{display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+#hoehetwerkt .principe{margin-top:44px;border-left:2px solid var(--x-gold);padding:4px 0 4px 26px;max-width:760px}
+#hoehetwerkt .principe p{font-family:'Fraunces',Georgia,serif;font-size:clamp(19px,2.4vw,24px);
+  line-height:1.4;color:var(--x-white);font-weight:500}
+#hoehetwerkt .principe span{display:block;font-family:'Manrope',sans-serif;font-size:15px;
+  color:var(--x-muted);margin-top:10px;line-height:1.65}
 #hoehetwerkt .a-knop{display:block;text-align:center;border-radius:9px;padding:9px;font-size:11.5px;
   font-weight:800;margin-top:9px;background:none;border:1px solid var(--x-line);color:var(--x-white)}
 
-/* documentweergave voor het voedingsschema */
+/* gesprek */
+#hoehetwerkt .gesprek-kop{display:flex;align-items:center;gap:9px;padding:3px 2px 11px;border-bottom:1px solid var(--x-line);margin-bottom:11px}
+#hoehetwerkt .gesprek-foto{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--x-gold),#8a7028);
+  display:flex;align-items:center;justify-content:center;font-family:'Fraunces',Georgia,serif;font-size:12px;color:#0b0e13;font-weight:600;flex-shrink:0}
+#hoehetwerkt .gesprek-naam{font-size:12.5px;font-weight:800;line-height:1.2;color:var(--x-white)}
+#hoehetwerkt .gesprek-status{font-size:9px;color:var(--x-muted)}
+#hoehetwerkt .dagscheiding{text-align:center;font-size:9.5px;color:var(--x-muted);text-transform:uppercase;
+  letter-spacing:.08em;margin:9px 0 7px}
+#hoehetwerkt .bel{max-width:82%;border-radius:12px;padding:7px 10px;margin-bottom:6px;font-size:10.5px;line-height:1.5}
+#hoehetwerkt .bel .tijd{display:block;font-size:8.5px;opacity:.6;text-align:right;margin-top:2px}
+#hoehetwerkt .bel.hem{background:var(--x-card);border:1px solid var(--x-line);border-bottom-left-radius:4px;
+  color:var(--x-white);margin-right:auto}
+#hoehetwerkt .bel.jij{background:rgba(201,169,98,.16);border:1px solid rgba(201,169,98,.4);border-bottom-right-radius:4px;
+  color:var(--x-white);margin-left:auto}
+
+/* voedingsblok */
+#hoehetwerkt .voed-open{display:none}
+#hoehetwerkt .voed-blok{margin-top:56px;display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:center}
+@media(max-width:880px){#hoehetwerkt .voed-blok{grid-template-columns:1fr;gap:28px;max-width:340px;margin-left:auto;margin-right:auto}}
+@media(max-width:880px){
+  #hoehetwerkt .voed-open{display:block;width:100%;margin-top:40px;background:none;
+    border:1px solid var(--x-line);border-radius:12px;padding:15px;color:var(--x-white);
+    font-family:inherit;font-size:14.5px;font-weight:700;cursor:pointer;text-align:center}
+  #hoehetwerkt .voed-open:after{content:" +";color:var(--x-gold);font-weight:400}
+  #hoehetwerkt .voed-open.open{border-color:var(--x-gold);color:var(--x-goldsoft)}
+  #hoehetwerkt .voed-open.open:after{content:" –"}
+  #hoehetwerkt .voed-blok{display:none}
+  #hoehetwerkt .voed-blok.open{display:grid;margin-top:22px}
+}
+#hoehetwerkt .voed-tekst p{color:var(--x-muted);font-size:15.5px;line-height:1.7;margin-bottom:14px}
+#hoehetwerkt .voed-tekst p:last-child{margin-bottom:0}
+#hoehetwerkt .voed-tekst b{color:var(--x-white)}
 #hoehetwerkt .vel{width:100%;max-width:300px;background:#fbfaf7;border-radius:8px;padding:20px 18px 16px;
-  min-height:444px;box-shadow:0 22px 50px rgba(0,0,0,.5);color:#1a1a1a;position:relative;overflow:hidden;line-height:1.6}
+  box-shadow:0 22px 50px rgba(0,0,0,.5);color:#1a1a1a;position:relative;overflow:hidden;line-height:1.6}
 #hoehetwerkt .vel:before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--x-gold)}
 #hoehetwerkt .vel-kop{display:flex;align-items:center;gap:9px;border-bottom:1.5px solid #d9d4c8;padding-bottom:9px;margin-bottom:11px}
 #hoehetwerkt .vel-logo{width:30px;height:30px;border-radius:7px;background:#0b0e13;color:var(--x-gold);
   display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-family:'Fraunces',Georgia,serif;flex-shrink:0}
-#hoehetwerkt .vel-titel{font-size:12.5px;font-weight:800;line-height:1.2}
+#hoehetwerkt .vel-titel{font-size:12.5px;font-weight:800;line-height:1.2;color:#1a1a1a}
 #hoehetwerkt .vel-sub{font-size:9px;color:#777;margin-top:1px}
 #hoehetwerkt .vel-m{border-bottom:1px solid #e8e4da;padding:7px 0}
 #hoehetwerkt .vel-m:last-of-type{border-bottom:none}
 #hoehetwerkt .vel-m .vm-kop{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
-#hoehetwerkt .vel-m .vm-naam{font-size:11px;font-weight:800}
+#hoehetwerkt .vel-m .vm-naam{font-size:11px;font-weight:800;color:#1a1a1a}
 #hoehetwerkt .vel-m .vm-kcal{font-size:9.5px;color:#8a6d2f;font-weight:700;white-space:nowrap}
 #hoehetwerkt .vel-m .vm-reg{font-size:9.5px;color:#4a4a4a;line-height:1.5;margin-top:2px}
 #hoehetwerkt .vel-tot{background:#f4efe3;border-left:3px solid var(--x-gold);border-radius:5px;padding:9px 10px;margin-top:10px}
-#hoehetwerkt .vel-tot .vt-lab{font-size:8px;text-transform:uppercase;letter-spacing:.07em;color:#777}
+#hoehetwerkt .vel-tot .vt-lab{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#777}
 #hoehetwerkt .vel-tot .vt-groot{font-size:17px;font-weight:800;color:#1a1a1a;line-height:1.2}
 #hoehetwerkt .vel-macros{display:flex;gap:5px;margin-top:7px}
 #hoehetwerkt .vel-macros div{flex:1;background:#fff;border:1px solid #e2ddd1;border-radius:5px;padding:4px 3px;text-align:center}
-#hoehetwerkt .vel-macros .vm{font-size:11px;font-weight:800}
-#hoehetwerkt .vel-macros .vl{font-size:7.5px;color:#888;text-transform:uppercase;letter-spacing:.04em}
-#hoehetwerkt .vel-voet{border-top:1px solid #e0dbcf;margin-top:11px;padding-top:7px;font-size:7.5px;color:#8a8a8a;text-align:center}
+#hoehetwerkt .vel-macros .vm{font-size:11px;font-weight:800;color:#1a1a1a}
+#hoehetwerkt .vel-macros .vl{font-size:8.5px;color:#888;text-transform:uppercase;letter-spacing:.04em}
+#hoehetwerkt .vel-voet{border-top:1px solid #e0dbcf;margin-top:11px;padding-top:7px;font-size:8.5px;color:#8a8a8a;text-align:center}
 
-/* voetnoot en knop */
-#hoehetwerkt .app-klein{font-size:13px;color:var(--x-muted);text-align:center;margin-top:26px;opacity:.8}
+/* afsluiting */
+#hoehetwerkt .app-klein{font-size:13px;color:var(--x-muted);text-align:center;margin-top:34px;opacity:.8}
 #hoehetwerkt .app-voet{margin-top:30px;background:var(--x-card);border:1px solid var(--x-line);border-radius:14px;
   padding:26px 30px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;justify-content:space-between}
-#hoehetwerkt .app-voet p{font-size:15px;color:var(--x-muted);max-width:580px;line-height:1.7}
+#hoehetwerkt .app-voet p{font-size:15.5px;color:var(--x-muted);max-width:600px;line-height:1.7}
 #hoehetwerkt .app-voet p b{color:var(--x-white)}
-
-/* expliciete tekstkleuren zodat niets afhangt van de pagina eromheen */
-#hoehetwerkt .a-dag .d-t,#hoehetwerkt .a-kop,#hoehetwerkt .a-weekbalk .wk{color:var(--x-white)}
-#hoehetwerkt .vel,#hoehetwerkt .vel *{font-family:'Manrope',system-ui,sans-serif}
-#hoehetwerkt .vel-titel,#hoehetwerkt .vel-m .vm-naam,#hoehetwerkt .vel-tot .vt-groot,
-#hoehetwerkt .vel-macros .vm{color:#1a1a1a}
-#hoehetwerkt p{margin:0}
-#hoehetwerkt .app-klein{margin-top:26px}
 </style>
 
-<section id="hoehetwerkt" style="border-top:1px solid var(--x-line)">
+<section id="hoehetwerkt" style="border-top:1px solid var(--line,#232a35)">
   <div class="wrap">
     <span class="kicker reveal">Wat je krijgt</span>
     <h2 class="reveal">Zo ziet jouw week eruit.</h2>
-    <p class="app-intro reveal d1">Je trainingsschema staat in een app op je telefoon, met de sessies al op de dagen die jij zelf aangaf. Je vinkt af wat je deed, en ik zie wat er van je week terechtkwam. Je voedingsschema wordt opgebouwd uit gerechten die je zelf koos.</p>
+    <p class="app-intro reveal d1">Je trainingsschema staat in een app op je telefoon, met de sessies op de dagen die jij zelf aangaf. Maar het belangrijkste staat niet in een app: <b>als je week anders loopt dan gepland, zoeken we samen wat er dan wel kan.</b></p>
 
     <div class="app-rij">
 
-      <!-- ============ 1 · WEEKKALENDER ============ -->
+      <!-- ============ 1 · DE WEEK ============ -->
       <div class="app-kolom reveal">
         <div class="tel">
           <div class="tel-notch"></div>
           <div class="tel-inner">
             <div class="tel-status"><span>9:41</span><span>▮▮▮ ▲ 82%</span></div>
-            <div class="a-kop">Halve marathon</div>
+            <div class="a-kop">Sterker worden &amp; 10 km</div>
             <div class="a-sub">Deze week · 2 van 4 gedaan</div>
             <div class="a-balk"><i style="width:50%"></i></div>
 
@@ -506,7 +528,6 @@ footer a:hover{color:var(--gold-soft)}
               <div class="mid"><div class="wk">17 aug — 23 aug</div><div class="dat">deze week</div></div>
               <div class="pijl">›</div>
             </div>
-            <span class="a-fase">opbouw</span>
 
             <div class="a-dag gedaan">
               <div class="inh">
@@ -520,8 +541,8 @@ footer a:hover{color:var(--gold-soft)}
             <div class="a-dag gedaan">
               <div class="inh">
                 <div class="d-kop">Dinsdag 18 aug</div>
-                <div class="d-t">Tempoduurloop</div>
-                <div class="d-d">10 min inlopen · 20 min op 5:18/km · 10 min uitlopen</div>
+                <div class="d-t">Rustige loop · 30 min</div>
+                <div class="d-d">Rustig tempo: je moet nog volledige zinnen kunnen zeggen</div>
               </div>
               <div class="a-vink aan">✓</div>
             </div>
@@ -537,7 +558,7 @@ footer a:hover{color:var(--gold-soft)}
               <div class="inh">
                 <div class="d-kop">Donderdag 20 aug · vandaag</div>
                 <div class="d-t">Kracht onderlichaam</div>
-                <div class="d-d">Leg press · Romanian deadlift · Leg curl · Kuiten</div>
+                <div class="d-d">Leg press · Romanian deadlift · Leg curl · Calf raises</div>
                 <div class="d-k">Korter: enkel de eerste drie oefeningen.</div>
               </div>
               <div class="a-vink"></div>
@@ -553,9 +574,9 @@ footer a:hover{color:var(--gold-soft)}
             <div class="a-dag">
               <div class="inh">
                 <div class="d-kop">Zondag 23 aug</div>
-                <div class="d-t">Lange duurloop</div>
-                <div class="d-d">16 km op 6:42/km (±107 min)</div>
-                <div class="d-f">Onderweg: 45 g koolhydraten per uur — 3 gels, om de 25 min één.</div>
+                <div class="d-t">Langere loop · 45 min</div>
+                <div class="d-d">Nog altijd rustig. Deze loop bouwt je basis op, niet je snelheid.</div>
+                <div class="d-k">Korter: 30 min. Beter kort dan overgeslagen.</div>
               </div>
               <div class="a-vink"></div>
             </div>
@@ -584,9 +605,12 @@ footer a:hover{color:var(--gold-soft)}
                   <div class="d-d">Leg press 2×6-10 · Romanian deadlift 2×6-10 · Seated leg curl 2×8-12 · Standing calf raises 2×8-12</div>
                   <div class="d-k">Korter: enkel de eerste drie oefeningen. Beter kort dan overgeslagen.</div>
                 </div>
-                <div class="a-vink"></div>
+                <div class="statusknoppen">
+                  <div class="a-vink" title="Gedaan"></div>
+                  <div class="a-kruis" title="Niet gedaan">✕</div>
+                </div>
               </div>
-              <div style="border:1px dashed rgba(224,138,109,.45);color:#e08a6d;border-radius:8px;
+              <div style="border:1px dashed rgba(201,169,98,.45);color:var(--x-goldsoft);border-radius:8px;
                 padding:6px;font-size:9.5px;font-weight:700;text-align:center;margin-top:8px;width:100%">
                 Past niet vandaag? Verschuif hem
               </div>
@@ -596,12 +620,12 @@ footer a:hover{color:var(--gold-soft)}
               <div class="inh">
                 <div class="d-kop">Morgen</div>
                 <div class="d-t">Rust</div>
-                <div class="d-d">Zondag staat je lange duurloop van 16 km gepland.</div>
+                <div class="d-d">Zondag staat je langere loop van 45 minuten gepland.</div>
               </div>
             </div>
 
             <div style="background:var(--x-card);border:1px solid var(--x-line);border-radius:10px;padding:9px 10px;margin-bottom:6px">
-              <div class="d-kop" style="font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--x-muted);font-weight:700">Gewicht vanochtend</div>
+              <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--x-muted);font-weight:700">Gewicht vanochtend</div>
               <div style="display:flex;gap:6px;margin-top:5px">
                 <div style="flex:1;background:var(--x-bg);border:1px solid var(--x-line);border-radius:7px;
                   padding:6px 8px;font-size:11.5px;color:var(--x-white)">81,4 kg</div>
@@ -610,87 +634,131 @@ footer a:hover{color:var(--gold-soft)}
               </div>
             </div>
 
-            <div style="border:1px dashed rgba(224,138,109,.5);color:#e08a6d;border-radius:9px;
-              padding:8px;font-size:10.5px;font-weight:700;text-align:center">
-              Chaosweek? Geef Robin een seintje
+            <div style="background:var(--x-card);border:1px solid var(--x-line);border-radius:10px;padding:9px 10px">
+              <div style="font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--x-muted);font-weight:700">Je vooruitgang</div>
+              <div style="font-size:10.5px;color:var(--x-muted);margin-top:4px;line-height:1.5">
+                Leg press: <span style="color:var(--x-goldsoft);font-weight:700">80 → 100 kg</span> in 5 weken</div>
             </div>
+
             <div class="a-knop">Hele week bekijken</div>
           </div>
         </div>
         <div class="app-bijschrift">
           <b>Elke dag weet je wat er staat</b>
-          <span>Met een kortere versie eronder, voor de dagen dat het leven ertussen komt.</span>
+          <span>Met een kortere versie eronder. En lukte het niet? Dan duid je dat gewoon aan — geen uitleg nodig.</span>
         </div>
       </div>
 
-      <!-- ============ 3 · VOEDINGSSCHEMA ============ -->
+      <!-- ============ 3 · HET GESPREK ============ -->
       <div class="app-kolom reveal d2">
-        <div class="vel">
-          <div class="vel-kop">
-            <div class="vel-logo">RV</div>
-            <div>
-              <div class="vel-titel">Voedingsschema — Jan</div>
-              <div class="vel-sub">Trainingsdag · week 5</div>
+        <div class="tel">
+          <div class="tel-notch"></div>
+          <div class="tel-inner">
+            <div class="tel-status"><span>21:14</span><span>▮▮▮ ▲ 61%</span></div>
+            <div class="gesprek-kop">
+              <div class="gesprek-foto">RV</div>
+              <div>
+                <div class="gesprek-naam">Robin</div>
+                <div class="gesprek-status">meestal binnen een paar uur</div>
+              </div>
             </div>
-          </div>
 
-          <div class="vel-m">
-            <div class="vm-kop"><span class="vm-naam">Ontbijt</span><span class="vm-kcal">510 kcal</span></div>
-            <div class="vm-reg">4 sneden volkoren brood · plattekaas · confituur · een appel</div>
-          </div>
+            <div class="dagscheiding">Dinsdag</div>
 
-          <div class="vel-m">
-            <div class="vm-kop"><span class="vm-naam">Middagmaal</span><span class="vm-kcal">640 kcal</span></div>
-            <div class="vm-reg">Brooddoos: 4 boterhammen met gehaktbrood en kaas · komkommer · yoghurt</div>
-          </div>
+            <div class="bel jij">Robin, deze week loopt in het honderd. De kleine is ziek, twee nachten amper geslapen. Ik denk dat ik alles ga moeten laten vallen.<span class="tijd">21:14</span></div>
 
-          <div class="vel-m">
-            <div class="vm-kop"><span class="vm-naam">Tussendoortje</span><span class="vm-kcal">230 kcal</span></div>
-            <div class="vm-reg">Banaan · handje ongezouten noten</div>
-          </div>
+            <div class="bel hem">Niets laten vallen. Doe donderdag enkel de eerste drie oefeningen, een halfuur. De langere loop schuiven we naar volgende week.<span class="tijd">21:31</span></div>
 
-          <div class="vel-m">
-            <div class="vm-kop"><span class="vm-naam">Avondmaal</span><span class="vm-kcal">735 kcal</span></div>
-            <div class="vm-reg">Spaghetti bolognese · 100 g spaghetti · 150 g mager gehakt · saus met wortel en ui · geraspte kaas</div>
-          </div>
+            <div class="bel hem">Slaap is nu belangrijker dan je schema. Dat haal je zo weer in.<span class="tijd">21:31</span></div>
 
-          <div class="vel-m">
-            <div class="vm-kop"><span class="vm-naam">Avondsnack</span><span class="vm-kcal">185 kcal</span></div>
-            <div class="vm-reg">Kwark met appel en een lepel pindakaas</div>
-          </div>
+            <div class="dagscheiding">Donderdag</div>
 
-          <div class="vel-tot">
-            <div class="vt-lab">Totaal op een trainingsdag</div>
-            <div class="vt-groot">2300 kcal</div>
-            <div class="vel-macros">
-              <div><div class="vm">140 g</div><div class="vl">eiwit</div></div>
-              <div><div class="vm">275 g</div><div class="vl">kh</div></div>
-              <div><div class="vm">70 g</div><div class="vl">vet</div></div>
-            </div>
-          </div>
+            <div class="bel jij">Gedaan. Voelde eigenlijk beter dan verwacht.<span class="tijd">19:48</span></div>
 
-          <div class="vel-voet">Robin Verdonck Coaching · Peer · +32 472 50 20 86</div>
+            <div class="bel hem">Zie je wel. Volgende week pikken we gewoon op waar we gebleven waren.<span class="tijd">20:02</span></div>
+          </div>
         </div>
         <div class="app-bijschrift">
-          <b>Een voedingsschema met jouw eten</b>
-          <span>Opgebouwd uit gerechten die je zelf koos in je intake. Gewoon eten waar je gezin ook van mee-eet.</span>
+          <b>En ik kijk elke week mee</b>
+          <span>Dit is waar je eigenlijk voor betaalt. Een app kan je niet zeggen wat je moet doen wanneer het leven ertussen komt.</span>
+          <span style="display:block;margin-top:8px;font-size:12.5px;opacity:.72">Voorbeeld van hoe zo'n gesprek in de praktijk verloopt.</span>
         </div>
       </div>
 
     </div>
 
-    <p class="app-klein reveal">Voorbeeldweergaven. Je eigen schema wordt volledig op maat gemaakt na je intake.</p>
+    <div class="principe reveal">
+      <p>Een gemiste sessie is geen mislukte week.</p>
+      <span>Dat klinkt vanzelfsprekend, maar het is precies waar de meeste mensen afhaken: een week die tegenzit voelt als falen, en dan stopt alles. Daarom staat er bij elke training een kortere versie, en mag je gerust aanduiden dat het niet lukte. Ik reken je daar niet op af — ik stuur bij.</span>
+    </div>
+
+    <!-- ============ 4 · VOEDING ============ -->
+    <button class="voed-open" type="button" onclick="var b=document.getElementById('voedblok'),o=b.classList.toggle('open');this.classList.toggle('open',o);this.querySelector('span').textContent=o?'Voorbeeld van een voedingsdag':'Bekijk ook een voedingsdag'"><span>Bekijk ook een voedingsdag</span></button>
+
+    <div class="voed-blok reveal" id="voedblok">
+      <div class="vel">
+        <div class="vel-kop">
+          <div class="vel-logo">RV</div>
+          <div>
+            <div class="vel-titel">Voedingsschema — Jan</div>
+            <div class="vel-sub">81 kg · 4 trainingen per week</div>
+          </div>
+        </div>
+
+        <div class="vel-m">
+          <div class="vm-kop"><span class="vm-naam">Ontbijt</span><span class="vm-kcal">620 kcal</span></div>
+          <div class="vm-reg">5 sneden volkoren brood · plattekaas · confituur · een banaan</div>
+        </div>
+
+        <div class="vel-m">
+          <div class="vm-kop"><span class="vm-naam">Middagmaal</span><span class="vm-kcal">720 kcal</span></div>
+          <div class="vm-reg">Brooddoos: 4 boterhammen met gehaktbrood en kaas · komkommer · yoghurt</div>
+        </div>
+
+        <div class="vel-m">
+          <div class="vm-kop"><span class="vm-naam">Tussendoortje</span><span class="vm-kcal">280 kcal</span></div>
+          <div class="vm-reg">Appel · handje ongezouten noten</div>
+        </div>
+
+        <div class="vel-m">
+          <div class="vm-kop"><span class="vm-naam">Avondmaal</span><span class="vm-kcal">860 kcal</span></div>
+          <div class="vm-reg">Spaghetti bolognese · 125 g spaghetti · 150 g mager gehakt · saus met wortel en ui · geraspte kaas</div>
+        </div>
+
+        <div class="vel-m">
+          <div class="vm-kop"><span class="vm-naam">Avondsnack</span><span class="vm-kcal">320 kcal</span></div>
+          <div class="vm-reg">Kwark met appel, pindakaas en een handje granola</div>
+        </div>
+
+        <div class="vel-tot">
+          <div class="vt-lab">Totaal op een trainingsdag</div>
+          <div class="vt-groot">2800 kcal</div>
+          <div class="vel-macros">
+            <div><div class="vm">155 g</div><div class="vl">eiwit</div></div>
+            <div><div class="vm">330 g</div><div class="vl">kh</div></div>
+            <div><div class="vm">96 g</div><div class="vl">vet</div></div>
+          </div>
+        </div>
+
+        <div class="vel-voet">Robin Verdonck Coaching · Peer · +32 472 50 20 86</div>
+      </div>
+
+      <div class="voed-tekst">
+        <h3>En je hoeft niet apart te koken.</h3>
+        <p>In je intake kies je uit meer dan honderdvijftig gerechten wat je graag eet. Daar bouw ik je schema mee op — <b>gewoon eten dat je samen met je gezin op tafel zet</b>. Geen aparte maaltijden, geen dingen die je niet lust, geen poeders.</p>
+        <p>Op een rustdag ligt het totaal wat lager, op een zware trainingsdag wat hoger. Je krijgt het als document dat je kan afdrukken of op je telefoon houdt.</p>
+        <p>Verandert er iets — een blessure, een periode met minder tijd, een doel dat verschuift — dan pas ik het aan. Je zit nergens aan vast.</p>
+      </div>
+    </div>
+
+    <p class="app-klein reveal">Voorbeeldweergaven. Jouw schema wordt volledig op maat gemaakt na de intake.</p>
 
     <div class="app-voet reveal">
-      <p><b>De app is niet het product — ik ben het product.</b> Dit is gewoon de manier waarop je schema bij je terechtkomt en waarop ik zie hoe je week liep. Elke week kijk ik mee en stuur ik bij waar het nodig is.</p>
+      <p><b>De app is niet het product. Ik ben het product.</b> Het schema is het makkelijke deel — dat kan iedereen maken. Waar het om draait is dat er iemand meekijkt op het moment dat je week anders loopt dan gepland. Niet om je te controleren, maar omdat de meeste mensen daar afhaken.<br><br>Na een paar maanden ben je niet iemand die een schema volgt. Je bent iemand die traint. Dat is het echte doel.</p>
       <a class="btn btn-gold" href="#aanvraag" style="display:inline-flex;align-items:center;gap:10px;padding:17px 34px;border-radius:99px;font-weight:700;font-size:15.5px;text-decoration:none;background:linear-gradient(135deg,var(--x-gold),#b3934e);color:#0b0e13">Stuur me een berichtje</a>
     </div>
   </div>
 </section>
-
-<!-- ================================================================
-     EINDE — hierna volgt gewoon je bestaande sectie #investering
-     ================================================================ -->
 
 <!-- ============ INVESTERING ============ -->
 <section class="ps" id="investering" style="border-bottom:none">
