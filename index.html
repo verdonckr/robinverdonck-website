@@ -1013,5 +1013,170 @@ function submitForm(){
 show(1);
 </script>
 <script src="cookies.js"></script>
+  <style>
+@media(max-width:880px){
+
+  /* de bestaande balk wordt vervangen */
+  body>nav{display:none!important}
+  body{padding-bottom:78px}
+  .hero{padding-top:104px!important}
+
+  /* ---------- vaste bovenbalk ---------- */
+  #mbalk{position:fixed;top:0;left:0;right:0;z-index:60;
+    background:rgba(11,14,19,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+  #mbalk .rij{display:flex;align-items:center;justify-content:space-between;height:58px;padding:0 16px}
+  #mbalk .naam{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:600;color:var(--white)}
+  #mbalk .naam em{font-style:italic;color:var(--gold)}
+  #mknop{display:flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);
+    color:var(--white);font-family:inherit;font-size:14.5px;font-weight:700;padding:10px 15px;
+    border-radius:99px;cursor:pointer;min-height:44px;transition:.22s var(--ease)}
+  #mknop svg{width:13px;height:13px;transition:transform .25s var(--ease)}
+  #mknop.open{border-color:var(--gold);color:var(--gold-soft);background:rgba(201,169,98,.1)}
+  #mknop.open svg{transform:rotate(180deg)}
+
+  /* ---------- uitklapmenu ---------- */
+  #mmenu{max-height:0;overflow:hidden;background:var(--slate);
+    border-top:1px solid transparent;transition:max-height .32s var(--ease)}
+  #mmenu.open{max-height:78vh;overflow-y:auto;border-top-color:var(--line);
+    -webkit-overflow-scrolling:touch}
+  #mmenu .groep{padding:12px 16px 4px;font-size:11px;font-weight:800;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gold)}
+  #mmenu a{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:15px 16px;min-height:52px;font-size:16px;font-weight:600;color:var(--white);
+    border-bottom:1px solid rgba(255,255,255,.05)}
+  #mmenu a span{color:var(--muted);font-size:13px;font-weight:400;text-align:right}
+  #mmenu a:active{background:var(--card)}
+  #mmenu .slot{padding:14px 16px calc(18px + env(safe-area-inset-bottom))}
+  #mmenu .slot a{justify-content:center;border:none;border-radius:99px;min-height:52px;font-weight:800;
+    background:linear-gradient(135deg,var(--gold),#b3934e);color:#0b0e13}
+
+  /* ---------- vaste actiebalk onderaan ---------- */
+  #monder{position:fixed;left:0;right:0;bottom:0;z-index:59;display:flex;gap:9px;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    background:rgba(11,14,19,.95);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+    border-top:1px solid var(--line);transform:translateY(130%);transition:transform .32s var(--ease)}
+  #monder.aan{transform:none}
+  #monder a{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;
+    border-radius:99px;font-weight:800;font-size:15.5px}
+  #monder .hoofd{flex:1;background:linear-gradient(135deg,var(--gold),#b3934e);color:#0b0e13}
+  #monder .wa{width:52px;flex-shrink:0;background:var(--card);border:1px solid var(--line);color:var(--white)}
+  #monder .wa svg{width:22px;height:22px}
+
+  /* ---------- grotere aanraakvlakken in de voettekst ---------- */
+  footer .wrap{gap:12px}
+  footer a{display:inline-block;padding:11px 4px;min-height:44px;line-height:22px}
+
+  /* ---------- "Wat je krijgt" als veegbare rij ---------- */
+  #hoehetwerkt .app-rij{display:flex!important;grid-template-columns:none!important;
+    max-width:none!important;margin:0 -24px!important;padding:0 24px 8px!important;gap:16px!important;
+    overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #hoehetwerkt .app-rij::-webkit-scrollbar{display:none}
+  #hoehetwerkt .app-kolom{flex:0 0 84%;scroll-snap-align:center}
+  #hoehetwerkt .app-bijschrift{max-width:none}
+  #mstippen{display:flex;justify-content:center;gap:7px;margin-top:14px}
+  #mstippen i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.25s var(--ease)}
+  #mstippen i.aan{background:var(--gold);width:20px;border-radius:99px}
+  #mveeg{text-align:center;font-size:12.5px;color:var(--muted);margin-top:10px;opacity:.8}
+}
+@media(min-width:881px){#mbalk,#monder{display:none}}
+</style>
+
+<div id="mbalk">
+  <div class="rij">
+    <a class="naam" href="#top">Robin <em>Verdonck</em></a>
+    <button id="mknop" type="button" aria-expanded="false" aria-controls="mmenu">Menu
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+  </div>
+  <nav id="mmenu" aria-label="Hoofdmenu">
+    <div class="groep">Over de coaching</div>
+    <a href="#methode">Mijn aanpak</a>
+    <a href="#herkenning">Herken je dit</a>
+    <a href="#verhaal">Wie ik ben</a>
+    <a href="#hoehetwerkt">Wat je krijgt</a>
+    <a href="#investering">Prijzen</a>
+    <a href="#faq">Veelgestelde vragen</a>
+    <div class="groep">Gratis, zonder account</div>
+    <a href="gratis-tools.html">Gratis tools <span>calculators</span></a>
+    <a href="kennisbank.html">Kennisbank <span>artikels</span></a>
+    <a href="gratis-log.html">Gratis logboek <span>trainingen bijhouden</span></a>
+    <div class="slot"><a href="#aanvraag">Stuur me een berichtje</a></div>
+  </nav>
+</div>
+
+<div id="monder">
+  <a class="hoofd" href="#aanvraag">Stuur me een berichtje</a>
+  <a class="wa" href="https://wa.me/32472502086" target="_blank" rel="noopener" aria-label="Stuur een WhatsApp naar Robin">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.2-1.7-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.7 1-.9 1.2-.2.2-.3.2-.6.1-1.7-.9-2.9-1.6-4-3.6-.3-.5.3-.5.9-1.6.1-.2 0-.4 0-.5s-.7-1.6-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.2 5.1 4.4 1.9.8 2.6.9 3.5.8.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.4M12 2a10 10 0 00-8.6 15L2 22l5.1-1.3A10 10 0 1012 2m0 1.8a8.2 8.2 0 016.9 12.6l-.2.3.8 2.9-3-.8-.3.2A8.2 8.2 0 1112 3.8"/></svg>
+  </a>
+</div>
+
+<script>
+(function(){
+  if(innerWidth>880 && !matchMedia('(max-width:880px)').matches)return;
+  const knop=document.getElementById('mknop');
+  const menu=document.getElementById('mmenu');
+  const balk=document.getElementById('mbalk');
+  const onder=document.getElementById('monder');
+  const form=document.getElementById('aanvraag');
+
+  /* ---- menu openen en sluiten ---- */
+  function sluit(){
+    menu.classList.remove('open');
+    knop.classList.remove('open');
+    knop.setAttribute('aria-expanded','false');
+  }
+  knop.addEventListener('click',()=>{
+    const open=menu.classList.toggle('open');
+    knop.classList.toggle('open',open);
+    knop.setAttribute('aria-expanded',open?'true':'false');
+  });
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',sluit));
+  document.addEventListener('click',e=>{if(!balk.contains(e.target))sluit()});
+  addEventListener('keydown',e=>{if(e.key==='Escape')sluit()});
+
+  /* ---- actiebalk verschijnt voorbij het eerste scherm,
+          en verdwijnt zodra het contactformulier in beeld komt ---- */
+  let laatsteY=0;
+  function bijScroll(){
+    const y=scrollY;
+    const voorbij=y>380;
+    const bijForm=form && form.getBoundingClientRect().top < innerHeight*0.75;
+    onder.classList.toggle('aan', voorbij && !bijForm);
+    if(menu.classList.contains('open') && Math.abs(y-laatsteY)>40)sluit();
+    laatsteY=y;
+  }
+  addEventListener('scroll',bijScroll,{passive:true});
+  bijScroll();
+
+  /* ---- stippen onder de veegbare rij ---- */
+  const rij=document.querySelector('#hoehetwerkt .app-rij');
+  if(rij && rij.children.length>1){
+    const n=rij.children.length;
+    const stippen=document.createElement('div');
+    stippen.id='mstippen';
+    stippen.innerHTML=Array.from({length:n},(_,i)=>'<i class="'+(i?'':'aan')+'"></i>').join('');
+    const hint=document.createElement('p');
+    hint.id='mveeg';
+    hint.textContent='Veeg opzij voor de andere schermen';
+    rij.after(stippen); stippen.after(hint);
+    rij.addEventListener('scroll',()=>{
+      const i=Math.min(n-1,Math.round(rij.scrollLeft/(rij.scrollWidth/n)));
+      [...stippen.children].forEach((d,j)=>d.classList.toggle('aan',j===i));
+    },{passive:true});
+  }
+
+  /* ---- juiste toetsenborden op een telefoon ---- */
+  const mail=document.getElementById('mail');
+  if(mail){mail.type='email';mail.setAttribute('inputmode','email');mail.autocomplete='email'}
+  const gsm=document.getElementById('gsm');
+  if(gsm){gsm.setAttribute('inputmode','tel');gsm.autocomplete='tel'}
+  const naam=document.getElementById('naam');
+  if(naam)naam.autocomplete='given-name';
+})();
+</script>
+
 </body>
 </html>
