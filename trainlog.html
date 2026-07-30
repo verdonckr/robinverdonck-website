@@ -972,8 +972,9 @@ function renderTrainen(){
     const planKaart=planVandaag();
     const vandaagG=db.gewicht.find(g=>g.datum===vandaag());
     const gewichtKaart=`<div class="card"><label style="margin-top:0">Gewicht vanochtend</label>
-      <div class="rij"><input type="number" inputmode="decimal" step="0.1" id="gewichtin" placeholder="kg" value="${vandaagG?vandaagG.kg:''}">
+      <div class="rij"><input type="text" inputmode="decimal" id="gewichtin" placeholder="bv. 92,15" value="${vandaagG?String(vandaagG.kg).replace('.',','):''}">
       <button class="btn-klein" onclick="bewaarGewicht()">Opslaan</button></div>
+      <input type="text" id="gewichtopm" maxlength="60" placeholder="Iets bijzonders? bv. cheat, weinig geslapen, veel zout" value="${vandaagG&&vandaagG.opm?vandaagG.opm.replace(/"/g,'&quot;'):''}" style="margin-top:8px">
       ${vandaagG?'<div style="font-size:12px;color:var(--groen);font-weight:700;margin-top:6px">✓ Ingevuld voor vandaag — bekijk je verloop onder Progressie</div>':'<div style="font-size:12px;color:var(--grijs);margin-top:6px">Weeg je elke ochtend na het opstaan, voor het ontbijt. Elke meting wordt bewaard onder <b style="color:var(--goldsoft)">Progressie</b>, waar je in de grafiek en de lijst je toename of afname volgt.</div>'}</div>`;
     const intro=db.introOk?'':`<div class="card" style="border-color:var(--gold)">
       <b style="font-size:14px">Zo werkt je app</b>
@@ -1083,6 +1084,10 @@ function klapOpen(i){
     <div style="font-size:12.5px;color:var(--grijs);margin-top:10px">Ideale reprange: <b style="color:var(--goldsoft)">${rangeVan(oef)}</b> <button class="btn-mini" onclick="wijzigRange('${oef}')">wijzig</button>${TAGS[oef]?` &nbsp;·&nbsp; <span style="color:var(--goldsoft);text-transform:uppercase;letter-spacing:.05em;font-size:11px">${TAGS[oef]}</span>`:''}</div>
     ${vorig?`<div class="vorige">Vorige keer (${vorig.datum}): <b>${vorig.sets.map(s=>s.kg+'kg × '+s.reps).join(' · ')}</b><br>De grijze waarden in de velden zijn je vorige training.<br>Doel vandaag: <b>${overloadDoel(vorig,rangeVan(oef))}</b></div>`:'<div class="vorige">Eerste keer. Zet een startgewicht neer.</div>'}
     <label>Sets vandaag</label>
+    <div style="display:flex;align-items:center;gap:8px;margin:-4px 0 8px">
+      <span style="font-size:12px;color:var(--grijs)">Knoppen springen per</span>
+      <button class="btn-mini" id="stapknop" onclick="wisselStap()">${SPRONG.toString().replace('.',',')} kg</button>
+    </div>
     <div id="sets${i}">${setsHtml}</div>
     ${vorig?`<button class="btn-mini" style="margin:2px 0 8px" onclick="vulVorige(${i},'${oef.replace(/'/g,"\\'")}')">Zelfde als vorige keer</button> `:''}<button class="btn-lijn" style="margin:4px 0 10px" onclick="voegSet(${i})">+ set toevoegen</button>
     <label>Rusttimer</label>
@@ -1095,7 +1100,7 @@ function setHtml(nr,phKg,phReps){
     <div class="setmain">
       <span class="setnr">${nr}</span>
       <button type="button" class="stap" onclick="stap(this,-1)">−</button>
-      <input type="number" inputmode="decimal" step="0.5" class="v-kg" placeholder="${phKg!==''?phKg+' kg':'kg'}">
+      <input type="text" inputmode="decimal" class="v-kg" placeholder="${phKg!==''?phKg+' kg':'kg'}">
       <button type="button" class="stap" onclick="stap(this,1)">+</button>
       <button type="button" class="stap" onclick="stapR(this,-1)">−</button>
       <input type="number" inputmode="numeric" class="v-reps" placeholder="${phReps!==''?phReps+' reps':'reps'}">
@@ -1109,7 +1114,23 @@ function setHtml(nr,phKg,phReps){
     </div>
   </div>`;
 }
-function stap(b,d){const i=b.parentElement.querySelector('.v-kg');let v=parseFloat(i.value);if(isNaN(v))v=parseFloat((i.placeholder||'').replace(',','.'))||0;i.value=Math.max(0,Math.round((v+d*2.5)*2)/2);}
+/* stapgrootte van de + en − knoppen, instelbaar voor microloaden */
+const SPRONGEN=[2.5,1.25,0.5,0.25];
+let SPRONG=parseFloat(localStorage.getItem('tl_sprong'))||2.5;
+function wisselStap(){
+  const i=SPRONGEN.indexOf(SPRONG);
+  SPRONG=SPRONGEN[(i+1)%SPRONGEN.length];
+  localStorage.setItem('tl_sprong',SPRONG);
+  const k=document.getElementById('stapknop');
+  if(k)k.textContent=SPRONG.toString().replace('.',',')+' kg';
+}
+function stap(b,d){
+  const i=b.parentElement.querySelector('.v-kg');
+  let v=getal(i.value);
+  if(!v)v=getal((i.placeholder||'').replace(' kg',''));
+  const nw=Math.max(0,Math.round((v+d*SPRONG)*100)/100);
+  i.value=String(nw).replace('.',',');
+}
 function stapR(b,d){const i=b.parentElement.querySelector('.v-reps');let v=parseInt(i.value);if(isNaN(v))v=parseInt(i.placeholder)||0;i.value=Math.max(0,v+d);}
 function wisSet(b){b.closest('.setrij').remove();}
 function standaardRange(oef){
@@ -1138,7 +1159,7 @@ function bewaarOef(i){
   const dag=db.dagen.find(d=>d.id===huidigeDag);
   const oef=altOef[i]||dag.oefs[i];
   const sets=[...document.querySelectorAll('#sets'+i+' .setrij')].map(r=>({
-    kg:parseFloat(r.querySelector('.v-kg').value)||0,
+    kg:Math.round(getal(r.querySelector('.v-kg').value)*100)/100,
     reps:parseInt(r.querySelector('.v-reps').value)||0,
     rpe:parseInt(r.querySelector('.v-rpe').value)||0,
     warm:r.classList.contains('warm')
@@ -1156,12 +1177,19 @@ function bewaarOef(i){
   renderTrainen();
 }
 
+function getal(x){
+  /* leest zowel 92,15 als 92.15 */
+  const v=parseFloat(String(x==null?'':x).replace(',','.'));
+  return isNaN(v)?0:v;
+}
 function bewaarGewicht(){
-  const v=parseFloat(document.getElementById('gewichtin').value);
+  const v=getal(document.getElementById('gewichtin').value);
   if(!v){toast('Vul je gewicht in.');return}
+  const opm=(document.getElementById('gewichtopm')||{}).value||'';
   db.gewicht=db.gewicht.filter(g=>g.datum!==vandaag());
-  db.gewicht.push({datum:vandaag(),kg:v});
+  db.gewicht.push({datum:vandaag(),kg:Math.round(v*100)/100,opm:opm.trim()});
   bewaar();renderTrainen();syncSupabase();
+  toast(opm.trim()?'Gewicht en notitie bewaard':'Gewicht bewaard');
 }
 function houdWakker(aan){
   try{
@@ -1174,7 +1202,7 @@ function vulVorige(i,oef){
   const vorig=laatsteLog(oef); if(!vorig||!vorig.sets)return;
   document.querySelectorAll('#sets'+i+' .setrij').forEach((r,n)=>{
     const s=vorig.sets[n]; if(!s)return;
-    r.querySelector('.v-kg').value=s.kg; r.querySelector('.v-reps').value=s.reps;
+    r.querySelector('.v-kg').value=String(s.kg).replace('.',','); r.querySelector('.v-reps').value=s.reps;
     if(s.rpe)r.querySelector('.v-rpe').value=s.rpe;
     if(s.warm)r.classList.add('warm');
   });
@@ -1380,7 +1408,12 @@ function tekenGewicht(){
   const desc=[...db.gewicht].sort((a,b)=>b.datum.localeCompare(a.datum));
   document.getElementById('glijst').innerHTML=desc.map((x,i)=>{
     const vor=desc[i+1];const d=vor?x.kg-vor.kg:null;
-    return `<div class="histset" style="display:flex;justify-content:space-between"><span>${x.datum}</span><span><b style="color:var(--wit)">${x.kg.toFixed(1)} kg</b>${d===null?'':` <span style="color:${d<0?'var(--groen)':'var(--goldsoft)'};font-weight:700">${d>0?'+':''}${d.toFixed(1)}</span>`}</span></div>`;
+    const kg=(Math.round(x.kg*100)/100).toFixed(2).replace('.',',');
+    const ds=d===null?'':(d>0?'+':'')+d.toFixed(2).replace('.',',');
+    return `<div class="histset" style="display:block">
+      <div style="display:flex;justify-content:space-between"><span>${x.datum}</span><span><b style="color:var(--wit)">${kg} kg</b>${d===null?'':` <span style="color:${d<0?'var(--groen)':'var(--goldsoft)'};font-weight:700">${ds}</span>`}</span></div>
+      ${x.opm?`<div style="font-size:11.5px;color:var(--goldsoft);margin-top:2px">${String(x.opm).replace(/</g,'&lt;')}</div>`:''}
+    </div>`;
   }).join('');
 }
 function groepVan(oef){ for(const k in BIB){ if(BIB[k].some(x=>x[0]===oef))return k; } const e=db.eigen.find(x=>x.n===oef); return e?e.groep:null; }
@@ -1533,8 +1566,10 @@ async function verstuurCheckin(){
   txt+='Speciale momenten (geweest/gepland): '+(v('ci_event')||'geen')+'\n\n';
   const g=db.gewicht.filter(x=>x.datum>=sinds).sort((a,b)=>a.datum.localeCompare(b.datum));
   if(g.length){
-    const gem=(g.reduce((a,x)=>a+x.kg,0)/g.length).toFixed(1);
-    txt+='Gewicht (laatste 2 weken): gemiddeld '+gem+' kg, verloop '+g.map(x=>x.kg).join(' > ')+'\n';
+    const gem=(g.reduce((a,x)=>a+x.kg,0)/g.length).toFixed(2).replace('.',',');
+    txt+='Gewicht (laatste 2 weken): gemiddeld '+gem+' kg, verloop '+g.map(x=>String(x.kg).replace('.',',')).join(' > ')+'\n';
+    const opm=g.filter(x=>x.opm);
+    if(opm.length)txt+='Opmerkingen bij het wegen: '+opm.map(x=>x.datum.slice(5)+' '+x.opm).join(' | ')+'\n';
   }
   const m={datum:vandaag(),taille:v('ci_taille'),borst:v('ci_borst'),heup:v('ci_heup'),arm:v('ci_arm'),dij:v('ci_dij')};
   if(m.taille||m.borst||m.heup||m.arm||m.dij){
@@ -1584,7 +1619,7 @@ async function weekNaarRobin(){
   dagen.forEach(d=>{txt+='\n'+d+':\n'+logs.filter(l=>l.datum===d).map(l=>'- '+l.oef+': '+(l.cardio?(l.min+' min'+(l.km?', '+l.km+' km':'')):l.sets.map(s=>s.kg+'x'+s.reps).join(', '))).join('\n')+'\n'});
   if(!dagen.length)txt+='\nGeen trainingen gelogd deze week.\n';
   const g=db.gewicht.filter(x=>x.datum>=sinds).sort((a,b)=>a.datum.localeCompare(b.datum));
-  if(g.length)txt+='\nGewicht: '+g.map(x=>x.kg+'kg').join(' > ');
+  if(g.length)txt+='\nGewicht: '+g.map(x=>String(x.kg).replace('.',',')+'kg'+(x.opm?' ('+x.opm+')':'')).join(' > ');
   const m=db.macros.filter(x=>x.datum>=sinds&&!x.vrij);
   const vrijdagen=db.macros.filter(x=>x.datum>=sinds&&x.vrij).length;
   if(m.length)txt+='\nGemiddeld '+Math.round(m.reduce((a,x)=>a+x.kcal,0)/m.length)+' kcal over '+m.length+' dagen'+(vrijdagen?' (+'+vrijdagen+' speciale gelegenheid)':'');
@@ -1634,7 +1669,7 @@ function maandRapport(){
   h+='<h1>Maandrapport — '+(db.naam||'')+'</h1><p>'+sinds+' tot '+vandaag()+' · Robin Verdonck Coaching</p>';
   h+='<h2>Training</h2><p>'+dagen+' trainingsdagen gelogd in de voorbije 30 dagen.</p>';
   if(nieuwePrs.length)h+='<h2>Nieuwe records (geschat 1RM)</h2><table>'+nieuwePrs.map(([o,p])=>'<tr><td>'+o+'</td><td><b>'+p.v.toFixed(1)+' kg</b></td><td>'+p.d+'</td></tr>').join('')+'</table>';
-  if(g.length)h+='<h2>Gewicht</h2><p>Van '+g[0].kg+' kg naar '+g[g.length-1].kg+' kg ('+(gd>0?'+':'')+gd.toFixed(1)+' kg) over '+g.length+' metingen.</p>';
+  if(g.length)h+='<h2>Gewicht</h2><p>Van '+String(g[0].kg).replace('.',',')+' kg naar '+String(g[g.length-1].kg).replace('.',',')+' kg ('+(gd>0?'+':'')+gd.toFixed(2).replace('.',',')+' kg) over '+g.length+' metingen.</p>';
   if(mg)h+='<h2>Voeding</h2><p>Gemiddeld '+mg+' kcal per dag over '+m.length+' gelogde dagen'+(db.macrodoel&&db.macrodoel.kcal?' (doel: '+db.macrodoel.kcal+')':'')+'.</p>';
   if(laatsteMeting)h+='<h2>Laatste metingen (cm)</h2><p>Taille '+(laatsteMeting.taille||'—')+' · borst '+(laatsteMeting.borst||'—')+' · heup '+(laatsteMeting.heup||'—')+' · arm '+(laatsteMeting.arm||'—')+' · dij '+(laatsteMeting.dij||'—')+' ('+laatsteMeting.datum+')</p>';
   h+='<p style="margin-top:26px;color:#6f6c64;font-size:12px">Automatisch gegenereerd uit TrainLog. Bespreek dit rapport met Robin tijdens je check-in.</p></body></html>';
