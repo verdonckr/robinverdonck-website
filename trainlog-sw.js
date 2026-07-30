@@ -1,5 +1,5 @@
 /* TrainLog service worker — zorgt dat de app werkt zonder internet */
-const CACHE = 'trainlog-v5';
+const CACHE = 'trainlog-v6';
 const BESTANDEN = [
   'trainlog.html',
   'trainlog.webmanifest',
